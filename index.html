@@ -223,6 +223,137 @@
     background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
     border-radius: 4px; padding: 1px 6px; font-family: monospace; font-size: 10px;
   }
+
+  /* === Weather particles === */
+  .rain-drop {
+    position: absolute; width: 2px; height: 14px;
+    background: linear-gradient(to bottom, transparent, rgba(140, 180, 230, 0.7));
+    pointer-events: none; z-index: 15;
+    animation: rainFall linear infinite;
+  }
+  @keyframes rainFall {
+    0%   { transform: translateY(-20px); }
+    100% { transform: translateY(105vh); }
+  }
+  .snow-flake {
+    position: absolute; font-size: 14px; color: #fff;
+    text-shadow: 0 0 4px rgba(255,255,255,0.6);
+    pointer-events: none; z-index: 15;
+    animation: snowFall linear infinite;
+  }
+  @keyframes snowFall {
+    0%   { transform: translateY(-20px) rotate(0deg); }
+    100% { transform: translateY(105vh) rotate(360deg); }
+  }
+  .cloud-overlay {
+    position: absolute; inset: 0; z-index: 14; pointer-events: none;
+    background: radial-gradient(ellipse at 20% 0%, rgba(60, 70, 90, 0.4) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 5%, rgba(60, 70, 90, 0.35) 0%, transparent 45%),
+                radial-gradient(ellipse at 50% -5%, rgba(80, 90, 110, 0.3) 0%, transparent 55%);
+    opacity: 0; transition: opacity 1s;
+  }
+  .cloud-overlay.show { opacity: 1; }
+  .fog-overlay {
+    position: absolute; inset: 0; z-index: 14; pointer-events: none;
+    background: linear-gradient(180deg, rgba(180, 190, 200, 0.3) 0%, rgba(200, 210, 220, 0.4) 100%);
+    opacity: 0; transition: opacity 1s;
+  }
+  .fog-overlay.show { opacity: 1; }
+  .storm-flash {
+    position: absolute; inset: 0; z-index: 13; pointer-events: none;
+    background: #fff; opacity: 0;
+  }
+
+  /* === Weather HUD === */
+  #weather-indicator {
+    position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+    background: rgba(20, 25, 40, 0.78); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px; padding: 6px 14px;
+    font-size: 13px; color: #fff;
+    display: flex; align-items: center; gap: 8px;
+    pointer-events: auto; cursor: pointer;
+    z-index: 11;
+  }
+  #weather-indicator:hover { background: rgba(40, 45, 60, 0.9); }
+  #weather-indicator .wi-icon { font-size: 18px; }
+  #weather-indicator .wi-info { display: flex; flex-direction: column; }
+  #weather-indicator .wi-name { font-weight: 600; }
+  #weather-indicator .wi-stats { font-size: 10px; opacity: 0.7; }
+
+  /* === Modal: Save/Load/Staff === */
+  .manage-modal {
+    position: absolute; inset: 0; z-index: 50;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+  }
+  .manage-modal.show { display: flex; }
+  .manage-box {
+    background: linear-gradient(145deg, rgba(40,30,80,0.95) 0%, rgba(20,15,40,0.95) 100%);
+    border: 2px solid rgba(255, 215, 107, 0.3);
+    border-radius: 20px; padding: 28px 32px; min-width: 480px; max-width: 640px;
+    color: #fff; box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+    max-height: 80vh; overflow-y: auto;
+  }
+  .manage-box h2 {
+    font-size: 22px; margin-bottom: 4px;
+    background: linear-gradient(135deg, #FFD66B, #ff8a65);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .manage-box .sub { opacity: 0.6; font-size: 12px; margin-bottom: 16px; }
+
+  /* Save slots */
+  .save-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+  .save-slot {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 12px; text-align: center; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .save-slot:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+  .save-slot.empty { border-style: dashed; opacity: 0.7; }
+  .save-slot.empty:hover { border-color: #FFD66B; opacity: 1; }
+  .save-slot .ss-day { font-size: 18px; font-weight: 700; color: #FFD66B; }
+  .save-slot .ss-date { font-size: 10px; opacity: 0.6; margin-top: 2px; }
+  .save-slot .ss-stats { font-size: 11px; margin-top: 6px; opacity: 0.8; }
+
+  /* Staff cards */
+  .staff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .staff-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 12px; text-align: center;
+  }
+  .staff-card .sc-emoji { font-size: 32px; margin-bottom: 6px; }
+  .staff-card .sc-name { font-weight: 700; font-size: 14px; }
+  .staff-card .sc-effect { font-size: 11px; opacity: 0.7; margin: 4px 0 8px; }
+  .staff-card .sc-cost {
+    background: rgba(255,214,107,0.2); color: #FFD66B;
+    padding: 3px 8px; border-radius: 8px; font-size: 12px; font-weight: 700;
+    display: inline-block; margin-bottom: 8px;
+  }
+  .staff-card button {
+    background: linear-gradient(135deg, #FFD66B 0%, #ff8a65 100%);
+    color: #1a1428; border: none; padding: 6px 14px;
+    border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px;
+    width: 100%;
+  }
+  .staff-card button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .staff-card .sc-hired { color: #6ee7b7; font-size: 12px; font-weight: 600; }
+
+  /* Active staff list */
+  .active-staff {
+    margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .active-staff h3 { font-size: 14px; opacity: 0.8; margin-bottom: 8px; }
+  .staff-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 12px; background: rgba(255,255,255,0.03);
+    border-radius: 8px; margin-bottom: 6px; font-size: 13px;
+  }
+  .staff-row .fire-btn {
+    background: rgba(220, 60, 60, 0.3); color: #ff8888;
+    border: 1px solid rgba(220, 80, 80, 0.4); padding: 3px 10px;
+    border-radius: 6px; font-size: 11px; cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -273,6 +404,32 @@
   </div>
 </div>
 
+<!-- Weather indicator (top center) -->
+<div id="weather-indicator" title="คลิกเพื่อดู Weather system">
+  <span class="wi-icon">☀️</span>
+  <div class="wi-info">
+    <span class="wi-name">Sunny</span>
+    <span class="wi-stats">×1.0 visitors · ×1.0 tips</span>
+  </div>
+</div>
+
+<!-- Action buttons (next to sound toggle) -->
+<div id="action-buttons" style="position:absolute; top:16px; right:16px; display:flex; gap:8px; z-index:11;">
+  <button class="action-btn" id="btn-staff" title="จ้างพนักงาน">👨‍💼</button>
+  <button class="action-btn" id="btn-save" title="บันทึก/โหลด">💾</button>
+</div>
+<style>
+  .action-btn {
+    background: rgba(20, 25, 40, 0.78); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 50%; width: 44px; height: 44px;
+    color: #fff; font-size: 20px; cursor: pointer; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0; transition: transform 0.15s;
+  }
+  .action-btn:hover { background: rgba(40,45,60,0.9); transform: scale(1.1); }
+</style>
+
 <!-- Sound toggle -->
 <button id="sound-toggle" title="เปิด/ปิด เสียง">🔊</button>
 
@@ -318,6 +475,71 @@
     <div class="stat-row"><span class="lbl">🏆 Most Popular Ride</span><span class="v" id="s-popular">--</span></div>
     <div class="stat-row"><span class="lbl">📅 Day</span><span class="v" id="s-day">1</span></div>
     <button class="close-btn" id="stats-close">ปิด</button>
+  </div>
+</div>
+
+<!-- Save/Load Modal -->
+<div id="save-modal" class="manage-modal">
+  <div class="manage-box">
+    <h2>💾 Save & Load</h2>
+    <div class="sub">เก็บ park state ของคุณ · Auto-save ทุก 30 วินาที</div>
+    <div class="save-grid" id="save-grid">
+      <div class="save-slot empty" data-slot="0">
+        <div class="ss-day">Empty</div>
+        <div class="ss-date">—</div>
+      </div>
+      <div class="save-slot empty" data-slot="1">
+        <div class="ss-day">Empty</div>
+        <div class="ss-date">—</div>
+      </div>
+      <div class="save-slot empty" data-slot="2">
+        <div class="ss-day">Empty</div>
+        <div class="ss-date">—</div>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="close-btn" id="btn-quick-save" style="background:linear-gradient(135deg,#84cc16,#22c55e);">💾 Save Slot 1</button>
+      <button class="close-btn" id="btn-export-save" style="background:rgba(255,255,255,0.1); color:#fff;">📥 Export JSON</button>
+      <button class="close-btn" id="btn-import-save" style="background:rgba(255,255,255,0.1); color:#fff;">📤 Import</button>
+      <button class="close-btn" id="save-close">ปิด</button>
+    </div>
+    <input type="file" id="import-file-input" accept=".json" style="display:none;">
+  </div>
+</div>
+
+<!-- Staff Modal -->
+<div id="staff-modal" class="manage-modal">
+  <div class="manage-box">
+    <h2>👨‍💼 Staff Management</h2>
+    <div class="sub">จ้างพนักงานช่วยพัฒนาสวน · หักเงินรายวัน</div>
+    <div class="staff-grid">
+      <div class="staff-card" data-staff="janitor">
+        <div class="sc-emoji">🧹</div>
+        <div class="sc-name">คนกวาด</div>
+        <div class="sc-effect">+ความสุข +0.5/นาที</div>
+        <div class="sc-cost">$30/วัน</div>
+        <button class="hire-btn">จ้าง</button>
+      </div>
+      <div class="staff-card" data-staff="mechanic">
+        <div class="sc-emoji">🔧</div>
+        <div class="sc-name">ช่างซ่อม</div>
+        <div class="sc-effect">+ความเสถียร +30%</div>
+        <div class="sc-cost">$60/วัน</div>
+        <button class="hire-btn">จ้าง</button>
+      </div>
+      <div class="staff-card" data-staff="mascot">
+        <div class="sc-emoji">🎭</div>
+        <div class="sc-name">มาสคอต</div>
+        <div class="sc-effect">+spawn +20%</div>
+        <div class="sc-cost">$80/วัน</div>
+        <button class="hire-btn">จ้าง</button>
+      </div>
+    </div>
+    <div class="active-staff">
+      <h3>พนักงานที่จ้างอยู่ (<span id="staff-count">0</span>)</h3>
+      <div id="active-staff-list"></div>
+    </div>
+    <button class="close-btn" id="staff-close" style="margin-top:14px;">ปิด</button>
   </div>
 </div>
 
@@ -1116,7 +1338,7 @@ class Visitor {
     this.timer = 0;
     this.targetRide = null;
     this.rideTimer = 0;
-    this.happiness = 0.6 + Math.random() * 0.3;
+    this.happiness = Math.max(0, Math.min(1, 0.6 + Math.random() * 0.3 + WEATHERS[game.weather].moodDelta));
     this.ridesTaken = 0;
     this.maxRides = 2 + Math.floor(Math.random() * 4);
     this.wanderDir = new BABYLON.Vector3((Math.random() - 0.5) * 3, 0, (Math.random() - 0.5) * 3);
@@ -1229,7 +1451,8 @@ class Visitor {
         if (this.targetRide) {
           const baseIncome = this.targetRide.info.income;
           const incomeMult = 1.0 + game.parkRating * 0.1;  // Rating → income bonus
-          const earned = Math.round(baseIncome * incomeMult);
+          const tipMult = WEATHERS[game.weather].tipMult;   // Weather → tip bonus
+          const earned = Math.round(baseIncome * incomeMult * tipMult);
           earnMoney(earned, 'ride');
           game.totalRiders++;
           const idx = this.targetRide.passengers.indexOf(this);
@@ -1295,24 +1518,52 @@ function spawnVisitor(pos = null, groupId = null) {
 //                          GAME STATE & RATING
 // =========================================================================
 
+const WEATHERS = {
+  sunny:  { icon: '☀️', name: 'แดดดี',  nameEn: 'Sunny',  spawnMult: 1.0, tipMult: 1.0, moodDelta: 0,    skyTint: [0.55, 0.75, 0.95] },
+  cloudy: { icon: '☁️', name: 'มีเมฆ',  nameEn: 'Cloudy', spawnMult: 0.9, tipMult: 1.0, moodDelta: 0,    skyTint: [0.65, 0.70, 0.78] },
+  rain:   { icon: '🌧️', name: 'ฝนตก',  nameEn: 'Rain',   spawnMult: 0.6, tipMult: 1.5, moodDelta: -0.04, skyTint: [0.45, 0.55, 0.65] },
+  storm:  { icon: '⛈️', name: 'พายุ',  nameEn: 'Storm',  spawnMult: 0.3, tipMult: 1.2, moodDelta: -0.15, skyTint: [0.30, 0.35, 0.45] },
+  snow:   { icon: '❄️', name: 'หิมะ',  nameEn: 'Snow',   spawnMult: 0.4, tipMult: 1.8, moodDelta: 0.05, skyTint: [0.85, 0.90, 0.95] },
+};
+const WEATHER_ORDER = ['sunny', 'cloudy', 'rain', 'storm', 'snow'];
+
+const STAFF_TYPES = {
+  janitor:  { name: 'คนกวาด', emoji: '🧹', cost: 30,  color: '#84cc16', bodyColor: [0.40, 0.55, 0.20], headColor: [0.85, 0.70, 0.55], effect: 'happiness', rate: 0.5, desc: '+ความสุข +0.5/นาที' },
+  mechanic: { name: 'ช่างซ่อม', emoji: '🔧', cost: 60,  color: '#06b6d4', bodyColor: [0.30, 0.40, 0.55], headColor: [0.85, 0.70, 0.55], effect: 'reliability', rate: 0.3, desc: '+ความเสถียร +30%' },
+  mascot:   { name: 'มาสคอต', emoji: '🎭', cost: 80,  color: '#ec4899', bodyColor: [0.90, 0.30, 0.60], headColor: [0.95, 0.75, 0.70], effect: 'spawn', rate: 0.2, desc: '+คนมาเยอะขึ้น +20%' },
+};
+
 const game = {
   money: 10000,
   day: 1,
   dayTimer: 0,
   dayLength: 60,
   nightFactor: 0,
-  timeOfDay: 'day',  // 'morning' | 'day' | 'evening' | 'night'
+  timeOfDay: 'day',
   selectedRideType: null,
   ghost: null,
   ghostColor: 'green',
   spawnTimer: 0,
   parkRating: 0,
   displayedRating: 0,
-  ratingTier: 0,  // integer floor of rating — for milestone detection
+  ratingTier: 0,
   totalVisitors: 0,
   totalIncome: 0,
   totalRiders: 0,
   ridePopularity: {},
+  // Weather
+  weather: 'sunny',
+  weatherTimer: 0,
+  weatherDuration: 90,  // seconds
+  weatherParticles: [],
+  // Staff
+  staff: [],            // [{type, hireDay, position}]
+  dailyStaffCost: 0,    // total $ per day
+  staffHappinessBonus: 0,
+  staffSpawnBonus: 0,   // 0-1
+  // Save/Load
+  saveSlots: [null, null, null],
+  autoSaveTimer: 0,
 };
 
 function calculateRating() {
@@ -1439,6 +1690,556 @@ function updateDayNightCycle() {
     -1 + Math.cos(phase * Math.PI) * 0.3,
     -0.35
   );
+}
+
+// =========================================================================
+//                          WEATHER SYSTEM (v1.2)
+// =========================================================================
+
+function setWeather(newWeather) {
+  if (game.weather === newWeather) return;
+  game.weather = newWeather;
+  game.weatherTimer = 0;
+  // Update UI
+  updateWeatherUI();
+  // Spawn new particles for new weather
+  clearWeatherParticles();
+  if (newWeather === 'rain' || newWeather === 'storm') spawnRain();
+  else if (newWeather === 'snow') spawnSnow();
+  // Sky tint
+  const tint = WEATHERS[newWeather].skyTint;
+  // Only apply if not night (night uses its own colors)
+  if (game.nightFactor < 0.3) {
+    // Mix with day/night base
+    const daySky = WEATHERS[newWeather].skyTint;
+    scene.fogColor.r = daySky[0] * 0.85 + 0.15;
+    scene.fogColor.g = daySky[1] * 0.85 + 0.15;
+    scene.fogColor.b = daySky[2] * 0.85 + 0.15;
+  }
+  // Show cloud/fog overlay for cloudy/storm
+  document.querySelector('.cloud-overlay')?.classList.toggle('show', newWeather === 'cloudy' || newWeather === 'storm');
+  document.querySelector('.fog-overlay')?.classList.toggle('show', newWeather === 'rain');
+  // Hint
+  const info = WEATHERS[newWeather];
+  showHint(`${info.icon} ${info.name} — spawn ×${info.spawnMult}, tip ×${info.tipMult}`, 2500);
+}
+
+function rotateWeather() {
+  // Pick a different weather randomly (not always change)
+  if (Math.random() < 0.3) return; // 30% chance to keep same weather
+  let candidates = WEATHER_ORDER.filter(w => w !== game.weather);
+  let next = candidates[Math.floor(Math.random() * candidates.length)];
+  setWeather(next);
+}
+
+function updateWeatherUI() {
+  const w = WEATHERS[game.weather];
+  const el = document.getElementById('weather-indicator');
+  if (!el) return;
+  el.querySelector('.wi-icon').textContent = w.icon;
+  el.querySelector('.wi-name').textContent = w.name;
+  el.querySelector('.wi-stats').textContent = `×${w.spawnMult} คน · ×${w.tipMult} ทิป`;
+}
+
+function spawnRain() {
+  // ~100 drops
+  for (let i = 0; i < 100; i++) {
+    const drop = document.createElement('div');
+    drop.className = 'rain-drop';
+    drop.style.left = Math.random() * 100 + 'vw';
+    drop.style.animationDuration = (0.4 + Math.random() * 0.3) + 's';
+    drop.style.animationDelay = Math.random() * 1 + 's';
+    if (game.weather === 'storm') {
+      drop.style.height = '18px';
+      drop.style.animationDuration = (0.3 + Math.random() * 0.2) + 's';
+    }
+    document.body.appendChild(drop);
+    game.weatherParticles.push(drop);
+  }
+  // Storm: lightning flash
+  if (game.weather === 'storm') {
+    const flash = document.createElement('div');
+    flash.className = 'storm-flash';
+    document.body.appendChild(flash);
+    game.weatherParticles.push(flash);
+    setInterval(() => {
+      if (game.weather !== 'storm') return;
+      if (Math.random() < 0.15) {
+        flash.style.opacity = '0.9';
+        setTimeout(() => { flash.style.opacity = '0'; }, 80);
+        setTimeout(() => { flash.style.opacity = '0.5'; }, 200);
+        setTimeout(() => { flash.style.opacity = '0'; }, 280);
+      }
+    }, 3000);
+  }
+}
+
+function spawnSnow() {
+  for (let i = 0; i < 60; i++) {
+    const flake = document.createElement('div');
+    flake.className = 'snow-flake';
+    flake.textContent = ['❄', '❅', '❆', '✻'][Math.floor(Math.random() * 4)];
+    flake.style.left = Math.random() * 100 + 'vw';
+    flake.style.animationDuration = (4 + Math.random() * 3) + 's';
+    flake.style.animationDelay = Math.random() * 5 + 's';
+    flake.style.fontSize = (10 + Math.random() * 8) + 'px';
+    document.body.appendChild(flake);
+    game.weatherParticles.push(flake);
+  }
+}
+
+function clearWeatherParticles() {
+  game.weatherParticles.forEach(p => p.remove());
+  game.weatherParticles = [];
+  // Clean up overlays too
+  document.querySelectorAll('.cloud-overlay, .fog-overlay, .storm-flash').forEach(el => {
+    if (!el.parentElement) return;
+    el.remove();
+  });
+  // Re-create overlays
+  const cloud = document.createElement('div');
+  cloud.className = 'cloud-overlay';
+  document.body.appendChild(cloud);
+  const fog = document.createElement('div');
+  fog.className = 'fog-overlay';
+  document.body.appendChild(fog);
+}
+
+function updateWeather(dt) {
+  game.weatherTimer += dt;
+  // Auto-rotate every weatherDuration seconds
+  if (game.weatherTimer >= game.weatherDuration) {
+    rotateWeather();
+  }
+}
+
+// =========================================================================
+//                          STAFF SYSTEM (v1.2)
+// =========================================================================
+
+function createStaffMesh(type, position) {
+  const config = STAFF_TYPES[type];
+  const root = new BABYLON.TransformNode('staff', scene);
+  root.position.copyFrom(position);
+
+  // Body (capsule)
+  const body = BABYLON.MeshBuilder.CreateCapsule('staffBody', { radius: 0.3, height: 1.4, tessellation: 8 }, scene);
+  body.position.y = 0.9;
+  body.parent = root;
+  body.material = makeMat('staffBodyMat', new BABYLON.Color3(...config.bodyColor), { specularPower: 32 });
+  shadowGen.addShadowCaster(body);
+
+  // Head
+  const head = BABYLON.MeshBuilder.CreateSphere('staffHead', { diameter: 0.5, segments: 8 }, scene);
+  head.position.y = 1.85;
+  head.parent = root;
+  head.material = makeMat('staffHeadMat', new BABYLON.Color3(...config.headColor), { specularPower: 32 });
+  shadowGen.addShadowCaster(head);
+
+  // Hat/Indicator based on type
+  if (type === 'janitor') {
+    // Broom
+    const broom = BABYLON.MeshBuilder.CreateBox('broom', { width: 0.1, height: 1.8, depth: 0.1 }, scene);
+    broom.position.set(0.4, 0.9, 0);
+    broom.rotation.z = 0.2;
+    broom.parent = root;
+    broom.material = makeMat('broomMat', new BABYLON.Color3(0.55, 0.35, 0.15));
+    // Bristles
+    const bristles = BABYLON.MeshBuilder.CreateBox('bristles', { width: 0.4, height: 0.2, depth: 0.2 }, scene);
+    bristles.position.set(0.6, 0.15, 0);
+    bristles.parent = root;
+    bristles.material = makeMat('bristlesMat', new BABYLON.Color3(0.85, 0.65, 0.30));
+  } else if (type === 'mechanic') {
+    // Wrench (small box on side)
+    const wrench = BABYLON.MeshBuilder.CreateBox('wrench', { width: 0.4, height: 0.1, depth: 0.1 }, scene);
+    wrench.position.set(0.35, 1.0, 0);
+    wrench.rotation.z = 0.5;
+    wrench.parent = root;
+    wrench.material = makeMat('wrenchMat', new BABYLON.Color3(0.5, 0.5, 0.55), { specularPower: 128 });
+  } else if (type === 'mascot') {
+    // Big headband with logo
+    const headband = BABYLON.MeshBuilder.CreateCylinder('mascotBand', { diameter: 0.7, height: 0.3, tessellation: 12 }, scene);
+    headband.position.y = 2.0;
+    headband.parent = root;
+    headband.material = makeMat('mascotBandMat', new BABYLON.Color3(0.95, 0.85, 0.30), { emissive: new BABYLON.Color3(0.15, 0.12, 0.04) });
+  }
+
+  // State
+  return {
+    root, body, head, config,
+    type,
+    state: 'patrol', // 'patrol' | 'idle'
+    targetPos: new BABYLON.Vector3((Math.random() - 0.5) * 80, 0, (Math.random() - 0.5) * 80),
+    idleTimer: 0,
+    speed: 1.8,
+    rotation: Math.random() * Math.PI * 2,
+    timer: 0,
+  };
+}
+
+function hireStaff(type) {
+  if (game.money < STAFF_TYPES[type].cost * 3) {
+    showHint(`❌ เงินไม่พอ (ต้องมีอย่างน้อย $${STAFF_TYPES[type].cost * 3})`);
+    playClick();
+    return;
+  }
+  // Check duplicate
+  if (game.staff.find(s => s.type === type)) {
+    showHint(`❌ จ้าง ${STAFF_TYPES[type].name} อยู่แล้ว`);
+    return;
+  }
+  const mesh = createStaffMesh(type, new BABYLON.Vector3(
+    (Math.random() - 0.5) * 30, 0, (Math.random() - 0.5) * 30
+  ));
+  game.staff.push(mesh);
+  // Deduct first 3 days upfront
+  game.money -= STAFF_TYPES[type].cost * 3;
+  // Recalc bonuses
+  recalcStaffBonuses();
+  updateUI();
+  renderStaffModal();
+  playStarUp();
+  showHint(`✅ จ้าง ${STAFF_TYPES[type].name} แล้ว! (-$${STAFF_TYPES[type].cost * 3})`);
+}
+
+function fireStaff(idx) {
+  const s = game.staff[idx];
+  if (!s) return;
+  s.root.dispose();
+  game.staff.splice(idx, 1);
+  recalcStaffBonuses();
+  updateUI();
+  renderStaffModal();
+  showHint(`🗑️ เลิกจ้าง ${s.config.name}`);
+}
+
+function recalcStaffBonuses() {
+  let happinessBonus = 0;
+  let spawnBonus = 0;
+  game.dailyStaffCost = 0;
+  game.staff.forEach(s => {
+    game.dailyStaffCost += s.config.cost;
+    if (s.config.effect === 'happiness') happinessBonus += s.config.rate;
+    if (s.config.effect === 'spawn') spawnBonus += s.config.rate;
+  });
+  game.staffHappinessBonus = happinessBonus;
+  game.staffSpawnBonus = spawnBonus;
+}
+
+function updateStaff(dt) {
+  if (!game.staff || game.staff.length === 0) return;
+  game.staff.forEach(s => {
+    s.timer += dt;
+    if (s.state === 'patrol') {
+      // Walk toward targetPos
+      const dx = s.targetPos.x - s.root.position.x;
+      const dz = s.targetPos.z - s.root.position.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      if (dist < 1.5) {
+        // Reached target
+        s.state = 'idle';
+        s.idleTimer = 1 + Math.random() * 2;
+        return;
+      }
+      s.root.position.x += (dx / dist) * s.speed * dt;
+      s.root.position.z += (dz / dist) * s.speed * dt;
+      s.rotation = lerpAngle(s.rotation, Math.atan2(dx, dz), dt * 3);
+      s.root.rotation.y = s.rotation;
+    } else if (s.state === 'idle') {
+      s.idleTimer -= dt;
+      // Breathing animation
+      s.body.scaling.y = 1 + Math.sin(s.timer * 3) * 0.02;
+      if (s.idleTimer <= 0) {
+        s.state = 'patrol';
+        // Pick new random target within park
+        s.targetPos.x = (Math.random() - 0.5) * 70;
+        s.targetPos.z = (Math.random() - 0.5) * 70;
+        // Keep within bounds
+        s.targetPos.x = Math.max(-70, Math.min(70, s.targetPos.x));
+        s.targetPos.z = Math.max(-70, Math.min(70, s.targetPos.z));
+      }
+    }
+  });
+  // Apply happiness bonus to all visitors
+  if (game.staffHappinessBonus > 0) {
+    const bonus = game.staffHappinessBonus * dt / 60; // convert to per-frame
+    visitors.forEach(v => {
+      if (v.state !== 'gone' && v.state !== 'leaving') {
+        v.happiness = Math.min(1, v.happiness + bonus);
+      }
+    });
+  }
+}
+
+// =========================================================================
+//                          SAVE / LOAD (v1.2)
+// =========================================================================
+
+const SAVE_KEY = 'sj88WonderPark_save';
+
+function serializeGame() {
+  return {
+    money: game.money,
+    day: game.day,
+    dayTimer: game.dayTimer,
+    parkRating: game.parkRating,
+    totalVisitors: game.totalVisitors,
+    totalIncome: game.totalIncome,
+    totalRiders: game.totalRiders,
+    ridePopularity: game.ridePopularity,
+    rideTypeCount: { ...rideTypeCount },
+    rideCount: rides.length,
+    staff: game.staff.map(s => ({ type: s.type })),
+    weather: game.weather,
+    savedAt: Date.now(),
+  };
+}
+
+function saveGame(slot = 0) {
+  const data = serializeGame();
+  data.rides = rides.map(r => ({
+    type: r.type,
+    pos: { x: r.root.position.x, z: r.root.position.z },
+  }));
+  try {
+    game.saveSlots[slot] = JSON.stringify(data);
+    localStorage.setItem(SAVE_KEY + '_slot' + slot, game.saveSlots[slot]);
+    showHint(`💾 Saved to Slot ${slot + 1}`);
+    playClick();
+    renderSaveSlots();
+  } catch (e) {
+    showHint('❌ Save failed: ' + e.message);
+  }
+}
+
+function loadGame(slot = 0) {
+  const raw = game.saveSlots[slot] || localStorage.getItem(SAVE_KEY + '_slot' + slot);
+  if (!raw) {
+    showHint(`❌ Slot ${slot + 1} is empty`);
+    return;
+  }
+  try {
+    const data = JSON.parse(raw);
+    if (!confirm(`Load Slot ${slot + 1}? Current progress will be lost.`)) return;
+    // Clear existing
+    rides.forEach(r => r.root.dispose());
+    rides.length = 0;
+    visitors.forEach(v => v.destroy());
+    visitors.length = 0;
+    game.staff.forEach(s => s.root.dispose());
+    game.staff.length = 0;
+    Object.keys(rideTypeCount).forEach(k => delete rideTypeCount[k]);
+    // Restore
+    game.money = data.money;
+    game.day = data.day;
+    game.dayTimer = data.dayTimer || 0;
+    game.parkRating = data.parkRating || 0;
+    game.totalVisitors = data.totalVisitors || 0;
+    game.totalIncome = data.totalIncome || 0;
+    game.totalRiders = data.totalRiders || 0;
+    game.ridePopularity = data.ridePopularity || {};
+    Object.assign(rideTypeCount, data.rideTypeCount || {});
+    game.weather = data.weather || 'sunny';
+    setWeather(game.weather);
+    if (data.rides) {
+      data.rides.forEach(rd => {
+        const ride = rideFactories[rd.type](new BABYLON.Vector3(rd.pos.x, 0, rd.pos.z));
+        rides.push(ride);
+        tagRideMeshes(ride);
+      });
+    }
+    if (data.staff) {
+      data.staff.forEach(s => hireStaff(s.type));
+    }
+    recalcStaffBonuses();
+    updateUI();
+    showHint(`✅ Loaded Slot ${slot + 1}`);
+    playStarUp();
+    closeModals();
+  } catch (e) {
+    showHint('❌ Load failed: ' + e.message);
+  }
+}
+
+function deleteSave(slot = 0) {
+  if (!confirm(`Delete Slot ${slot + 1}?`)) return;
+  game.saveSlots[slot] = null;
+  localStorage.removeItem(SAVE_KEY + '_slot' + slot);
+  renderSaveSlots();
+}
+
+function exportSave() {
+  const data = serializeGame();
+  data.rides = rides.map(r => ({
+    type: r.type, pos: { x: r.root.position.x, z: r.root.position.z },
+  }));
+  data.staff = game.staff.map(s => ({ type: s.type }));
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `sj88-park-day${game.day}-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showHint('📥 Save file downloaded');
+}
+
+function importSave() {
+  document.getElementById('import-file-input').click();
+}
+
+document.getElementById('import-file-input')?.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!confirm('Import this save? Current progress will be lost.')) return;
+      rides.forEach(r => r.root.dispose());
+      rides.length = 0;
+      visitors.forEach(v => v.destroy());
+      visitors.length = 0;
+      game.staff.forEach(s => s.root.dispose());
+      game.staff.length = 0;
+      Object.keys(rideTypeCount).forEach(k => delete rideTypeCount[k]);
+      game.money = data.money;
+      game.day = data.day;
+      game.dayTimer = data.dayTimer || 0;
+      game.parkRating = data.parkRating || 0;
+      game.totalVisitors = data.totalVisitors || 0;
+      game.totalIncome = data.totalIncome || 0;
+      game.totalRiders = data.totalRiders || 0;
+      game.ridePopularity = data.ridePopularity || {};
+      Object.assign(rideTypeCount, data.rideTypeCount || {});
+      game.weather = data.weather || 'sunny';
+      setWeather(game.weather);
+      if (data.rides) {
+        data.rides.forEach(rd => {
+          const ride = rideFactories[rd.type](new BABYLON.Vector3(rd.pos.x, 0, rd.pos.z));
+          rides.push(ride);
+          tagRideMeshes(ride);
+        });
+      }
+      if (data.staff) {
+        data.staff.forEach(s => hireStaff(s.type));
+      }
+      recalcStaffBonuses();
+      updateUI();
+      closeModals();
+      showHint('✅ Save imported!');
+      playStarUp();
+    } catch (err) {
+      showHint('❌ Import failed: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+});
+
+function renderSaveSlots() {
+  const grid = document.getElementById('save-grid');
+  if (!grid) return;
+  for (let i = 0; i < 3; i++) {
+    const raw = game.saveSlots[i] || localStorage.getItem(SAVE_KEY + '_slot' + i);
+    const slot = grid.children[i];
+    if (!slot) continue;
+    if (!raw) {
+      slot.className = 'save-slot empty';
+      slot.innerHTML = `<div class="ss-day">Slot ${i + 1}</div><div class="ss-date">Empty · click to save</div>`;
+      slot.onclick = () => saveGame(i);
+    } else {
+      try {
+        const data = JSON.parse(raw);
+        slot.className = 'save-slot';
+        const date = new Date(data.savedAt).toLocaleString('th-TH');
+        slot.innerHTML = `
+          <div class="ss-day">Day ${data.day}</div>
+          <div class="ss-date">${date}</div>
+          <div class="ss-stats">$${Math.floor(data.money)} · ${data.rideCount || 0} rides</div>
+          <div style="display:flex; gap:4px; margin-top:6px;">
+            <button class="close-btn" style="font-size:10px; padding:4px 8px; background:linear-gradient(135deg,#FFD66B,#ff8a65);" data-action="load">▶ Load</button>
+            <button class="close-btn" style="font-size:10px; padding:4px 8px; background:rgba(220,60,60,0.4); color:#fff;" data-action="delete">🗑️</button>
+          </div>
+        `;
+        slot.onclick = null;
+        slot.querySelector('[data-action="load"]').onclick = (e) => { e.stopPropagation(); loadGame(i); };
+        slot.querySelector('[data-action="delete"]').onclick = (e) => { e.stopPropagation(); deleteSave(i); };
+      } catch (e) {
+        slot.className = 'save-slot empty';
+        slot.innerHTML = `<div class="ss-day">Slot ${i + 1}</div><div class="ss-date">Corrupted</div>`;
+      }
+    }
+  }
+}
+
+function renderStaffModal() {
+  const list = document.getElementById('active-staff-list');
+  const count = document.getElementById('staff-count');
+  if (!list || !count) return;
+  count.textContent = game.staff.length;
+  if (game.staff.length === 0) {
+    list.innerHTML = '<div style="opacity:0.6; font-size:12px; padding:8px 0;">ยังไม่ได้จ้างพนักงาน</div>';
+  } else {
+    list.innerHTML = game.staff.map((s, idx) => `
+      <div class="staff-row">
+        <span>${s.config.emoji} <b>${s.config.name}</b> · <span style="opacity:0.7; font-size:11px;">${s.config.desc}</span></span>
+        <button class="fire-btn" data-idx="${idx}">ไล่ออก</button>
+      </div>
+    `).join('');
+    list.querySelectorAll('.fire-btn').forEach(btn => {
+      btn.onclick = () => fireStaff(parseInt(btn.dataset.idx));
+    });
+  }
+  // Update hire buttons (disable if already hired)
+  document.querySelectorAll('.staff-card').forEach(card => {
+    const type = card.dataset.staff;
+    const btn = card.querySelector('.hire-btn');
+    const hired = game.staff.find(s => s.type === type);
+    if (hired) {
+      btn.disabled = true;
+      btn.textContent = 'จ้างอยู่แล้ว';
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'จ้าง';
+    }
+  });
+  // Update daily cost display
+  const totalCostEl = document.getElementById('staff-total-cost');
+  if (totalCostEl) totalCostEl.textContent = game.dailyStaffCost;
+}
+
+function closeModals() {
+  document.getElementById('save-modal')?.classList.remove('show');
+  document.getElementById('staff-modal')?.classList.remove('show');
+}
+
+// Button wiring
+document.getElementById('btn-save')?.addEventListener('click', () => {
+  renderSaveSlots();
+  document.getElementById('save-modal').classList.add('show');
+  playClick();
+});
+document.getElementById('btn-staff')?.addEventListener('click', () => {
+  renderStaffModal();
+  document.getElementById('staff-modal').classList.add('show');
+  playClick();
+});
+document.getElementById('save-close')?.addEventListener('click', closeModals);
+document.getElementById('staff-close')?.addEventListener('click', closeModals);
+document.getElementById('btn-quick-save')?.addEventListener('click', () => saveGame(0));
+document.getElementById('btn-export-save')?.addEventListener('click', exportSave);
+document.getElementById('btn-import-save')?.addEventListener('click', importSave);
+document.querySelectorAll('.staff-card .hire-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const type = btn.closest('.staff-card').dataset.staff;
+    hireStaff(type);
+  });
+});
+
+// Load save slots from localStorage on init
+for (let i = 0; i < 3; i++) {
+  const raw = localStorage.getItem(SAVE_KEY + '_slot' + i);
+  if (raw) game.saveSlots[i] = raw;
 }
 
 // =========================================================================
@@ -1750,10 +2551,16 @@ scene.registerBeforeRender(() => {
 
   rides.forEach(r => r.update && r.update(dt));
 
-  // Spawn visitors — rate scales with rating
+  // Update staff (patrol AI + happiness bonus applied per-frame)
+  updateStaff(dt);
+
+  // Weather system (v1.2)
+  updateWeather(dt);
+
+  // Spawn visitors — rate scales with rating × weather × staff
   game.spawnTimer += dt;
   const baseInterval = Math.max(1.5, 5 - rides.length * 0.4);
-  const spawnInterval = baseInterval / getSpawnMultiplier();
+  const spawnInterval = baseInterval / (getSpawnMultiplier() * WEATHERS[game.weather].spawnMult * (1 + game.staffSpawnBonus));
   if (game.spawnTimer > spawnInterval && rides.length > 0) {
     spawnVisitor();
     game.totalVisitors++;
@@ -1792,7 +2599,13 @@ scene.registerBeforeRender(() => {
   if (game.dayTimer > game.dayLength) {
     game.day++;
     game.dayTimer = 0;
-    showHint(`📅 Day ${game.day} — ยินดีต้อนรับผู้เข้าชมใหม่!`, 3000);
+    // Deduct daily staff cost
+    if (game.dailyStaffCost > 0) {
+      game.money -= game.dailyStaffCost;
+      showHint(`📅 Day ${game.day} — หักค่าจ้างพนักงาน -$${game.dailyStaffCost}`, 3000);
+    } else {
+      showHint(`📅 Day ${game.day} — ยินดีต้อนรับผู้เข้าชมใหม่!`, 3000);
+    }
     playStarUp();
   }
 
@@ -1814,6 +2627,13 @@ scene.registerBeforeRender(() => {
   updateTimeOfDay();
   updateDayNightCycle();
 
+  // Auto-save every 30s
+  game.autoSaveTimer += dt;
+  if (game.autoSaveTimer >= 30) {
+    saveGame(0); // Auto-save to slot 0
+    game.autoSaveTimer = 0;
+  }
+
   updateUI();
 });
 
@@ -1822,13 +2642,14 @@ window.addEventListener('resize', () => engine.resize());
 
 // Initial state
 updateUI();
+updateWeatherUI();  // v1.2: weather HUD
 
 // Hover info for rides (already handled in pointer observer)
 
 // Prevent context menu
 canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-console.log('🎢 SJ88 Wonder Park v1.1 loaded', { rides: rides.length, visitors: visitors.length });
+console.log('🎢 SJ88 Wonder Park v1.2 loaded', { rides: rides.length, visitors: visitors.length, weather: game.weather });
 </script>
 
 </body>

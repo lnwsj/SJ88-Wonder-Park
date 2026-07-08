@@ -16,6 +16,33 @@ A complete browser-based tycoon game where you place rides, manage visitors, gro
 
 ---
 
+## ⭐ v1.2 — "Complete Tycoon" (NEW)
+
+Three new systems close the loop and turn the park into a full tycoon:
+
+### 💾 Save/Load (retention)
+- **Auto-save** every 30s to localStorage
+- **3 save slots** with Day/Money/Ride count
+- **Export/Import JSON** for backup or transfer
+- Persists money/day/rating/totals/rides/staff/weather
+
+### 🌦️ Weather System (dynamic challenge)
+- **5 states**: sunny / cloudy / rain / storm / snow
+- Each modifies **spawn rate** (0.3-1.0×), **tip bonus** (1.0-1.8×), **visitor mood**, and **sky tint**
+- **CSS particles**: rain drops, snow flakes, fog overlay, storm lightning
+- **Auto-rotates** every 90s
+
+### 👨‍💼 Staff System (management depth)
+- **3 roles** with NPC meshes: Janitor ($30/d) · Mechanic ($60/d) · Mascot ($80/d)
+- **Patrol AI** — they walk around the park
+- **Hire cost** 3 days upfront; **daily payroll** auto-deducted
+- Effects: Janitor → +happiness, Mascot → +20% spawn rate
+- Continuous money sink → flywheel keeps spinning
+
+![Snow Weather](screenshots/v1.2-01-snow.png)
+
+---
+
 ## ⭐ v1.1 — "Living Park" (NEW)
 
 A rating flywheel that compounds: **better park → more visitors → more income → better park.**
