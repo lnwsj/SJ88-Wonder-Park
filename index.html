@@ -192,6 +192,69 @@
   .stat-row:last-child { border-bottom: none; }
   .stat-row .lbl { opacity: 0.7; font-size: 13px; }
   .stat-row .v { font-weight: 700; color: #FFD66B; font-size: 15px; }
+
+  /* === v1.3: Rating graph === */
+  .stats-section-title {
+    margin-top: 22px; margin-bottom: 10px;
+    font-size: 14px; font-weight: 700; color: #FFD66B;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .ach-progress { font-size: 12px; color: rgba(255,255,255,0.6); font-weight: 600; }
+  .rating-graph {
+    background: rgba(0,0,0,0.3); border-radius: 12px; padding: 12px 8px;
+    min-height: 110px; display: flex; align-items: center; justify-content: center;
+  }
+  .rating-graph svg { width: 100%; height: 100px; display: block; }
+  .rating-graph-empty {
+    color: rgba(255,255,255,0.45); font-size: 12px; text-align: center;
+    padding: 12px; line-height: 1.5;
+  }
+  .graph-line { fill: none; stroke: url(#graphGrad); stroke-width: 2.5; stroke-linejoin: round; }
+  .graph-fill { fill: url(#graphFill); opacity: 0.7; }
+  .graph-dot { fill: #FFD66B; stroke: #1a1428; stroke-width: 1.5; }
+  .graph-day-label { fill: rgba(255,255,255,0.5); font-size: 9px; text-anchor: middle; }
+  .graph-y-label { fill: rgba(255,255,255,0.4); font-size: 9px; text-anchor: end; }
+  .graph-current-dot { fill: #ec4899; }
+
+  /* === v1.3: Achievement grid === */
+  .ach-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+    margin-top: 4px;
+  }
+  .ach-card {
+    aspect-ratio: 1; border-radius: 8px; padding: 4px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; cursor: default; transition: transform 0.15s;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  }
+  .ach-card:hover { transform: translateY(-2px); }
+  .ach-card.unlocked {
+    background: linear-gradient(135deg, rgba(255,215,107,0.18) 0%, rgba(236,72,153,0.18) 100%);
+    border-color: rgba(255,215,107,0.4);
+    box-shadow: 0 0 12px rgba(255,215,107,0.18);
+  }
+  .ach-card.locked .ach-icon { filter: grayscale(1) brightness(0.5); opacity: 0.4; }
+  .ach-card.locked { opacity: 0.6; }
+  .ach-icon { font-size: 22px; line-height: 1; margin-bottom: 2px; }
+  .ach-name { font-size: 9px; line-height: 1.2; color: rgba(255,255,255,0.9); font-weight: 600; }
+  .ach-card.unlocked .ach-name { color: #FFD66B; }
+  .ach-card.locked .ach-name { color: rgba(255,255,255,0.4); }
+
+  /* === v1.3: Achievement toast === */
+  .ach-toast {
+    position: fixed; top: 80px; right: 24px; z-index: 200;
+    background: linear-gradient(135deg, rgba(40,30,80,0.96) 0%, rgba(80,30,60,0.96) 100%);
+    border: 2px solid rgba(255,215,107,0.5);
+    border-radius: 14px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    min-width: 260px; max-width: 340px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 24px rgba(255,215,107,0.25);
+  }
+  .ach-toast-icon { font-size: 32px; line-height: 1; }
+  .ach-toast-body { flex: 1; min-width: 0; }
+  .ach-toast-cat { font-size: 11px; color: #FFD66B; font-weight: 700; margin-bottom: 2px; }
+  .ach-toast-name { font-size: 14px; color: #fff; font-weight: 700; margin-bottom: 2px; }
+  .ach-toast-desc { font-size: 11px; color: rgba(255,255,255,0.7); line-height: 1.3; }
   .close-btn {
     margin-top: 18px; width: 100%;
     background: linear-gradient(135deg, #FFD66B 0%, #ff8a65 100%);
@@ -474,6 +537,13 @@
     <div class="stat-row"><span class="lbl">😊 Avg Happiness</span><span class="v" id="s-happy">--</span></div>
     <div class="stat-row"><span class="lbl">🏆 Most Popular Ride</span><span class="v" id="s-popular">--</span></div>
     <div class="stat-row"><span class="lbl">📅 Day</span><span class="v" id="s-day">1</span></div>
+    <!-- v1.3: Multi-day rating history graph -->
+    <div class="stats-section-title">📈 7-Day Rating Trend</div>
+    <div id="rating-graph" class="rating-graph"></div>
+    <div id="rating-graph-empty" class="rating-graph-empty">ยังไม่มีข้อมูลย้อนหลัง — เล่นครบ 1 วันเพื่อเริ่มบันทึก</div>
+    <!-- v1.3: Achievements grid -->
+    <div class="stats-section-title">🏆 Achievements <span class="ach-progress" id="ach-progress">0 / 0</span></div>
+    <div id="ach-grid" class="ach-grid"></div>
     <button class="close-btn" id="stats-close">ปิด</button>
   </div>
 </div>
@@ -1455,6 +1525,7 @@ class Visitor {
           const earned = Math.round(baseIncome * incomeMult * tipMult);
           earnMoney(earned, 'ride');
           game.totalRiders++;
+          recordDailyStat('riders', 1);  // v1.3: track daily rides taken
           const idx = this.targetRide.passengers.indexOf(this);
           if (idx >= 0) this.targetRide.passengers.splice(idx, 1);
           this.happiness = Math.min(1, this.happiness + 0.15);
@@ -1527,6 +1598,119 @@ const WEATHERS = {
 };
 const WEATHER_ORDER = ['sunny', 'cloudy', 'rain', 'storm', 'snow'];
 
+// =========================================================================
+//              v1.3 — MEMORIES & MILESTONES (Achievements)
+// =========================================================================
+const ACHIEVEMENTS = {
+  // Build
+  first_ride:   { id: 'first_ride',   icon: '🎡', name: 'ขึ้นรถม้าหมุนครั้งแรก',     cat: 'build',  desc: 'วางเครื่องเล่นแรกของคุณ' },
+  full_set:     { id: 'full_set',     icon: '🎢', name: 'ครบทุกเครื่อง',           cat: 'build',  desc: 'มีครบ 6 เครื่องเล่น (Ferris/Carousel/Tower/Bumper/Coaster/Food)' },
+  tycoon_10:    { id: 'tycoon_10',    icon: '🏗️', name: 'นักพัฒนา',              cat: 'build',  desc: 'วางเครื่องเล่นครบ 10 ชิ้น' },
+  // Economy
+  first_dollar: { id: 'first_dollar', icon: '💵', name: 'เงินแรก',                  cat: 'econ',   desc: 'มีรายได้ $100 แรก' },
+  thousandaire: { id: 'thousandaire', icon: '💰', name: 'เศรษฐีพัน',               cat: 'econ',   desc: 'รายได้รวม $1,000' },
+  big_spender:  { id: 'big_spender',  icon: '💎', name: 'เศรษฐีหมื่น',             cat: 'econ',   desc: 'รายได้รวม $10,000' },
+  // Visitors
+  first_guest:  { id: 'first_guest',  icon: '👤', name: 'แขกคนแรก',                cat: 'vis',    desc: 'ต้อนรับผู้เข้าชมคนแรก' },
+  crowd_10:     { id: 'crowd_10',     icon: '👥', name: 'ฝูงชน',                  cat: 'vis',    desc: 'มีผู้เข้าชม 10 คนพร้อมกัน' },
+  crowd_20:     { id: 'crowd_20',     icon: '🧑‍🤝‍🧑', name: 'สวนสนุกคึกคัก',         cat: 'vis',    desc: 'มีผู้เข้าชม 20 คนพร้อมกัน' },
+  riders_100:   { id: 'riders_100',   icon: '🎟️', name: 'รอบที่ 100',              cat: 'vis',    desc: 'ผู้เข้าชมนั่งเครื่องเล่นครบ 100 รอบ' },
+  riders_500:   { id: 'riders_500',   icon: '🎢', name: 'ครึ่งพัน',                 cat: 'vis',    desc: 'ผู้เข้าชมนั่งเครื่องเล่นครบ 500 รอบ' },
+  // Weather
+  rain_check:   { id: 'rain_check',   icon: '☔', name: 'ฝนไม่หยุด',                cat: 'weather',desc: 'เปิดสวนสนุกฝนตกสำเร็จ 1 วัน' },
+  snow_day:     { id: 'snow_day',     icon: '⛄', name: 'หิมะแรก',                  cat: 'weather',desc: 'เปิดสวนสนุกหิมะตกสำเร็จ 1 วัน' },
+  storm_survivor:{ id: 'storm_survivor', icon: '⛈️', name: 'ผ่านพายุ',             cat: 'weather',desc: 'เปิดสวนสนุกพายุฝนสำเร็จ 1 วัน' },
+  all_weather:  { id: 'all_weather',  icon: '🌈', name: 'ทุกฤดู',                  cat: 'weather',desc: 'เจอสภาพอากาศครบทุกแบบ (sunny/cloudy/rain/storm/snow)' },
+  // Staff
+  first_staff:  { id: 'first_staff',  icon: '🧹', name: 'ลูกจ้างคนแรก',             cat: 'staff',  desc: 'จ้างพนักงานคนแรก' },
+  full_team:    { id: 'full_team',    icon: '🎭', name: 'ทีมครบ',                  cat: 'staff',  desc: 'จ้างครบ 3 ประเภท (กวาด/ช่างซ่อม/มาสคอต)' },
+  // Mastery
+  star_2:       { id: 'star_2',       icon: '⭐', name: '2 ดาว',                   cat: 'master', desc: 'สวนสนุกได้ rating 2 ดาว' },
+  star_3:       { id: 'star_3',       icon: '🌟', name: '3 ดาว',                   cat: 'master', desc: 'สวนสนุกได้ rating 3 ดาว' },
+  star_4:       { id: 'star_4',       icon: '✨', name: '4 ดาว',                   cat: 'master', desc: 'สวนสนุกได้ rating 4 ดาว' },
+  star_5:       { id: 'star_5',       icon: '💫', name: '5 ดาว!',                  cat: 'master', desc: 'สวนสนุกได้ rating 5 ดาว (สูงสุด)' },
+  week_7:       { id: 'week_7',       icon: '📅', name: 'อาทิตย์แรก',               cat: 'master', desc: 'เปิดสวนสนุกมาแล้ว 7 วัน' },
+};
+
+function unlockAchievement(id) {
+  if (!ACHIEVEMENTS[id] || game.achievements[id]) return;
+  game.achievements[id] = { unlockedAt: Date.now() };
+  showAchievementToast(ACHIEVEMENTS[id]);
+  playStarUp();
+}
+
+function checkAchievements() {
+  const a = game.achievements;
+  const active = visitors.filter(v => v.state !== 'gone' && v.state !== 'leaving');
+  // Build
+  if (rides.length >= 1)         unlockAchievement('first_ride');
+  if (Object.keys(rideTypeCount).length >= 6) unlockAchievement('full_set');
+  if (rides.length >= 10)        unlockAchievement('tycoon_10');
+  // Economy
+  if (game.totalIncome >= 100)   unlockAchievement('first_dollar');
+  if (game.totalIncome >= 1000)  unlockAchievement('thousandaire');
+  if (game.totalIncome >= 10000) unlockAchievement('big_spender');
+  // Visitors
+  if (game.totalVisitors >= 1)   unlockAchievement('first_guest');
+  if (active.length >= 10)       unlockAchievement('crowd_10');
+  if (active.length >= 20)       unlockAchievement('crowd_20');
+  if (game.totalRiders >= 100)   unlockAchievement('riders_100');
+  if (game.totalRiders >= 500)   unlockAchievement('riders_500');
+  // Weather
+  if (game.weatherDays.rain >= 1)    unlockAchievement('rain_check');
+  if (game.weatherDays.snow >= 1)    unlockAchievement('snow_day');
+  if (game.weatherDays.storm >= 1)   unlockAchievement('storm_survivor');
+  if (Object.values(game.weatherDays).filter(v => v >= 1).length >= 5) unlockAchievement('all_weather');
+  // Staff
+  if (game.staff.length >= 1)    unlockAchievement('first_staff');
+  if (game.staff.length >= 3)    unlockAchievement('full_team');
+  // Mastery
+  if (game.parkRating >= 2)      unlockAchievement('star_2');
+  if (game.parkRating >= 3)      unlockAchievement('star_3');
+  if (game.parkRating >= 4)      unlockAchievement('star_4');
+  if (game.parkRating >= 5)      unlockAchievement('star_5');
+  if (game.day >= 7)             unlockAchievement('week_7');
+}
+
+function showAchievementToast(ach) {
+  const t = document.createElement('div');
+  t.className = 'ach-toast';
+  t.innerHTML = `
+    <div class="ach-toast-icon">${ach.icon}</div>
+    <div class="ach-toast-body">
+      <div class="ach-toast-cat">🏆 ความสำเร็จใหม่</div>
+      <div class="ach-toast-name">${ach.name}</div>
+      <div class="ach-toast-desc">${ach.desc}</div>
+    </div>
+  `;
+  document.body.appendChild(t);
+  // v1.3: no animation - just appear. Reliable across all browsers.
+  setTimeout(() => t.remove(), 4200);
+}
+
+function recordDailyStat(key, amount = 1) {
+  if (!game.dailyStats[key]) game.dailyStats[key] = 0;
+  game.dailyStats[key] += amount;
+}
+
+function recordWeatherDay(weather) {
+  if (!game.weatherDays[weather]) game.weatherDays[weather] = 0;
+  game.weatherDays[weather] += 1;
+}
+
+function snapshotDailyHistory() {
+  // Capture yesterday's stats at the moment of day increment
+  game.ratingHistory.unshift({
+    day: game.day - 1,                       // day that just ended
+    rating: game.lastDayRating || game.parkRating,
+    income: game.dailyStats.income || 0,
+    visitors: game.dailyStats.visitors || 0,
+    rides: game.dailyStats.riders || 0,
+    weather: game.lastDayWeather || game.weather,
+  });
+  if (game.ratingHistory.length > 7) game.ratingHistory.length = 7;
+}
+
 const STAFF_TYPES = {
   janitor:  { name: 'คนกวาด', emoji: '🧹', cost: 30,  color: '#84cc16', bodyColor: [0.40, 0.55, 0.20], headColor: [0.85, 0.70, 0.55], effect: 'happiness', rate: 0.5, desc: '+ความสุข +0.5/นาที' },
   mechanic: { name: 'ช่างซ่อม', emoji: '🔧', cost: 60,  color: '#06b6d4', bodyColor: [0.30, 0.40, 0.55], headColor: [0.85, 0.70, 0.55], effect: 'reliability', rate: 0.3, desc: '+ความเสถียร +30%' },
@@ -1564,6 +1748,14 @@ const game = {
   // Save/Load
   saveSlots: [null, null, null],
   autoSaveTimer: 0,
+  // v1.3 — Memories & Milestones
+  ratingHistory: [],          // last 7 days snapshots
+  dailyStats: { income: 0, visitors: 0, riders: 0, tips: 0 },
+  weatherDays: { sunny: 0, cloudy: 0, rain: 0, storm: 0, snow: 0 },
+  achievements: {},           // {id: {unlockedAt}}
+  stormFlashInterval: null,   // bug fix: track interval ID for cleanup
+  lastDayRating: 0,           // rating at end of previous day
+  lastDayWeather: 'sunny',    // weather at end of previous day
 };
 
 function calculateRating() {
@@ -1762,7 +1954,9 @@ function spawnRain() {
     flash.className = 'storm-flash';
     document.body.appendChild(flash);
     game.weatherParticles.push(flash);
-    setInterval(() => {
+    // v1.3 bug fix: track interval ID so clearWeatherParticles can clean it up
+    if (game.stormFlashInterval) clearInterval(game.stormFlashInterval);
+    game.stormFlashInterval = setInterval(() => {
       if (game.weather !== 'storm') return;
       if (Math.random() < 0.15) {
         flash.style.opacity = '0.9';
@@ -1991,11 +2185,18 @@ function serializeGame() {
     rideCount: rides.length,
     staff: game.staff.map(s => ({ type: s.type })),
     weather: game.weather,
+    // v1.3: persistent memories
+    ratingHistory: [...(game.ratingHistory || [])],
+    dailyStats: { ...(game.dailyStats || { income: 0, visitors: 0, riders: 0, tips: 0 }) },
+    weatherDays: { ...(game.weatherDays || { sunny: 0, cloudy: 0, rain: 0, storm: 0, snow: 0 }) },
+    achievements: { ...(game.achievements || {}) },
+    lastDayRating: game.lastDayRating || 0,
+    lastDayWeather: game.lastDayWeather || 'sunny',
     savedAt: Date.now(),
   };
 }
 
-function saveGame(slot = 0) {
+function saveGame(slot = 0, silent = false) {
   const data = serializeGame();
   data.rides = rides.map(r => ({
     type: r.type,
@@ -2004,7 +2205,8 @@ function saveGame(slot = 0) {
   try {
     game.saveSlots[slot] = JSON.stringify(data);
     localStorage.setItem(SAVE_KEY + '_slot' + slot, game.saveSlots[slot]);
-    showHint(`💾 Saved to Slot ${slot + 1}`);
+    // v1.3 bug fix: silent auto-save (don't spam hint every 30s)
+    if (!silent) showHint(`💾 Saved to Slot ${slot + 1}`);
     playClick();
     renderSaveSlots();
   } catch (e) {
@@ -2041,6 +2243,13 @@ function loadGame(slot = 0) {
     Object.assign(rideTypeCount, data.rideTypeCount || {});
     game.weather = data.weather || 'sunny';
     setWeather(game.weather);
+    // v1.3: restore memories & milestones
+    game.ratingHistory = data.ratingHistory || [];
+    game.dailyStats = data.dailyStats || { income: 0, visitors: 0, riders: 0, tips: 0 };
+    game.weatherDays = data.weatherDays || { sunny: 0, cloudy: 0, rain: 0, storm: 0, snow: 0 };
+    game.achievements = data.achievements || {};
+    game.lastDayRating = data.lastDayRating || 0;
+    game.lastDayWeather = data.lastDayWeather || 'sunny';
     if (data.rides) {
       data.rides.forEach(rd => {
         const ride = rideFactories[rd.type](new BABYLON.Vector3(rd.pos.x, 0, rd.pos.z));
@@ -2355,6 +2564,7 @@ function isValidPlacement(pos) {
 function earnMoney(amount, source) {
   game.money += amount;
   game.totalIncome += amount;
+  recordDailyStat('income', amount);  // v1.3: track daily income
   updateUI();
   spawnCoinParticle(amount);
 }
@@ -2530,8 +2740,92 @@ function openStats() {
   }
   document.getElementById('s-popular').textContent = popularType;
   document.getElementById('s-day').textContent = game.day;
+  // v1.3: render rating history graph + achievements grid
+  renderRatingGraph();
+  renderAchievementsGrid();
   modal.classList.add('show');
   playClick();
+}
+
+function renderRatingGraph() {
+  const container = document.getElementById('rating-graph');
+  const emptyEl = document.getElementById('rating-graph-empty');
+  const history = game.ratingHistory || [];
+  if (history.length === 0) {
+    container.style.display = 'none';
+    emptyEl.style.display = 'block';
+    return;
+  }
+  container.style.display = 'flex';
+  emptyEl.style.display = 'none';
+
+  // Build data points: oldest→newest (left→right). Add current day as last point.
+  const data = [...history].reverse();  // oldest first
+  data.push({ day: game.day, rating: game.parkRating, current: true });
+
+  const w = 100, h = 40;  // viewBox units (100 wide × 40 tall)
+  const padding = { l: 4, r: 2, t: 4, b: 8 };
+  const innerW = w - padding.l - padding.r;
+  const innerH = h - padding.t - padding.b;
+
+  const points = data.map((d, i) => ({
+    x: padding.l + (data.length === 1 ? innerW / 2 : (i / (data.length - 1)) * innerW),
+    y: padding.t + innerH - (d.rating / 5) * innerH,
+    day: d.day,
+    rating: d.rating,
+    current: d.current,
+  }));
+
+  // Path: line + area fill
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+  const fillPath = linePath + ` L ${points[points.length - 1].x.toFixed(1)} ${(padding.t + innerH).toFixed(1)} L ${points[0].x.toFixed(1)} ${(padding.t + innerH).toFixed(1)} Z`;
+
+  const dots = points.map(p =>
+    `<circle class="graph-dot ${p.current ? 'graph-current-dot' : ''}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${p.current ? 2.2 : 1.6}" />`
+  ).join('');
+
+  const dayLabels = points.map(p =>
+    `<text class="graph-day-label" x="${p.x.toFixed(1)}" y="${(h - 2).toFixed(1)}">D${p.day}</text>`
+  ).join('');
+
+  container.innerHTML = `
+    <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="graphGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#FFD66B"/>
+          <stop offset="100%" stop-color="#ec4899"/>
+        </linearGradient>
+        <linearGradient id="graphFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#FFD66B" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="#FFD66B" stop-opacity="0.0"/>
+        </linearGradient>
+      </defs>
+      <text class="graph-y-label" x="3.5" y="${padding.t + 1}">5★</text>
+      <text class="graph-y-label" x="3.5" y="${(h / 2).toFixed(1)}">2.5</text>
+      <text class="graph-y-label" x="3.5" y="${(padding.t + innerH).toFixed(1)}">0</text>
+      <path class="graph-fill" d="${fillPath}" />
+      <path class="graph-line" d="${linePath}" />
+      ${dots}
+      ${dayLabels}
+    </svg>
+  `;
+}
+
+function renderAchievementsGrid() {
+  const grid = document.getElementById('ach-grid');
+  const progress = document.getElementById('ach-progress');
+  const total = Object.keys(ACHIEVEMENTS).length;
+  const unlocked = Object.keys(game.achievements).length;
+  progress.textContent = `${unlocked} / ${total}`;
+  grid.innerHTML = Object.values(ACHIEVEMENTS).map(a => {
+    const isOn = !!game.achievements[a.id];
+    return `
+      <div class="ach-card ${isOn ? 'unlocked' : 'locked'}" title="${a.desc}">
+        <div class="ach-icon">${a.icon}</div>
+        <div class="ach-name">${a.name}</div>
+      </div>
+    `;
+  }).join('');
 }
 
 // Welcome
@@ -2564,6 +2858,7 @@ scene.registerBeforeRender(() => {
   if (game.spawnTimer > spawnInterval && rides.length > 0) {
     spawnVisitor();
     game.totalVisitors++;
+    recordDailyStat('visitors', 1);  // v1.3: track daily visitors
     game.spawnTimer = 0;
     // 30% chance of family group (2-3 visitors)
     if (Math.random() < 0.3) {
@@ -2572,6 +2867,7 @@ scene.registerBeforeRender(() => {
         const offsetX = (i + 1) * 1.2;
         spawnVisitor(new BABYLON.Vector3(offsetX, 0, 92), Date.now());
         game.totalVisitors++;
+        recordDailyStat('visitors', 1);
       }
     }
   }
@@ -2597,6 +2893,13 @@ scene.registerBeforeRender(() => {
   // Day cycle
   game.dayTimer += dt;
   if (game.dayTimer > game.dayLength) {
+    // v1.3: snapshot previous day's stats before incrementing
+    game.lastDayRating = game.parkRating;
+    game.lastDayWeather = game.weather;
+    recordWeatherDay(game.weather);
+    snapshotDailyHistory();
+    game.dailyStats = { income: 0, visitors: 0, riders: 0, tips: 0 };
+
     game.day++;
     game.dayTimer = 0;
     // Deduct daily staff cost
@@ -2623,14 +2926,17 @@ scene.registerBeforeRender(() => {
   }
   game.ratingTier = newTier;
 
+  // v1.3: check achievements every frame (idempotent — unlocks once)
+  checkAchievements();
+
   // Time of day
   updateTimeOfDay();
   updateDayNightCycle();
 
-  // Auto-save every 30s
+  // Auto-save every 30s (silent — v1.3 bug fix)
   game.autoSaveTimer += dt;
   if (game.autoSaveTimer >= 30) {
-    saveGame(0); // Auto-save to slot 0
+    saveGame(0, true);  // silent=true: no hint spam
     game.autoSaveTimer = 0;
   }
 
@@ -2649,7 +2955,7 @@ updateWeatherUI();  // v1.2: weather HUD
 // Prevent context menu
 canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-console.log('🎢 SJ88 Wonder Park v1.2 loaded', { rides: rides.length, visitors: visitors.length, weather: game.weather });
+console.log('🎢 SJ88 Wonder Park v1.3 loaded', { rides: rides.length, visitors: visitors.length, weather: game.weather, achievements: Object.keys(game.achievements).length });
 </script>
 
 </body>
