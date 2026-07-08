@@ -2,32 +2,61 @@
 
 > Build your dream amusement park in 3D, powered by Babylon.js.
 
-A complete browser-based tycoon game where you place rides, manage visitors, and grow your park's economy. Single-file HTML, no build step, no server required.
+A complete browser-based tycoon game where you place rides, manage visitors, grow your rating, and watch the flywheel compound. Single-file HTML, no build step, no server required.
 
 ![Welcome Screen](screenshots/04-branded.png)
 
 ---
 
-## ✨ Features
+## ⭐ v1.1 — "Living Park" (NEW)
 
-- **6 unique rides** with custom geometry, materials, and animations:
-  - 🎡 **Ferris Wheel** — rotating wheel with 8 colorful pods
-  - 🎠 **Carousel** — horses + striped canopy spinning around the center
-  - 🗼 **Drop Tower** — lift + drop + pause cycle
-  - 🚗 **Bumper Cars** — orbit-driving cars with antenna balls
-  - 🎢 **Roller Coaster** — looping orange track with a 3-car train
-  - 🍔 **Food Stall** — striped awning + glowing sign
+A rating flywheel that compounds: **better park → more visitors → more income → better park.**
 
-- **Visitor AI** — visitors spawn at the entrance gate, wander the park, walk to rides, queue (auto-promoted when capacity opens), ride, pay, and exit when satisfied
-- **Economy** — start with $10,000, deduct on placement, earn per ride completion
-- **Day cycle** — day counter, happiness score, dynamic visitor spawn rate
-- **Beautiful out of the box**:
-  - `DefaultRenderingPipeline` with ACES tone-mapping, FXAA, bloom, vignette
-  - 2048-resolution blurred exponential shadow maps
-  - Procedural checker-texture ground
-  - 80 procedural trees + bushes + pond + entrance arch
+### The Core Loop
 
-![All Rides Placed](screenshots/03-all-rides.png)
+- **⭐ 5-Star Park Rating** — computed live from diversity (max 1.5★), happiness (max 1.5★), income rate (max 1★), and crowd density (max 1★).
+- **Spawn rate** = `base × (rating/5)²` — a 5★ park spawns visitors **~3× faster** than a 1★ park.
+- **Income multiplier** = `1 + 0.1 × rating` — a 5★ park earns **+50% per ride**.
+
+### Visual Juices
+
+- 🏮 **12 lanterns** ring the park, glowing warm orange and flickering gently at night
+- 🌅 **Day/Night cycle** (60s) — sun arcs, sky shifts, lanterns auto-turn on at evening
+- 🎈 **Balloons** on 20% of visitors (kids more likely) bobble as they walk
+- 📸 **Photo-taking** — 1 in 20 wander step chance to stop and "take a photo" for 2 seconds
+- 💰 **Gold coin particles** fly up from the money counter whenever a ride completes
+- 🎆 **Confetti burst** when crossing 1★/2★/3★/4★/5★ milestones (big burst at 4★+)
+- 🏆 **Entrance billboard** — 3D star rating plaque visible at the gate
+
+### Game Systems
+
+- 📊 **Stats Modal** — click the rating card or day counter for live stats (income, popular ride, avg happiness, etc.)
+- 🔊 **Sound effects** (Web Audio synthesis) — coin cha-ching, ride ding, star-up arpeggio, click tick
+- 👨‍👩‍👧 **Visitor groups** — 30% of spawns are families of 2-3
+- 🛎️ **Sound toggle** — 🔊/🔇 button in the top-center
+- 🌙 **Time-of-day indicator** — 🌅 Morning / ☀️ Day / 🌇 Evening / 🌙 Night in the HUD
+
+![Stats Modal](screenshots/v1.1-06-stats-modal.png)
+
+---
+
+## ✨ Rides (6 unique, fully animated)
+
+- 🎡 **Ferris Wheel** — rotating wheel with 8 colorful pods
+- 🎠 **Carousel** — horses + striped canopy spinning around the center
+- 🗼 **Drop Tower** — lift + drop + pause cycle
+- 🚗 **Bumper Cars** — orbit-driving cars with antenna balls
+- 🎢 **Roller Coaster** — looping orange track with a 3-car train
+- 🍔 **Food Stall** — striped awning + glowing sign
+
+| Ride | Cost | Income/ride | Capacity | Fun |
+|---|---|---|---|---|
+| 🎡 Ferris Wheel | $500 | $30 | 8 | ★★★ |
+| 🎠 Carousel | $300 | $15 | 6 | ★★ |
+| 🗼 Drop Tower | $800 | $40 | 4 | ★★★★ |
+| 🚗 Bumper Cars | $400 | $20 | 4 | ★★ |
+| 🎢 Roller Coaster | $1500 | $60 | 12 | ★★★★★ |
+| 🍔 Food Stall | $200 | $10 | ∞ | ★ |
 
 ---
 
@@ -40,6 +69,18 @@ A complete browser-based tycoon game where you place rides, manage visitors, and
 | Pan camera | `WASD` or arrow keys |
 | Zoom | Mouse wheel |
 | Cancel placement | `ESC` |
+| Open stats | Click the ⭐ Rating card or 📅 Day card |
+| Toggle sound | Click 🔊 top center |
+
+![All Rides Placed](screenshots/v1.1-02-rides.png)
+
+---
+
+## 🌙 At Night
+
+![Night lanterns](screenshots/v1.1-05-night-lanterns.png)
+
+Lanterns flicker, sky darkens, ride emissives glow. The park keeps running — night visitors pay the same.
 
 ---
 
@@ -66,8 +107,9 @@ The game uses Babylon.js v9.x from CDN — an internet connection is required on
 - **Standard Materials** with custom specular + emissive
 - **ShadowGenerator** with blur exponential shadow maps
 - **DefaultRenderingPipeline** for post-processing (bloom, ACES, FXAA, vignette)
+- **Web Audio API** for procedural sound effects (no audio files)
 - Pure **vanilla JavaScript** — no React/Vue/build tooling
-- Single 57 KB HTML file — portable, easy to share
+- Single 76 KB HTML file — portable, easy to share
 
 ---
 
@@ -77,11 +119,14 @@ A few patterns that kept the code tidy:
 
 - **`makeMat(name, color, opts)`** — one-line material creation helper (diffuse + specular + emissive + alpha)
 - **`makeCheckerTexture(name, size, c1, c2)`** — `DynamicTexture` checker pattern for grass + plaza
+- **`createStarTexture(state)`** — `DynamicTexture` for the entrance billboard stars
 - **`tagRideMeshes(ride)`** — marks child meshes with `metadata = { isRide, rideRef }` so hover info popups work via `scene.pick`
-- **`isValidPlacement(pos)`** — collision check (8-unit min distance from other rides, away from entrance + pond, in bounds)
+- **`isValidPlacement(pos)`** — collision check (8-unit min distance from other rides, away from entrance + pond + lanterns, in bounds)
 - **Visitor state machine** — `entering → wandering → walking_to_ride → queuing → riding → wandering | leaving → gone`
+- **Photo-taking state** — temporary `photo` state for visual life
 - **Auto-promote queue** — main loop walks rides and promotes first queuer when capacity opens
 - **Roller coaster track** — 60-point circle + per-segment cylinders oriented via `Vector3.Cross` + `Quaternion.RotationAxis`
+- **Lantern flicker** — `intensity = baseIntensity × nightFactor × (0.92 + sin(t × 4 + phase) × 0.08)` for natural flame
 
 ---
 
@@ -90,15 +135,9 @@ A few patterns that kept the code tidy:
 - [ ] Save / load park to localStorage
 - [ ] Multi-day visitor satisfaction trends
 - [ ] Ride upgrades (level 2/3 with bigger income + new visuals)
-- [ ] Park rating + reviews
-- [ ] True day/night cycle with park lighting + lit rides
-
----
-
-## 📸 Gallery
-
-### Populated park after ~10 seconds
-![Populated](screenshots/02-populated.png)
+- [ ] Park rating leaderboard (multiplayer async)
+- [ ] Weather system (rain, fog)
+- [ ] Music tracks (procedural ambient)
 
 ---
 
