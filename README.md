@@ -4,6 +4,14 @@
 
 A complete browser-based tycoon game where you place rides, manage visitors, grow your rating, and watch the flywheel compound. Single-file HTML, no build step, no server required.
 
+## 🌐 Live
+
+🎮 **https://sj88wonderpark.sj88ai.com/** — Official deployment with real Let's Encrypt SSL
+
+> Also hosted on test servers (HTTP):
+> - http://178.83.121.75:54000/  (port 54000, plain HTTP)
+> - https://178.83.121.75:54400/  (port 54400, self-signed cert)
+
 ![Welcome Screen](screenshots/04-branded.png)
 
 ---
@@ -37,6 +45,8 @@ A rating flywheel that compounds: **better park → more visitors → more incom
 - 🌙 **Time-of-day indicator** — 🌅 Morning / ☀️ Day / 🌇 Evening / 🌙 Night in the HUD
 
 ![Stats Modal](screenshots/v1.1-06-stats-modal.png)
+
+![Live at sj88wonderpark.sj88ai.com](screenshots/v1.1-07-sj88wonderpark-live.png)
 
 ---
 
