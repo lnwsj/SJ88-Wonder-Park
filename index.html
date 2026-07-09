@@ -140,6 +140,14 @@
     transition: transform 0.15s;
   }
   #ride-fix-btn:hover { transform: translateY(-1px); }
+  #ride-upgrade-btn {
+    margin-top: 6px; width: 100%;
+    background: linear-gradient(135deg, #FFD66B 0%, #ff8a65 100%);
+    color: #1a1428; border: none; padding: 7px 10px; font-size: 12px;
+    font-weight: 700; border-radius: 6px; cursor: pointer;
+    transition: transform 0.15s;
+  }
+  #ride-upgrade-btn:hover { transform: translateY(-1px); }
   /* v1.4: ride smoke particles */
   .ride-smoke {
     position: fixed; z-index: 5; pointer-events: none;
@@ -303,6 +311,7 @@
   }
   .topbar-btn:hover { background: rgba(40,45,60,0.9); }
   #expand-toggle { left: calc(50% + 60px); }
+  #leader-toggle { left: calc(50% + 116px); }
 
   /* === Bottom-left legend === */
   #legend {
@@ -452,6 +461,24 @@
   .plot-cost { font-size: 11px; opacity: 0.7; }
   .plot-status { font-size: 10px; margin-top: 4px; color: #FFD66B; }
 
+  /* === v1.5: Leaderboard === */
+  .leader-grid {
+    display: flex; flex-direction: column; gap: 8px;
+    margin: 16px 0;
+  }
+  .leader-row {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; padding: 10px 12px;
+  }
+  .leader-icon { font-size: 28px; line-height: 1; }
+  .leader-body { flex: 1; min-width: 0; }
+  .leader-label { font-size: 13px; font-weight: 700; color: #fff; }
+  .leader-current { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+  .leader-value { text-align: right; }
+  .leader-best { font-size: 16px; font-weight: 700; color: #FFD66B; }
+  .leader-unit { font-size: 9px; color: rgba(255,255,255,0.4); }
+
   /* === Modal: Save/Load/Staff === */
   .manage-modal {
     position: absolute; inset: 0; z-index: 50;
@@ -588,6 +615,16 @@
 <!-- v1.4: Quest panel (bottom left, above info buttons) -->
 <div id="quest-panel" class="quest-panel" title="ภารกิจรายวัน — claim เมื่อสำเร็จ!"></div>
 
+<!-- v1.5: Leaderboard modal -->
+<div id="leader-modal" class="manage-modal">
+  <div class="manage-box" style="max-width: 480px;">
+    <h2>🏆 Leaderboard</h2>
+    <div class="sub">สถิติดีที่สุดตลอดกาล · อัปเดต real-time</div>
+    <div class="leader-grid" id="leader-grid"></div>
+    <button class="close-btn" id="leader-close">ปิด</button>
+  </div>
+</div>
+
 <!-- v1.4: Park Expansion modal -->
 <div id="expand-modal" class="manage-modal">
   <div class="manage-box" style="max-width: 640px;">
@@ -618,6 +655,7 @@
 <!-- Sound toggle -->
 <button id="sound-toggle" title="เปิด/ปิด เสียง">🔊</button>
 <button id="expand-toggle" class="topbar-btn" title="ซื้อที่ดินเพิ่ม">🗺️</button>
+<button id="leader-toggle" class="topbar-btn" title="ดู Leaderboard">🏆</button>
 
 <!-- Hint banner -->
 <div id="hint">Click on the ground to place 🎡</div>
@@ -647,6 +685,7 @@
   <div class="row"><span>Fun:</span><span class="fun">--</span></div>
   <div class="row health-row"><span>Health:</span><span class="hp">--</span></div>
   <button id="ride-fix-btn" style="display:none;">🔧 ซ่อม ($<span class="fix-cost">0</span>)</button>
+  <button id="ride-upgrade-btn" style="display:none;">⬆️ อัปเกรด L<span class="upgrade-level">2</span> ($<span class="upgrade-cost">0</span>)</button>
 </div>
 
 <!-- Stats modal -->
@@ -1473,12 +1512,35 @@ const rideFactories = {
 
 const visitors = [];
 
+// v1.5: Visitor personality types
+const VISITOR_TYPES = {
+  kid:     { name: 'เด็ก',     emoji: '🧒', spawnWeight: 25, prefers: ['bumper', 'carousel', 'ferris'], tipMult: 0.5,  patienceMult: 0.5, maxRides: [2,3], decayMult: 1.4, colorTint: [0.95, 0.85, 0.40] },
+  family:  { name: 'ครอบครัว', emoji: '👨‍👩‍👧', spawnWeight: 35, prefers: ['food', 'ferris', 'carousel'], tipMult: 1.2,  patienceMult: 1.3, maxRides: [4,6], decayMult: 0.8, colorTint: [0.40, 0.85, 0.50] },
+  couple:  { name: 'คู่รัก',   emoji: '💑', spawnWeight: 25, prefers: ['tower', 'coaster', 'ferris'], tipMult: 1.5,  patienceMult: 1.0, maxRides: [3,4], decayMult: 1.0, colorTint: [0.95, 0.40, 0.65] },
+  rich:    { name: 'รวย',     emoji: '💰', spawnWeight: 15, prefers: ['coaster', 'tower', 'ferris'], tipMult: 2.5,  patienceMult: 0.7, maxRides: [5,7], decayMult: 0.9, colorTint: [0.95, 0.60, 0.30] },
+};
+
+function pickRandomVisitorType() {
+  // v1.5: weighted random pick
+  const totalWeight = Object.values(VISITOR_TYPES).reduce((s, t) => s + t.spawnWeight, 0);
+  let r = Math.random() * totalWeight;
+  for (const [key, t] of Object.entries(VISITOR_TYPES)) {
+    r -= t.spawnWeight;
+    if (r <= 0) return key;
+  }
+  return 'family';
+}
+
 class Visitor {
   constructor(pos, groupId = null) {
     this.root = new BABYLON.TransformNode('visitor', scene);
     this.root.position.copyFrom(pos);
     this.root.rotation.y = Math.random() * Math.PI * 2;
     this.groupId = groupId;
+    // v1.5: assign personality
+    this.type = pickRandomVisitorType();
+    this.personality = VISITOR_TYPES[this.type];
+    this.ridePreferenceMatched = 0;  // count of preferred rides taken
 
     const colorIdx = Math.floor(Math.random() * 6);
     const bodyColor = [
@@ -1535,10 +1597,13 @@ class Visitor {
     this.rideTimer = 0;
     this.happiness = Math.max(0, Math.min(1, 0.6 + Math.random() * 0.3 + WEATHERS[game.weather].moodDelta));
     this.ridesTaken = 0;
-    this.maxRides = 2 + Math.floor(Math.random() * 4);
+    // v1.5: maxRides from personality range
+    const [minR, maxR] = this.personality.maxRides;
+    this.maxRides = minR + Math.floor(Math.random() * (maxR - minR + 1));
     this.wanderDir = new BABYLON.Vector3((Math.random() - 0.5) * 3, 0, (Math.random() - 0.5) * 3);
     this.wanderTimer = 0;
-    this.speed = 4.5 + Math.random() * 1.5;
+    // v1.5: speed affected by patience (kids faster, rich slower)
+    this.speed = (4.5 + Math.random() * 1.5) * this.personality.patienceMult;
     this.photoCooldown = 0;
     this.root.rotation.y = -Math.PI / 2;
   }
@@ -1577,6 +1642,8 @@ class Visitor {
         this.wanderDir.set((Math.random() - 0.5) * 4, 0, (Math.random() - 0.5) * 4);
         this.wanderTimer = 2 + Math.random() * 4;
       }
+      // v1.5: happiness decay (kids get bored fast, families patient)
+      this.happiness = Math.max(0, this.happiness - 0.01 * dt * this.personality.decayMult);
 
       // Photo-taking animation (NEW)
       if (this.photoCooldown <= 0 && Math.random() < 0.002) {
@@ -1587,11 +1654,21 @@ class Visitor {
         return;
       }
 
-      // Decide to visit a ride
+      // Decide to visit a ride (v1.5: weighted by personality preferences)
       if (rides.length > 0 && this.ridesTaken < this.maxRides && Math.random() < 0.012) {
         const candidates = rides.filter(r => r.passengers.length < r.info.capacity);
         if (candidates.length > 0) {
-          this.targetRide = candidates[Math.floor(Math.random() * candidates.length)];
+          // 70% chance to pick preferred, 30% random
+          let chosen;
+          if (Math.random() < 0.7) {
+            const preferred = candidates.filter(r => this.personality.prefers.includes(r.type));
+            chosen = preferred.length > 0
+              ? preferred[Math.floor(Math.random() * preferred.length)]
+              : candidates[Math.floor(Math.random() * candidates.length)];
+          } else {
+            chosen = candidates[Math.floor(Math.random() * candidates.length)];
+          }
+          this.targetRide = chosen;
           this.state = 'walking_to_ride';
         }
       }
@@ -1644,10 +1721,17 @@ class Visitor {
       if (this.rideTimer > rideLength) {
         this.state = 'wandering';
         if (this.targetRide) {
-          const baseIncome = this.targetRide.info.income;
+          // v1.5: apply upgrade multiplier to base income
+          const upStats = getUpgradeStats(this.targetRide);
+          const baseIncome = Math.round(this.targetRide.info.income * upStats.incMult);
           const incomeMult = 1.0 + game.parkRating * 0.1;  // Rating → income bonus
           const tipMult = WEATHERS[game.weather].tipMult;   // Weather → tip bonus
-          const earned = Math.round(baseIncome * incomeMult * tipMult);
+          // v1.5: personality tip multiplier
+          const personalityTipMult = this.personality.tipMult;
+          // v1.5: preferred ride bonus (10% extra tip if matches preference)
+          const isPreferred = this.personality.prefers.includes(this.targetRide.type);
+          const preferenceBonus = isPreferred ? 1.1 : 1.0;
+          const earned = Math.round(baseIncome * incomeMult * tipMult * personalityTipMult * preferenceBonus);
           earnMoney(earned, 'ride');
           game.totalRiders++;
           recordDailyStat('riders', 1);  // v1.3: track daily rides taken
@@ -1655,7 +1739,14 @@ class Visitor {
           damageRide(this.targetRide, 1);  // v1.4: degrade ride health per use
           const idx = this.targetRide.passengers.indexOf(this);
           if (idx >= 0) this.targetRide.passengers.splice(idx, 1);
-          this.happiness = Math.min(1, this.happiness + 0.15);
+          // v1.5: extra happiness for preferred rides, less for kids
+          const happinessGain = isPreferred ? 0.25 : 0.15;
+          this.happiness = Math.min(1, this.happiness + happinessGain);
+          if (isPreferred) this.ridePreferenceMatched++;
+          // v1.5: rich visitors hate broken rides
+          if (this.type === 'rich' && game.rideHealth[this.targetRide.id]?.broken) {
+            this.happiness -= 0.2;
+          }
           // Track most popular ride
           game.ridePopularity[this.targetRide.type] = (game.ridePopularity[this.targetRide.type] || 0) + 1;
           playDing();
@@ -1688,7 +1779,20 @@ class Visitor {
     }
   }
 
-  destroy() { this.root.dispose(); }
+  destroy() {
+    // v1.5: track personality stats when visitor leaves
+    if (this.ridesTaken > 0) {
+      if (!game.visitorStats) game.visitorStats = { byType: {} };
+      if (!game.visitorStats.byType[this.type]) {
+        game.visitorStats.byType[this.type] = { count: 0, totalRides: 0, totalIncome: 0, preferredMatches: 0 };
+      }
+      const s = game.visitorStats.byType[this.type];
+      s.count++;
+      s.totalRides += this.ridesTaken;
+      s.preferredMatches += this.ridePreferenceMatched;
+    }
+    this.root.dispose();
+  }
 }
 
 function lerpAngle(a, b, t) {
@@ -1702,7 +1806,9 @@ function promoteQueuer(ride) {
   // v1.4: don't promote from broken rides
   const h = game.rideHealth[ride.id];
   if (h && h.broken) return;
-  if (ride.passengers.length > 0 && ride.passengers.length < ride.info.capacity) {
+  // v1.5: use effective capacity (with upgrade)
+  const effCap = getUpgradeStats(ride).capacity || ride.info.capacity;
+  if (ride.passengers.length > 0 && ride.passengers.length < effCap) {
     const next = ride.passengers.find(v => v.state === 'queuing');
     if (next) { next.state = 'riding'; next.rideTimer = 0; }
   }
@@ -1821,6 +1927,32 @@ function showAchievementToast(ach) {
 function recordDailyStat(key, amount = 1) {
   if (!game.dailyStats[key]) game.dailyStats[key] = 0;
   game.dailyStats[key] += amount;
+}
+
+// v1.5: Leaderboard records tracking
+function updateLeaderboard() {
+  if (game.parkRating > game.bestRating) game.bestRating = game.parkRating;
+  if (game.money > game.bestMoney) game.bestMoney = game.money;
+  // Track concurrent visitors peak
+  const active = visitors.filter(v => v.state !== 'gone' && v.state !== 'leaving').length;
+  if (active > game.mostVisitorsServed) game.mostVisitorsServed = active;
+}
+
+function checkStreakOnDayEnd() {
+  // Called at day increment
+  const moneyEnd = game.money;
+  const moneyStart = game.lastDayMoney;
+  if (moneyEnd >= moneyStart) {
+    game.currentStreak++;
+    if (game.currentStreak > game.bestStreak) game.bestStreak = game.currentStreak;
+  } else {
+    game.currentStreak = 0;
+  }
+  game.lastDayMoney = moneyEnd;
+  // Best day record (by income)
+  if (game.dailyStats.income > game.bestDay.income) {
+    game.bestDay = { day: game.day - 1, income: game.dailyStats.income, visitors: game.dailyStats.visitors };
+  }
 }
 
 function recordWeatherDay(weather) {
@@ -1968,6 +2100,46 @@ function fixRide(ride) {
   playClick();
 }
 
+// v1.5: Ride upgrade system
+function getRideLevel(ride) {
+  return game.rideUpgrades[ride.id] || 1;
+}
+
+function getUpgradeCost(ride) {
+  const level = getRideLevel(ride);
+  if (level >= 3) return null;  // max level
+  return Math.round(ride.info.cost * level * 0.8);  // 80% of base * current level
+}
+
+function getUpgradeStats(ride) {
+  const level = getRideLevel(ride);
+  const capMult = 1 + (level - 1) * 0.5;   // +50% cap per level
+  const incMult = 1 + (level - 1) * 0.3;   // +30% income per level
+  return { capacity: Math.floor(ride.info.capacity * capMult), income: Math.round(ride.info.income * incMult), capMult, incMult };
+}
+
+function upgradeRide(ride) {
+  if (!ride || ride.id == null) return;
+  const cost = getUpgradeCost(ride);
+  if (cost === null) {
+    showHint(`❌ ${ride.info.name} ถึงระดับสูงสุดแล้ว (L3)`);
+    return;
+  }
+  if (game.money < cost) {
+    showHint(`❌ เงินไม่พออัปเกรด (ต้องการ $${cost})`);
+    return;
+  }
+  game.money -= cost;
+  game.rideUpgrades[ride.id] = getRideLevel(ride) + 1;
+  spawnCoinParticle(-cost);
+  const newLevel = game.rideUpgrades[ride.id];
+  const stats = getUpgradeStats(ride);
+  showHint(`⬆️ ${ride.info.name} อัปเกรดเป็น L${newLevel}! cap+${Math.round((stats.capMult-1)*100)}% inc+${Math.round((stats.incMult-1)*100)}%`, 3500);
+  spawnConfetti(40);
+  playStarUp();
+  updateUI();
+}
+
 function updateMechanicAutoRepair(dt) {
   if (!game.staff) return;
   const mechanics = game.staff.filter(s => s.type === 'mechanic');
@@ -2095,7 +2267,53 @@ const game = {
   rideHealth: {},             // {rideIdx: {health: 0-100, broken: bool}}
   mechanicFixCooldown: 0,     // prevents spam on auto-fix
   ownedPlots: ['center'],     // park plot ownership for v1.4.4
+  // v1.5 — Personalities + Upgrades + Leaderboard
+  visitorStats: { byType: { kid: {count:0,totalRides:0,totalIncome:0,preferredMatches:0}, family: {count:0,totalRides:0,totalIncome:0,preferredMatches:0}, couple: {count:0,totalRides:0,totalIncome:0,preferredMatches:0}, rich: {count:0,totalRides:0,totalIncome:0,preferredMatches:0} } },
+  rideUpgrades: {},             // {rideId: level} (1-3)
+  bestDay: { day: 0, income: 0, visitors: 0 },
+  bestRating: 0,                // all-time best park rating
+  mostVisitorsServed: 0,        // peak concurrent visitors
+  bestMoney: 0,                 // peak money held
+  bestStreak: 0,                // most consecutive days without losing money
+  currentStreak: 0,            // current streak counter
+  lastDayMoney: 0,              // money at end of previous day
 };
+
+// v1.5: Leaderboard modal handlers
+document.getElementById('leader-toggle').addEventListener('click', () => {
+  renderLeaderboard();
+  document.getElementById('leader-modal').classList.add('show');
+  playClick();
+});
+document.getElementById('leader-close').addEventListener('click', () => {
+  document.getElementById('leader-modal').classList.remove('show');
+  playClick();
+});
+
+function renderLeaderboard() {
+  const grid = document.getElementById('leader-grid');
+  if (!grid) return;
+  const records = [
+    { icon: '⭐', label: 'Rating สูงสุด',   value: game.bestRating.toFixed(2),  unit: '/ 5.0 ★', current: game.parkRating.toFixed(2) },
+    { icon: '💵', label: 'รายได้วันเดียว',    value: '$' + Math.floor(game.bestDay.income).toLocaleString(),  unit: game.bestDay.day ? '(Day ' + game.bestDay.day + ')' : '', current: '$' + Math.floor(game.dailyStats.income).toLocaleString() },
+    { icon: '🧑‍🤝‍🧑', label: 'คนเยอะสุด',    value: game.mostVisitorsServed.toLocaleString(), unit: 'คน', current: visitors.filter(v => v.state !== 'gone' && v.state !== 'leaving').length + ' คน' },
+    { icon: '💰', label: 'เงินเยอะสุด',     value: '$' + Math.floor(game.bestMoney).toLocaleString(),       unit: '', current: '$' + Math.floor(game.money).toLocaleString() },
+    { icon: '🔥', label: 'Streak ดีที่สุด',    value: game.bestStreak.toString(),     unit: 'วัน', current: game.currentStreak + ' วัน' },
+  ];
+  grid.innerHTML = records.map(r => `
+    <div class="leader-row">
+      <div class="leader-icon">${r.icon}</div>
+      <div class="leader-body">
+        <div class="leader-label">${r.label}</div>
+        <div class="leader-current">ตอนนี้: ${r.current}</div>
+      </div>
+      <div class="leader-value">
+        <div class="leader-best">${r.value}</div>
+        <div class="leader-unit">${r.unit}</div>
+      </div>
+    </div>
+  `).join('');
+}
 
 // v1.4: Park expansion plot definitions (3x3 grid + center)
 const PARK_PLOTS = [
@@ -2635,6 +2853,15 @@ function serializeGame() {
     achievements: { ...(game.achievements || {}) },
     lastDayRating: game.lastDayRating || 0,
     lastDayWeather: game.lastDayWeather || 'sunny',
+    // v1.5: leaderboard + upgrades
+    rideUpgrades: { ...(game.rideUpgrades || {}) },
+    bestDay: { ...(game.bestDay || { day: 0, income: 0, visitors: 0 }) },
+    bestRating: game.bestRating || 0,
+    mostVisitorsServed: game.mostVisitorsServed || 0,
+    bestMoney: game.bestMoney || 0,
+    bestStreak: game.bestStreak || 0,
+    currentStreak: game.currentStreak || 0,
+    lastDayMoney: game.lastDayMoney || 0,
     savedAt: Date.now(),
   };
 }
@@ -2693,6 +2920,15 @@ function loadGame(slot = 0) {
     game.achievements = data.achievements || {};
     game.lastDayRating = data.lastDayRating || 0;
     game.lastDayWeather = data.lastDayWeather || 'sunny';
+    // v1.5: leaderboard + upgrades
+    game.rideUpgrades = data.rideUpgrades || {};
+    game.bestDay = data.bestDay || { day: 0, income: 0, visitors: 0 };
+    game.bestRating = data.bestRating || 0;
+    game.mostVisitorsServed = data.mostVisitorsServed || 0;
+    game.bestMoney = data.bestMoney || 0;
+    game.bestStreak = data.bestStreak || 0;
+    game.currentStreak = data.currentStreak || 0;
+    game.lastDayMoney = data.lastDayMoney || 0;
     if (data.rides) {
       data.rides.forEach(rd => {
         const ride = rideFactories[rd.type](new BABYLON.Vector3(rd.pos.x, 0, rd.pos.z));
@@ -2939,17 +3175,31 @@ scene.onPointerObservable.add((pointerInfo) => {
         info.style.top = (pointerInfo.event.clientY + 12) + 'px';
         info.querySelector('.name').textContent = r.info.name;
         info.querySelector('.cap').textContent = r.info.capacity || '∞';
-        info.querySelector('.inc').textContent = '$' + Math.round(r.info.income * (1 + game.parkRating * 0.1));
+        // v1.5: show effective capacity (with upgrade)
+        const upStats = getUpgradeStats(r);
+        const baseCap = r.info.capacity || 0;
+        const effCap = upStats.capacity || baseCap;
+        if (effCap > baseCap) {
+          info.querySelector('.cap').textContent = `${baseCap} → ${effCap}`;
+        }
+        info.querySelector('.inc').textContent = '$' + Math.round(r.info.income * upStats.incMult * (1 + game.parkRating * 0.1));
         info.querySelector('.fun').textContent = '★'.repeat(Math.min(5, Math.ceil(r.info.fun / 2)));
         // v1.4: health + fix button
         const h = game.rideHealth[r.id];
         const hpEl = info.querySelector('.hp');
         const fixBtn = document.getElementById('ride-fix-btn');
-        if (h) {
+        const upBtn = document.getElementById('ride-upgrade-btn');
+        // v1.5: show level badge
+        const level = getRideLevel(r);
+        if (level > 1) {
+          hpEl.innerHTML = `<span style="color:#FFD66B;font-weight:700;margin-right:4px;">L${level}★</span> <span style="color:${h?.broken ? '#ef4444' : '#84cc16'};font-weight:700">${h ? Math.round(h.health) : 100}</span>`;
+        } else if (h) {
           const hp = Math.round(h.health);
           const color = h.broken ? '#ef4444' : hp < 30 ? '#f59e0b' : hp < 60 ? '#fbbf24' : '#84cc16';
           hpEl.innerHTML = `<span style="color:${color};font-weight:700">${hp}${h.broken ? ' ⚠️ พัง!' : ''}</span>`;
-          if (h.broken || hp < 50) {
+        }
+        if (h) {
+          if (h.broken || h.health < 50) {
             fixBtn.style.display = 'block';
             fixBtn.querySelector('.fix-cost').textContent = mechanicFixCost(r);
             fixBtn.dataset.rideId = r.id;
@@ -2957,6 +3207,16 @@ scene.onPointerObservable.add((pointerInfo) => {
           } else {
             fixBtn.style.display = 'none';
           }
+        }
+        // v1.5: upgrade button
+        const upCost = getUpgradeCost(r);
+        if (upCost !== null) {
+          upBtn.style.display = 'block';
+          upBtn.querySelector('.upgrade-level').textContent = level + 1;
+          upBtn.querySelector('.upgrade-cost').textContent = upCost;
+          upBtn.onclick = (e) => { e.stopPropagation(); upgradeRide(r); };
+        } else {
+          upBtn.style.display = 'none';
         }
       } else { info.classList.remove('show'); }
     } else { document.getElementById('ride-info').classList.remove('show'); }
@@ -3472,7 +3732,8 @@ scene.registerBeforeRender(() => {
 
   // Promote queuers
   rides.forEach(ride => {
-    if (ride.passengers.length < ride.info.capacity) {
+    const effCap = getUpgradeStats(ride).capacity || ride.info.capacity;
+    if (ride.passengers.length < effCap) {
       const waiting = ride.passengers.find(v => v.state === 'queuing');
       if (waiting) { waiting.state = 'riding'; waiting.rideTimer = 0; }
     }
@@ -3494,6 +3755,7 @@ scene.registerBeforeRender(() => {
     game.lastDayWeather = game.weather;
     recordWeatherDay(game.weather);
     snapshotDailyHistory();
+    checkStreakOnDayEnd();  // v1.5: update streak
     game.dailyStats = { income: 0, visitors: 0, riders: 0, tips: 0 };
 
     game.day++;
@@ -3528,6 +3790,7 @@ scene.registerBeforeRender(() => {
 
   // v1.3: check achievements every frame (idempotent — unlocks once)
   checkAchievements();
+  updateLeaderboard();  // v1.5
   // v1.4: check rating-based quest progress
   if (game.dailyQuest && game.dailyQuest.type === 'rating' && !game.dailyQuest.claimed) {
     game.dailyQuest.progress = Math.max(game.dailyQuest.progress, game.parkRating);
@@ -3578,7 +3841,7 @@ updatePlotUI();
 // Prevent context menu
 canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-console.log('🎢 SJ88 Wonder Park v1.4 loaded', { rides: rides.length, visitors: visitors.length, weather: game.weather, achievements: Object.keys(game.achievements).length, plots: game.ownedPlots.length });
+console.log('🎢 SJ88 Wonder Park v1.5 loaded', { rides: rides.length, visitors: visitors.length, weather: game.weather, achievements: Object.keys(game.achievements).length, plots: game.ownedPlots.length, personality: typeof VISITOR_TYPES === 'object' });
 </script>
 
 </body>
