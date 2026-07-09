@@ -527,6 +527,53 @@
   }
   .farm-buy-btn:hover { transform: translateY(-1px); }
 
+  /* === v1.9: Deco shop section title === */
+  .deco-section-title {
+    font-size: 12px; font-weight: 700; color: #84cc16;
+    padding: 4px 8px; margin-bottom: 4px;
+    border-left: 3px solid #84cc16;
+  }
+
+  /* === v1.9: Crop picker popup (small, on park click) === */
+  .crop-picker-popup {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 1000; display: none;
+  }
+  .crop-picker-popup.show { display: block; }
+  .picker-box {
+    background: linear-gradient(135deg, rgba(20,25,40,0.97), rgba(15,20,35,0.97));
+    border: 2px solid rgba(132,204,22,0.5); border-radius: 14px;
+    padding: 16px 18px; min-width: 360px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 30px rgba(132,204,22,0.2);
+    position: relative;
+  }
+  .picker-title {
+    font-size: 14px; font-weight: 700; color: #84cc16; margin-bottom: 12px;
+    text-align: center;
+  }
+  .picker-list {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+  }
+  .picker-crop-btn {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 10px 6px; cursor: pointer;
+    color: #fff; text-align: center; transition: all 0.15s;
+  }
+  .picker-crop-btn:hover {
+    background: rgba(132,204,22,0.15); border-color: rgba(132,204,22,0.5);
+    transform: translateY(-1px);
+  }
+  .picker-emoji { font-size: 28px; margin-bottom: 4px; }
+  .picker-name { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+  .picker-info { font-size: 9px; color: rgba(255,255,255,0.7); }
+  .picker-close {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(255,255,255,0.1); border: none; color: #fff;
+    width: 28px; height: 28px; border-radius: 14px; cursor: pointer;
+    font-size: 14px; font-weight: 700;
+  }
+  .picker-close:hover { background: rgba(255,255,255,0.2); }
+
   /* === Bottom-left legend === */
   #legend {
     position: absolute; bottom: 24px; left: 24px;
@@ -882,11 +929,20 @@
 <button id="leader-toggle" class="topbar-btn" title="ดู Leaderboard">🏆</button>
 <button id="campaign-toggle" class="topbar-btn" title="Marketing Campaigns">📺</button>
 <button id="deco-toggle" class="topbar-btn" title="Decoration Shop">🌳</button>
-<button id="farm-toggle" class="topbar-btn" title="Farm">🚜</button>
+<button id="farm-toggle" class="topbar-btn" title="วางอุปกรณ์ฟาร์ม">🚜</button>
 <div id="campaign-indicator" class="campaign-indicator"></div>
 
 <!-- Hint banner -->
 <div id="hint">Click on the ground to place 🎡</div>
+
+<!-- v1.9: Small crop picker popup (clicked on empty garden cell) -->
+<div id="crop-picker-popup" class="crop-picker-popup">
+  <div class="picker-box">
+    <div class="picker-title">🌱 เลือกพืชที่จะปลูก</div>
+    <div class="picker-list"></div>
+    <button class="picker-close" onclick="closeCropPickerModal()">✕</button>
+  </div>
+</div>
 
 <!-- v1.8: Farm modal -->
 <div id="farm-modal" class="manage-modal">
@@ -3182,6 +3238,10 @@ const DECORATION_TYPES = {
   flag:    { name: '🎏 ธง',     cost: 80,  color: [0.95, 0.30, 0.40], height: 5, shape: 'flag' },
   fountain:{ name: '⛲ น้ำพุ',    cost: 800, color: [0.30, 0.65, 0.95], height: 2, shape: 'fountain' },
   flowers: { name: '🌸 ดอกไม้',  cost: 60,  color: [0.95, 0.50, 0.80], height: 0.5, shape: 'sphere' },
+  // v1.9: Farm decorations — interactive
+  farm_plot:{name: '🌱 แปลงผัก 3×3', cost: 300, color: [0.55, 0.40, 0.25], height: 0.1, shape: 'farm_plot' },
+  farm_pond:{name: '🎣 บ่อปลา',      cost: 250, color: [0.30, 0.65, 0.95], height: 0.4, shape: 'farm_pond' },
+  farm_cow: {name: '🐄 วัว',         cost: 200, color: [0.95, 0.95, 0.95], height: 2, shape: 'farm_cow' },
 };
 
 function createDecorationMesh(type, x, z) {
@@ -3248,6 +3308,121 @@ function createDecorationMesh(type, x, z) {
     bloom.position.set(x, 0.5, z);
     bloom.material = mat;
     mesh = bloom;
+  } else if (type === 'farm_plot') {
+    // v1.9: 3x3 garden plot — each cell is its own clickable mesh
+    const root = new BABYLON.TransformNode('farm_plot_root_' + Date.now(), scene);
+    root.position.set(x, 0, z);
+    const cellMeshes = [];
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        const cell = BABYLON.MeshBuilder.CreateBox('plot_cell_' + row + '_' + col, { width: 1.6, height: 0.15, depth: 1.6 }, scene);
+        cell.parent = root;
+        cell.position.set((col - 1) * 1.7, 0.075, (row - 1) * 1.7);
+        const cellMat = new BABYLON.StandardMaterial('plotCellMat_' + Date.now() + '_' + row + col, scene);
+        cellMat.diffuseColor = new BABYLON.Color3(0.55, 0.40, 0.25);
+        cell.material = cellMat;
+        cell.metadata = { decoType: 'farm_plot', cellIndex: row * 3 + col };
+        cell.isPickable = true;
+        cellMeshes.push(cell);
+      }
+    }
+    // Border (logs around the plot)
+    for (let side = 0; side < 4; side++) {
+      const log = BABYLON.MeshBuilder.CreateBox('plot_border_' + side, { width: 5.5, height: 0.3, depth: 0.3 }, scene);
+      log.parent = root;
+      const a = side * Math.PI / 2;
+      log.position.set(Math.sin(a) * 2.7, 0.15, Math.cos(a) * 2.7);
+      log.rotation.y = a;
+      const logMat = new BABYLON.StandardMaterial('plotLogMat_' + side, scene);
+      logMat.diffuseColor = new BABYLON.Color3(0.45, 0.30, 0.20);
+      log.material = logMat;
+    }
+    return { root, cellMeshes, farmType: 'plot' };
+  } else if (type === 'farm_pond') {
+    // v1.9: Fishing pond
+    const root = new BABYLON.TransformNode('farm_pond_root_' + Date.now(), scene);
+    root.position.set(x, 0, z);
+    // Dirt rim
+    const rim = BABYLON.MeshBuilder.CreateCylinder('pond_rim', { diameter: 4.5, height: 0.3 }, scene);
+    rim.parent = root;
+    rim.position.y = 0.15;
+    const rimMat = new BABYLON.StandardMaterial('pondRimMat', scene);
+    rimMat.diffuseColor = new BABYLON.Color3(0.40, 0.30, 0.20);
+    rim.material = rimMat;
+    // Water
+    const water = BABYLON.MeshBuilder.CreateCylinder('pond_water', { diameter: 4, height: 0.15 }, scene);
+    water.parent = root;
+    water.position.y = 0.35;
+    const waterMat = new BABYLON.StandardMaterial('pondWaterMat', scene);
+    waterMat.diffuseColor = new BABYLON.Color3(0.30, 0.65, 0.95);
+    waterMat.alpha = 0.7;
+    waterMat.specularColor = new BABYLON.Color3(0.5, 0.7, 1.0);
+    water.material = waterMat;
+    water.metadata = { decoType: 'farm_pond' };
+    water.isPickable = true;
+    // Fish (only visible when casting)
+    const fish = BABYLON.MeshBuilder.CreateBox('pond_fish', { width: 0.6, height: 0.2, depth: 0.3 }, scene);
+    fish.parent = root;
+    fish.position.y = 0.5;
+    const fishMat = new BABYLON.StandardMaterial('pondFishMat', scene);
+    fishMat.diffuseColor = new BABYLON.Color3(0.95, 0.65, 0.30);
+    fishMat.emissiveColor = new BABYLON.Color3(0.95, 0.65, 0.30);
+    fish.material = fishMat;
+    fish.setEnabled(false);
+    return { root, water, fish, waterMat, fishMat, farmType: 'pond' };
+  } else if (type === 'farm_cow') {
+    // v1.9: Cow (clickable to milk)
+    const root = new BABYLON.TransformNode('farm_cow_root_' + Date.now(), scene);
+    root.position.set(x, 0, z);
+    // Body
+    const body = BABYLON.MeshBuilder.CreateBox('cow_body', { width: 1.5, height: 1, depth: 2 }, scene);
+    body.parent = root;
+    body.position.y = 1;
+    const bodyMat = new BABYLON.StandardMaterial('cowBodyMat', scene);
+    bodyMat.diffuseColor = new BABYLON.Color3(0.95, 0.95, 0.92);
+    body.material = bodyMat;
+    body.metadata = { decoType: 'farm_cow' };
+    body.isPickable = true;
+    // Black spots
+    for (let i = 0; i < 3; i++) {
+      const spot = BABYLON.MeshBuilder.CreateSphere('cow_spot_' + i, { diameter: 0.5, segments: 6 }, scene);
+      spot.parent = root;
+      spot.position.set((i - 1) * 0.5, 1.2, 0.3 + Math.random() * 0.3);
+      const spotMat = new BABYLON.StandardMaterial('cowSpotMat_' + i, scene);
+      spotMat.diffuseColor = new BABYLON.Color3(0.15, 0.10, 0.10);
+      spot.material = spotMat;
+    }
+    // Head
+    const head = BABYLON.MeshBuilder.CreateBox('cow_head', { width: 0.8, height: 0.8, depth: 0.8 }, scene);
+    head.parent = root;
+    head.position.set(0, 1.5, 1.1);
+    head.material = bodyMat;
+    // Horns
+    for (let s = -1; s <= 1; s += 2) {
+      const horn = BABYLON.MeshBuilder.CreateCylinder('cow_horn_' + s, { diameter: 0.1, height: 0.4 }, scene);
+      horn.parent = root;
+      horn.position.set(s * 0.3, 1.95, 1.1);
+      const hornMat = new BABYLON.StandardMaterial('cowHornMat_' + s, scene);
+      hornMat.diffuseColor = new BABYLON.Color3(0.85, 0.75, 0.60);
+      horn.material = hornMat;
+    }
+    // Legs (4)
+    for (let i = 0; i < 4; i++) {
+      const leg = BABYLON.MeshBuilder.CreateBox('cow_leg_' + i, { width: 0.25, height: 0.8, depth: 0.25 }, scene);
+      leg.parent = root;
+      leg.position.set((i % 2 === 0 ? -1 : 1) * 0.55, 0.4, (i < 2 ? -1 : 1) * 0.75);
+      leg.material = bodyMat;
+    }
+    // Milk indicator (visible when ready)
+    const milkIndicator = BABYLON.MeshBuilder.CreateSphere('cow_milk', { diameter: 0.4, segments: 8 }, scene);
+    milkIndicator.parent = root;
+    milkIndicator.position.set(0, 1.5, 1.5);
+    const milkMat = new BABYLON.StandardMaterial('cowMilkMat', scene);
+    milkMat.diffuseColor = new BABYLON.Color3(0.98, 0.98, 0.95);
+    milkMat.emissiveColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+    milkIndicator.material = milkMat;
+    milkIndicator.setEnabled(false);
+    return { root, body, milkIndicator, milkMat, farmType: 'cow' };
   }
   return mesh;
 }
@@ -3274,8 +3449,17 @@ function placeDecoration(x, z) {
     return;
   }
   game.money -= def.cost;
-  const mesh = createDecorationMesh(selectedDecoration, x, z);
-  const deco = { id: Date.now() + Math.random(), type: selectedDecoration, x, z, mesh };
+  const result = createDecorationMesh(selectedDecoration, x, z);
+  const deco = { id: Date.now() + Math.random(), type: selectedDecoration, x, z, result };
+  // v1.9: farm decorations need initial state
+  if (selectedDecoration === 'farm_plot') {
+    deco.state = { cells: Array(9).fill(null) };
+  } else if (selectedDecoration === 'farm_pond') {
+    deco.state = { casting: false, castAt: 0, catchMs: 0, catchValue: 0 };
+  } else if (selectedDecoration === 'farm_cow') {
+    const name = COW_NAMES[Math.floor(Math.random() * COW_NAMES.length)];
+    deco.state = { name, boughtAt: performance.now(), lastMilkAt: performance.now() };
+  }
   game.decorations.push(deco);
   showHint(`🛒 วาง ${def.name} เรียบร้อย!`, 2000);
   playClick();
@@ -3429,17 +3613,222 @@ function tickFarm() {
       if (elapsed >= cell.growMs) { cell.ready = true; changed = true; }
     }
   }
-  if (changed && typeof updateFarmUI === 'function' && document.getElementById('farm-modal').classList.contains('show')) {
-    updateFarmUI();
+  // v1.9: Auto-mark ready crops in 3D plot decorations
+  if (game.decorations) {
+    for (const d of game.decorations) {
+      if (d.type === 'farm_plot' && d.state && d.state.cells) {
+        for (let i = 0; i < d.state.cells.length; i++) {
+          const cell = d.state.cells[i];
+          if (cell && !cell.ready) {
+            const elapsed = performance.now() - cell.plantedAt;
+            if (elapsed >= cell.growMs) { cell.ready = true; changed = true; }
+          }
+        }
+      }
+    }
+    // Update all 3D farm decoration visuals
+    for (const d of game.decorations) {
+      if (!d.state) continue;
+      if (d.type === 'farm_plot') updatePlotMesh(d);
+      else if (d.type === 'farm_pond') updatePondMesh(d);
+      else if (d.type === 'farm_cow') updateCowMesh(d);
+    }
   }
+}
+
+// v1.9: 3D Farm handler functions
+function handlePlotClick(deco, cellIndex) {
+  const cell = deco.state.cells[cellIndex];
+  if (cell && cell.ready) {
+    // Harvest
+    const crop = CROPS[cell.crop];
+    game.money += crop.harvestValue;
+    deco.state.cells[cellIndex] = null;
+    showHint(`🎉 เก็บ ${crop.name} ได้ $${crop.harvestValue}!`, 2500);
+    spawnConfetti(20);
+    playStarUp();
+    updatePlotMesh(deco);
+    updateUI();
+  } else if (!cell) {
+    // Open crop picker modal
+    openCropPickerModal(cellIndex, (cropKey) => {
+      const crop = CROPS[cropKey];
+      if (game.money < crop.seedCost) {
+        showHint(`❌ เงินไม่พอ (ต้องการ $${crop.seedCost})`);
+        return;
+      }
+      game.money -= crop.seedCost;
+      deco.state.cells[cellIndex] = {
+        crop: cropKey,
+        plantedAt: performance.now(),
+        growMs: crop.growMs,
+        ready: false,
+      };
+      showHint(`🌱 ปลูก ${crop.name} แล้ว รอ ${Math.round(crop.growMs/1000)} วิ`, 2000);
+      playClick();
+      updatePlotMesh(deco);
+      updateUI();
+    });
+  } else {
+    // Growing
+    const crop = CROPS[cell.crop];
+    const elapsed = performance.now() - cell.plantedAt;
+    const secsLeft = Math.max(0, Math.ceil((cell.growMs - elapsed) / 1000));
+    showHint(`🌱 ${crop.name} เหลืออีก ${secsLeft} วิ`, 1800);
+  }
+}
+
+function handlePondClick(deco) {
+  if (!deco.state.casting) {
+    const catchMs = 30000 + Math.random() * 60000;
+    const catchValue = 30 + Math.floor(Math.random() * 70);
+    deco.state.casting = true;
+    deco.state.castAt = performance.now();
+    deco.state.catchMs = catchMs;
+    deco.state.catchValue = catchValue;
+    showHint(`🎣 แล่เบ็ด รอ ${Math.round(catchMs/1000)} วิ...`, 2000);
+    playClick();
+  } else {
+    const elapsed = performance.now() - deco.state.castAt;
+    if (elapsed >= deco.state.catchMs) {
+      game.money += deco.state.catchValue;
+      showHint(`🐟 ได้ปลา $${deco.state.catchValue}!`, 2500);
+      spawnConfetti(15);
+      playStarUp();
+      deco.state.casting = false;
+      deco.state.castAt = 0;
+      deco.state.catchMs = 0;
+      deco.state.catchValue = 0;
+      updateUI();
+    } else {
+      const secsLeft = Math.max(0, Math.ceil((deco.state.catchMs - elapsed) / 1000));
+      showHint(`🎣 รออีก ${secsLeft} วิ...`, 1500);
+    }
+  }
+}
+
+function handleCowClick(deco) {
+  const elapsed = performance.now() - deco.state.lastMilkAt;
+  if (elapsed >= 60000) {
+    const milkValue = 50;
+    game.money += milkValue;
+    deco.state.lastMilkAt = performance.now();
+    showHint(`🥛 ${deco.state.name} รีดนมได้ $${milkValue}!`, 2500);
+    spawnConfetti(8);
+    playStarUp();
+    updateCowMesh(deco);
+    updateUI();
+  } else {
+    const secsLeft = Math.max(0, Math.ceil((60000 - elapsed) / 1000));
+    showHint(`🐄 ${deco.state.name} รออีก ${secsLeft} วิ`, 1500);
+  }
+}
+
+function updatePlotMesh(deco) {
+  if (!deco.result || !deco.result.cellMeshes) return;
+  for (let i = 0; i < 9; i++) {
+    const cell = deco.state.cells[i];
+    const mesh = deco.result.cellMeshes[i];
+    if (!cell) {
+      // Empty — brown earth
+      mesh.material.diffuseColor = new BABYLON.Color3(0.55, 0.40, 0.25);
+      mesh.scaling.y = 1;
+    } else {
+      const elapsed = performance.now() - cell.plantedAt;
+      const progress = Math.min(1, elapsed / cell.growMs);
+      const crop = CROPS[cell.crop];
+      if (progress >= 1) {
+        // Ready — bright color + bigger scale
+        mesh.material.diffuseColor = new BABYLON.Color3(0.95, 0.85, 0.30);
+        mesh.scaling.y = 2;
+      } else {
+        // Growing — green tone + scale by progress
+        mesh.material.diffuseColor = new BABYLON.Color3(0.30 + progress * 0.4, 0.55 + progress * 0.2, 0.25);
+        mesh.scaling.y = 1 + progress * 0.5;
+      }
+    }
+  }
+}
+
+function updatePondMesh(deco) {
+  if (!deco.result) return;
+  const fish = deco.result.fish;
+  if (deco.state.casting) {
+    const elapsed = performance.now() - deco.state.castAt;
+    const progress = Math.min(1, elapsed / deco.state.catchMs);
+    fish.setEnabled(true);
+    // Animate fish swimming in circle
+    const t = performance.now() * 0.002;
+    fish.position.x = Math.cos(t) * 1.2;
+    fish.position.z = Math.sin(t) * 1.2;
+    fish.position.y = 0.5;
+    // Color shifts from yellow (waiting) to green (ready!)
+    if (progress >= 1) {
+      fish.material.diffuseColor = new BABYLON.Color3(0.30, 0.95, 0.45);
+      fish.material.emissiveColor = new BABYLON.Color3(0.30, 0.95, 0.45);
+    } else {
+      fish.material.diffuseColor = new BABYLON.Color3(0.95, 0.65, 0.30);
+      fish.material.emissiveColor = new BABYLON.Color3(0.95, 0.65, 0.30);
+    }
+  } else {
+    fish.setEnabled(false);
+  }
+  // Water shimmer
+  if (deco.result.waterMat) {
+    const t = performance.now() * 0.001;
+    deco.result.waterMat.alpha = 0.6 + Math.sin(t) * 0.1;
+  }
+}
+
+function updateCowMesh(deco) {
+  if (!deco.result) return;
+  const elapsed = performance.now() - deco.state.lastMilkAt;
+  const ready = elapsed >= 60000;
+  const indicator = deco.result.milkIndicator;
+  indicator.setEnabled(ready);
+  if (ready) {
+    // Glow more when ready
+    const pulse = (Math.sin(performance.now() * 0.005) + 1) * 0.5;
+    deco.result.milkMat.emissiveColor = new BABYLON.Color3(0.5 + pulse * 0.5, 0.5 + pulse * 0.5, 0.5);
+  }
+  // Subtle bobbing
+  const root = deco.result.root;
+  root.position.y = Math.sin(performance.now() * 0.003 + deco.x) * 0.05;
+}
+
+// v1.9: Small crop picker popup (not the full farm modal)
+let _pickerCallback = null;
+function openCropPickerModal(cellIndex, onPick) {
+  _pickerCallback = onPick;
+  const popup = document.getElementById('crop-picker-popup');
+  if (!popup) return;
+  const list = popup.querySelector('.picker-list');
+  list.innerHTML = Object.entries(CROPS).map(([k, cr]) =>
+    `<button class="picker-crop-btn" onclick="pickCropInline('${k}')">
+      <div class="picker-emoji">${cr.emoji}</div>
+      <div class="picker-name">${cr.name}</div>
+      <div class="picker-info">🌱 $${cr.seedCost} · ⏱️ ${Math.round(cr.growMs/1000)}วิ · 💰$${cr.harvestValue}</div>
+    </button>`
+  ).join('');
+  popup.classList.add('show');
+}
+function pickCropInline(key) {
+  if (_pickerCallback) _pickerCallback(key);
+  closeCropPickerModal();
+}
+function closeCropPickerModal() {
+  const popup = document.getElementById('crop-picker-popup');
+  if (popup) popup.classList.remove('show');
+  _pickerCallback = null;
 }
 
 // v1.6: Decoration Shop modal handlers
 // v1.8: Farm modal handlers
-let currentFarmTab = 'garden';
+// v1.9: Farm toggle button now OPENS DECO SHOP filtered to farm types
 document.getElementById('farm-toggle').addEventListener('click', () => {
-  document.getElementById('farm-modal').classList.add('show');
-  renderFarmTab();
+  document.getElementById('deco-toggle').click();
+  // Filter deco shop to only show farm types — for simplicity, just open it
+  showHint('🚜 เลือก แปลงผัก/บ่อปลา/วัว แล้วคลิกบนพื้น', 4000);
   playClick();
 });
 document.getElementById('farm-close').addEventListener('click', () => {
@@ -3564,7 +3953,10 @@ document.getElementById('deco-close').addEventListener('click', () => {
 function renderDecoShop() {
   const grid = document.getElementById('deco-grid');
   if (!grid) return;
-  grid.innerHTML = Object.entries(DECORATION_TYPES).map(([key, d]) => {
+  const farmKeys = ['farm_plot', 'farm_pond', 'farm_cow'];
+  const decoKeys = Object.keys(DECORATION_TYPES).filter(k => !farmKeys.includes(k));
+  const renderCard = (key) => {
+    const d = DECORATION_TYPES[key];
     const canBuy = game.money >= d.cost;
     return `
       <div class="campaign-card ${canBuy ? 'can-buy' : 'locked'}" style="border-left: 4px solid ${d.color.map(c => Math.round(c*255)).join(',')};">
@@ -3572,13 +3964,18 @@ function renderDecoShop() {
           <div class="campaign-name">${d.name}</div>
           <div class="campaign-cost">$${d.cost}</div>
         </div>
-        <div class="campaign-desc">ตกแต่งสวนสนุก · จัดวาง: ${game.decorations.filter(x => x.type === key).length}</div>
+        <div class="campaign-desc">จัดวาง: ${game.decorations.filter(x => x.type === key).length}</div>
         <button class="campaign-btn" ${canBuy ? '' : 'disabled'} onclick="selectDecoration('${key}')">
           ${canBuy ? '🛒 เลือกวาง' : '🔒 เงินไม่พอ'}
         </button>
       </div>
     `;
-  }).join('');
+  };
+  grid.innerHTML =
+    `<div class="deco-section-title">🌳 ของตกแต่ง</div>` +
+    decoKeys.map(renderCard).join('') +
+    `<div class="deco-section-title" style="margin-top: 14px">🚜 ฟาร์ม (คลิกหลังวางได้เลย)</div>` +
+    farmKeys.map(renderCard).join('');
 }
 
 // v1.6: Campaign modal handlers
@@ -4637,6 +5034,24 @@ scene.onPointerObservable.add((pointerInfo) => {
           placeDecoration(p.x, p.z);
         } else {
           showHint('❌ ตำแหน่งนี้วางไม่ได้ (ทับของเดิม)');
+        }
+      }
+    }
+    // v1.9: Farm decoration interaction (click on placed farm)
+    else if (pointerInfo.event.button === 0 && !selectedDecoration) {
+      const farmPick = scene.pick(scene.pointerX, scene.pointerY, m => m.metadata && (m.metadata.decoType === 'farm_plot' || m.metadata.decoType === 'farm_pond' || m.metadata.decoType === 'farm_cow'));
+      if (farmPick.hit && farmPick.pickedMesh) {
+        const meta = farmPick.pickedMesh.metadata;
+        if (meta.decoType === 'farm_plot') {
+          // Find which deco this belongs to
+          const deco = game.decorations.find(d => d.type === 'farm_plot' && d.result && d.result.cellMeshes.includes(farmPick.pickedMesh));
+          if (deco) handlePlotClick(deco, meta.cellIndex);
+        } else if (meta.decoType === 'farm_pond') {
+          const deco = game.decorations.find(d => d.type === 'farm_pond' && d.result && d.result.water === farmPick.pickedMesh);
+          if (deco) handlePondClick(deco);
+        } else if (meta.decoType === 'farm_cow') {
+          const deco = game.decorations.find(d => d.type === 'farm_cow' && d.result && d.result.body === farmPick.pickedMesh);
+          if (deco) handleCowClick(deco);
         }
       }
     }
