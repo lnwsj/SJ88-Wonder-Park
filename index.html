@@ -52,13 +52,32 @@
   /* === Toolbar === */
   #toolbar {
     position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 10px; padding: 12px 16px;
+    display: flex; flex-direction: column; gap: 8px; padding: 12px 16px;
     background: rgba(20, 25, 40, 0.85); backdrop-filter: blur(14px);
     border: 1px solid rgba(255,255,255,0.15);
     border-radius: 18px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    z-index: 10;
+    z-index: 10; align-items: center;
   }
+  #cat-tabs { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
+  .cat-tab {
+    padding: 5px 11px; font-size: 11px; font-weight: 700;
+    background: rgba(255,255,255,0.08); color: #fff;
+    border: 1px solid transparent; border-radius: 14px;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .cat-tab:hover { background: rgba(255,255,255,0.18); }
+  .cat-tab.active {
+    background: var(--cat-color); color: #fff;
+    border-color: rgba(255,255,255,0.4);
+    box-shadow: 0 0 12px var(--cat-color);
+  }
+  .cat-count {
+    font-size: 9px; padding: 1px 5px;
+    background: rgba(0,0,0,0.4); border-radius: 8px; font-weight: 700;
+  }
+  #ride-grid { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 90vw; }
   .ride-btn {
     background: rgba(255,255,255,0.06);
     border: 2px solid rgba(255,255,255,0.08);
@@ -76,6 +95,14 @@
   }
   .ride-btn .emoji { font-size: 26px; }
   .ride-btn .cost { color: #FFD66B; font-weight: 700; font-size: 10px; }
+  .ride-btn .owned-badge {
+    position: absolute; top: -6px; right: -6px;
+    background: #fbbf24; color: #000;
+    font-size: 10px; font-weight: 800;
+    padding: 1px 6px; border-radius: 10px;
+    border: 1px solid #000;
+  }
+  .ride-btn { position: relative; }
   .ride-btn.disabled { opacity: 0.4; cursor: not-allowed; }
 
   #cancel-btn {
@@ -760,13 +787,9 @@
 
 <!-- Toolbar -->
 <div id="toolbar">
-  <button class="ride-btn" data-ride="ferris">  <span class="emoji">🎡</span>Ferris<span class="cost">$500</span></button>
-  <button class="ride-btn" data-ride="carousel"><span class="emoji">🎠</span>Carousel<span class="cost">$300</span></button>
-  <button class="ride-btn" data-ride="tower">  <span class="emoji">🗼</span>Drop Tower<span class="cost">$800</span></button>
-  <button class="ride-btn" data-ride="bumper"> <span class="emoji">🚗</span>Bumper<span class="cost">$400</span></button>
-  <button class="ride-btn" data-ride="coaster"><span class="emoji">🎢</span>Coaster<span class="cost">$1500</span></button>
-  <button class="ride-btn" data-ride="food">   <span class="emoji">🍔</span>Food<span class="cost">$200</span></button>
-  <button class="ride-btn" id="cancel-btn">    <span class="emoji">❌</span>Cancel<span class="cost">ESC</span></button>
+  <div id="cat-tabs"></div>
+  <div id="ride-grid"></div>
+  <button class="ride-btn" id="cancel-btn"><span class="emoji">❌</span>Cancel<span class="cost">ESC</span></button>
 </div>
 
 <!-- Legend -->
@@ -1257,12 +1280,40 @@ pondEdge.receiveShadows = true;
 // =========================================================================
 
 const RIDE_INFO = {
-  ferris:   { name: 'Ferris Wheel',  cost: 500,  capacity: 8,  income: 30, fun: 5 },
-  carousel: { name: 'Carousel',      cost: 300,  capacity: 6,  income: 15, fun: 3 },
-  tower:    { name: 'Drop Tower',    cost: 800,  capacity: 4,  income: 40, fun: 8 },
-  bumper:   { name: 'Bumper Cars',   cost: 400,  capacity: 4,  income: 20, fun: 4 },
-  coaster:  { name: 'Roller Coaster',cost: 1500, capacity: 12, income: 60, fun: 10},
-  food:     { name: 'Food Stall',    cost: 200,  capacity: 0,  income: 10, fun: 2 },
+  // === 🎠 Classic Family ===
+  ferris:   { name: 'Ferris Wheel',   cost: 500,  capacity: 8,  income: 30, fun: 5,  cat: 'family' },
+  carousel: { name: 'Carousel',       cost: 300,  capacity: 6,  income: 15, fun: 3,  cat: 'family' },
+  swing:    { name: 'Swing Ride',     cost: 600,  capacity: 10, income: 28, fun: 5,  cat: 'family' },
+  teacup:   { name: 'Tea Cups',       cost: 450,  capacity: 8,  income: 22, fun: 4,  cat: 'family' },
+  train:    { name: 'Mini Train',     cost: 700,  capacity: 12, income: 25, fun: 4,  cat: 'family' },
+  balloon:  { name: 'Balloon Ride',   cost: 900,  capacity: 6,  income: 35, fun: 6,  cat: 'family' },
+  // === 🎢 Thrill ===
+  coaster:  { name: 'Roller Coaster', cost: 1500, capacity: 12, income: 60, fun: 10, cat: 'thrill' },
+  tower:    { name: 'Drop Tower',     cost: 800,  capacity: 4,  income: 40, fun: 8,  cat: 'thrill' },
+  pendulum: { name: 'Pendulum',       cost: 1200, capacity: 8,  income: 50, fun: 9,  cat: 'thrill' },
+  loop:     { name: 'Loop Coaster',   cost: 1800, capacity: 10, income: 70, fun: 10, cat: 'thrill' },
+  pirate:   { name: 'Pirate Ship',    cost: 1100, capacity: 10, income: 45, fun: 8,  cat: 'thrill' },
+  bungee:   { name: 'Bungee Drop',    cost: 1300, capacity: 6,  income: 55, fun: 10, cat: 'thrill' },
+  // === 👶 Kids ===
+  bumper:   { name: 'Bumper Cars',    cost: 400,  capacity: 4,  income: 20, fun: 4,  cat: 'kids' },
+  playground:{name: 'Playground',     cost: 350,  capacity: 8,  income: 12, fun: 3,  cat: 'kids' },
+  boats:    { name: 'Bumper Boats',   cost: 850,  capacity: 8,  income: 30, fun: 5,  cat: 'kids' },
+  // === 🍔 Food ===
+  food:     { name: 'Food Stall',     cost: 200,  capacity: 0,  income: 10, fun: 2,  cat: 'food' },
+  icecream: { name: 'Ice Cream',      cost: 100,  capacity: 0,  income: 6,  fun: 1,  cat: 'food' },
+  popcorn:  { name: 'Popcorn',        cost: 80,   capacity: 0,  income: 5,  fun: 1,  cat: 'food' },
+  // === ✨ Specialty ===
+  haunted:  { name: 'Haunted House',  cost: 1500, capacity: 8,  income: 55, fun: 7,  cat: 'special' },
+  magic:    { name: 'Magic Show',     cost: 600,  capacity: 20, income: 25, fun: 5,  cat: 'special' },
+};
+
+// v1.7: Category metadata
+const RIDE_CATEGORIES = {
+  family:   { name: '🎠 Family',    color: '#10b981' },
+  thrill:   { name: '🎢 Thrill',    color: '#ef4444' },
+  kids:     { name: '👶 Kids',      color: '#f59e0b' },
+  food:     { name: '🍔 Food',      color: '#84cc16' },
+  special:  { name: '✨ Specialty', color: '#a855f7' },
 };
 
 const rides = [];
@@ -1600,9 +1651,466 @@ function createFoodStall(pos) {
   return { root, type: 'food', info: RIDE_INFO.food, passengers: [], update(dt) {} };
 }
 
+// =========================================================================
+//   v1.7: 14 NEW RIDES (Family / Thrill / Kids / Food / Special)
+// =========================================================================
+
+function createSwingRide(pos) {
+  const root = new BABYLON.TransformNode('swingRoot', scene);
+  root.position.copyFrom(pos);
+  // Central pole
+  const pole = BABYLON.MeshBuilder.CreateCylinder('pole', { diameter: 0.6, height: 8 }, scene);
+  pole.parent = root;
+  pole.position.y = 4;
+  pole.material = makeMat('sPoleMat', new BABYLON.Color3(0.85, 0.20, 0.45));
+  // Top hub
+  const hub = BABYLON.MeshBuilder.CreateCylinder('hub', { diameter: 1.5, height: 0.8 }, scene);
+  hub.parent = root;
+  hub.position.y = 7.5;
+  hub.rotation.z = Math.PI / 2;
+  hub.material = makeMat('sHubMat', new BABYLON.Color3(0.95, 0.85, 0.30));
+  shadowGen.addShadowCaster(pole);
+  // Spokes + swings
+  const spokes = new BABYLON.TransformNode('spokes', scene);
+  spokes.parent = root;
+  spokes.position.y = 7.5;
+  for (let i = 0; i < 10; i++) {
+    const angle = (i / 10) * Math.PI * 2;
+    const spoke = BABYLON.MeshBuilder.CreateBox('spk', { width: 5.5, height: 0.15, depth: 0.15 }, scene);
+    spoke.parent = spokes;
+    spoke.rotation.z = angle;
+    spoke.material = makeMat('spkMat', new BABYLON.Color3(0.95, 0.85, 0.30));
+    const seat = BABYLON.MeshBuilder.CreateBox('seat', { width: 0.6, height: 0.2, depth: 0.5 }, scene);
+    seat.parent = spokes;
+    seat.position.set(Math.cos(angle) * 5.5, -1.5, 0);
+    seat.material = makeMat('sSeatMat', new BABYLON.Color3(0.40, 0.80, 0.95));
+  }
+  return { root, type: 'swing', info: RIDE_INFO.swing, passengers: [], update(dt) { spokes.rotation.y += dt * 0.35; } };
+}
+
+function createTeaCups(pos) {
+  const root = new BABYLON.TransformNode('tcRoot', scene);
+  root.position.copyFrom(pos);
+  const base = BABYLON.MeshBuilder.CreateCylinder('tcBase', { diameter: 7, height: 0.6 }, scene);
+  base.parent = root;
+  base.position.y = 0.3;
+  base.material = makeMat('tcBaseMat', new BABYLON.Color3(0.95, 0.85, 0.95));
+  const spinner = new BABYLON.TransformNode('spinner', scene);
+  spinner.parent = root;
+  spinner.position.y = 0.6;
+  for (let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI * 2;
+    const cup = new BABYLON.TransformNode('cup', scene);
+    cup.parent = spinner;
+    cup.position.set(Math.cos(angle) * 2.5, 0.7, Math.sin(angle) * 2.5);
+    const body = BABYLON.MeshBuilder.CreateCylinder('cupBody', { diameter: 1.5, height: 1.2 }, scene);
+    body.parent = cup;
+    body.material = makeMat('cupMat_' + i, new BABYLON.Color3(Math.random()*0.5+0.5, Math.random()*0.5+0.3, 0.95));
+    const handle = BABYLON.MeshBuilder.CreateTorus('handle', { diameter: 1.7, thickness: 0.08, tessellation: 16 }, scene);
+    handle.parent = cup;
+    handle.position.y = 0.5;
+    handle.material = makeMat('hMat', new BABYLON.Color3(0.85, 0.85, 0.85));
+  }
+  return { root, type: 'teacup', info: RIDE_INFO.teacup, passengers: [], update(dt) { spinner.rotation.y += dt * 0.30; } };
+}
+
+function createMiniTrain(pos) {
+  const root = new BABYLON.TransformNode('trRoot', scene);
+  root.position.copyFrom(pos);
+  // Track pieces (simple oval)
+  for (let i = 0; i < 32; i++) {
+    const t = i / 32 * Math.PI * 2;
+    const sleeper = BABYLON.MeshBuilder.CreateBox('sl', { width: 0.8, height: 0.1, depth: 0.15 }, scene);
+    sleeper.parent = root;
+    sleeper.position.set(Math.cos(t) * 6, 0.05, Math.sin(t) * 6);
+    sleeper.rotation.y = -t;
+    sleeper.material = makeMat('slMat', new BABYLON.Color3(0.40, 0.25, 0.15));
+  }
+  const loco = new BABYLON.TransformNode('loco', scene);
+  loco.parent = root;
+  loco.position.y = 0.6;
+  const body = BABYLON.MeshBuilder.CreateBox('locoBody', { width: 2.5, height: 1.2, depth: 1.5 }, scene);
+  body.parent = loco;
+  body.material = makeMat('locoMat', new BABYLON.Color3(0.95, 0.30, 0.30));
+  const cabin = BABYLON.MeshBuilder.CreateBox('cabin', { width: 1, height: 1, depth: 1.4 }, scene);
+  cabin.parent = loco;
+  cabin.position.set(-0.7, 1.1, 0);
+  cabin.material = makeMat('cabinMat', new BABYLON.Color3(0.95, 0.65, 0.20));
+  const chimney = BABYLON.MeshBuilder.CreateCylinder('chimney', { diameter: 0.3, height: 0.8 }, scene);
+  chimney.parent = loco;
+  chimney.position.set(0.9, 1.1, 0);
+  chimney.material = makeMat('chMat', new BABYLON.Color3(0.20, 0.20, 0.20));
+  shadowGen.addShadowCaster(body);
+  return { root, type: 'train', info: RIDE_INFO.train, passengers: [], state: { t: 0 }, update(dt) {
+    loco.position.x = Math.cos(loco.state.t) * 6;
+    loco.position.z = Math.sin(loco.state.t) * 6;
+    loco.rotation.y = -loco.state.t + Math.PI / 2;
+    this.state.t += dt * 0.5;
+  } };
+}
+
+function createBalloon(pos) {
+  const root = new BABYLON.TransformNode('bRoot', scene);
+  root.position.copyFrom(pos);
+  // Tether base
+  const base = BABYLON.MeshBuilder.CreateCylinder('bBase', { diameter: 1.5, height: 0.3 }, scene);
+  base.parent = root;
+  base.material = makeMat('bBaseMat', new BABYLON.Color3(0.55, 0.55, 0.55));
+  // Rope
+  const rope = BABYLON.MeshBuilder.CreateCylinder('rope', { diameter: 0.05, height: 8 }, scene);
+  rope.parent = root;
+  rope.position.y = 4;
+  rope.material = makeMat('rMat', new BABYLON.Color3(0.30, 0.30, 0.30));
+  // Balloon cluster
+  for (let i = 0; i < 4; i++) {
+    const balloon = BABYLON.MeshBuilder.CreateSphere('balloon_' + i, { diameter: 2, segments: 12 }, scene);
+    balloon.parent = root;
+    const a = (i / 4) * Math.PI * 2;
+    balloon.position.set(Math.cos(a) * 1, 8 + Math.sin(a) * 0.3, Math.sin(a) * 1);
+    const colors = [[0.95,0.45,0.55], [0.45,0.85,0.95], [0.95,0.85,0.45], [0.65,0.85,0.55]];
+    balloon.material = makeMat('bM_' + i, new BABYLON.Color3(...colors[i]));
+  }
+  return { root, type: 'balloon', info: RIDE_INFO.balloon, passengers: [], state: { y: 7, t: 0 }, update(dt) {
+    this.state.t += dt * 1.5;
+    const newY = 7 + Math.sin(this.state.t) * 1.5;
+    for (const m of root.getChildMeshes()) {
+      if (m.name.startsWith('balloon_')) m.position.y = newY + Math.sin(m.position.x + this.state.t) * 0.3;
+    }
+  } };
+}
+
+function createPendulum(pos) {
+  const root = new BABYLON.TransformNode('pdRoot', scene);
+  root.position.copyFrom(pos);
+  // Frame base
+  const base = BABYLON.MeshBuilder.CreateBox('pdBase', { width: 6, height: 1, depth: 6 }, scene);
+  base.parent = root;
+  base.position.y = 0.5;
+  base.material = makeMat('pdBMat', new BABYLON.Color3(0.40, 0.40, 0.45));
+  shadowGen.addShadowCaster(base);
+  // Frame tower (4 corners)
+  for (let i = -1; i <= 1; i += 2) for (let j = -1; j <= 1; j += 2) {
+    const tower = BABYLON.MeshBuilder.CreateBox('pdT', { width: 0.5, height: 12, depth: 0.5 }, scene);
+    tower.parent = root;
+    tower.position.set(i * 2.8, 6, j * 2.8);
+    tower.material = makeMat('pdTMat', new BABYLON.Color3(0.70, 0.20, 0.30));
+  }
+  // Rotating arm
+  const arm = new BABYLON.TransformNode('arm', scene);
+  arm.parent = root;
+  arm.position.y = 12;
+  const beam = BABYLON.MeshBuilder.CreateBox('beam', { width: 12, height: 0.4, depth: 0.6 }, scene);
+  beam.parent = arm;
+  beam.material = makeMat('pBeamMat', new BABYLON.Color3(0.95, 0.30, 0.40));
+  // Passenger box at end
+  const cab = BABYLON.MeshBuilder.CreateBox('cab', { width: 2.5, height: 1.5, depth: 1.5 }, scene);
+  cab.parent = arm;
+  cab.position.y = -6;
+  cab.material = makeMat('cabMat', new BABYLON.Color3(0.95, 0.65, 0.20));
+  shadowGen.addShadowCaster(cab);
+  return { root, type: 'pendulum', info: RIDE_INFO.pendulum, passengers: [], update(dt) { arm.rotation.z = Math.sin(performance.now() * 0.001) * 0.7; } };
+}
+
+function createLoopCoaster(pos) {
+  const root = new BABYLON.TransformNode('lcRoot', scene);
+  root.position.copyFrom(pos);
+  // Track: oval with vertical loop in middle
+  const trackPts = [];
+  for (let i = 0; i <= 24; i++) {
+    const t = i / 24 * Math.PI * 2;
+    let x = Math.cos(t) * 7;
+    let y;
+    if (t > 0.7 && t < 2.5) { y = 6 - Math.sin((t - 0.7) / 1.8 * Math.PI) * 5; }
+    else { y = 1 + Math.sin(t * 2) * 0.4; }
+    const z = Math.sin(t) * 5 * Math.cos(t * 0.7);
+    trackPts.push(new BABYLON.Vector3(x, y, z));
+  }
+  for (let i = 0; i < trackPts.length; i++) {
+    const next = trackPts[(i + 1) % trackPts.length];
+    const tube = BABYLON.MeshBuilder.CreateCylinder('tcTrk', { diameter: 0.2, height: BABYLON.Vector3.Distance(trackPts[i], next) }, scene);
+    tube.parent = root;
+    tube.position = BABYLON.Vector3.Center(trackPts[i], next);
+    tube.lookAt(next);
+    tube.rotation.x += Math.PI / 2;
+    tube.material = makeMat('lcTrkMat', new BABYLON.Color3(0.45, 0.20, 0.75));
+  }
+  // Car
+  const car = new BABYLON.TransformNode('car', scene);
+  car.parent = root;
+  car.position.y = 1.5;
+  const carBody = BABYLON.MeshBuilder.CreateBox('carBody', { width: 2, height: 1, depth: 1.5 }, scene);
+  carBody.parent = car;
+  carBody.material = makeMat('carMat', new BABYLON.Color3(0.95, 0.85, 0.20));
+  shadowGen.addShadowCaster(carBody);
+  return { root, type: 'loop', info: RIDE_INFO.loop, passengers: [], state: { t: 0 }, update(dt) {
+    this.state.t += dt * 0.35;
+    const t = this.state.t;
+    const x = Math.cos(t) * 7;
+    const y = (t > 0.7 && t < 2.5) ? 6 - Math.sin((t - 0.7) / 1.8 * Math.PI) * 5 : 1.5 + Math.sin(t * 2) * 0.4;
+    const z = Math.sin(t) * 5 * Math.cos(t * 0.7);
+    car.position.set(x, y, z);
+  } };
+}
+
+function createPirateShip(pos) {
+  const root = new BABYLON.TransformNode('psRoot', scene);
+  root.position.copyFrom(pos);
+  // Base
+  const base = BABYLON.MeshBuilder.CreateBox('psBase', { width: 8, height: 0.6, depth: 4 }, scene);
+  base.parent = root;
+  base.position.y = 0.3;
+  base.material = makeMat('psBMat', new BABYLON.Color3(0.55, 0.40, 0.30));
+  // Frame towers
+  for (let i = -1; i <= 1; i += 2) {
+    const ft = BABYLON.MeshBuilder.CreateBox('psFT', { width: 0.4, height: 7, depth: 0.4 }, scene);
+    ft.parent = root;
+    ft.position.set(0, 3.5, i * 1.7);
+    ft.material = makeMat('psFtMat', new BABYLON.Color3(0.30, 0.30, 0.30));
+  }
+  // Ship (pivot group)
+  const ship = new BABYLON.TransformNode('ship', scene);
+  ship.parent = root;
+  ship.position.y = 4;
+  const hull = BABYLON.MeshBuilder.CreateBox('hull', { width: 7, height: 1.5, depth: 2.5 }, scene);
+  hull.parent = ship;
+  hull.material = makeMat('hullMat', new BABYLON.Color3(0.55, 0.30, 0.20));
+  const mast = BABYLON.MeshBuilder.CreateCylinder('mast', { diameter: 0.3, height: 4 }, scene);
+  mast.parent = ship;
+  mast.position.y = 2;
+  mast.material = makeMat('mastMat', new BABYLON.Color3(0.40, 0.25, 0.15));
+  shadowGen.addShadowCaster(hull);
+  return { root, type: 'pirate', info: RIDE_INFO.pirate, passengers: [], update(dt) {
+    ship.rotation.z = Math.sin(performance.now() * 0.0007) * 0.5;
+  } };
+}
+
+function createBungeeDrop(pos) {
+  const root = new BABYLON.TransformNode('bdRoot', scene);
+  root.position.copyFrom(pos);
+  // Tower
+  const tower = BABYLON.MeshBuilder.CreateCylinder('bdTower', { diameter: 1, height: 18 }, scene);
+  tower.parent = root;
+  tower.position.y = 9;
+  tower.material = makeMat('bdTMat', new BABYLON.Color3(0.85, 0.85, 0.90));
+  shadowGen.addShadowCaster(tower);
+  // Top crossbar
+  const crossbar = BABYLON.MeshBuilder.CreateBox('cb', { width: 3, height: 0.4, depth: 0.4 }, scene);
+  crossbar.parent = root;
+  crossbar.position.y = 17;
+  crossbar.material = makeMat('cbMat', new BABYLON.Color3(0.85, 0.25, 0.30));
+  // Capsule (rises and drops)
+  const capsule = new BABYLON.TransformNode('cap', scene);
+  capsule.parent = root;
+  const cap = BABYLON.MeshBuilder.CreateBox('cCap', { width: 1.5, height: 1.2, depth: 1.5 }, scene);
+  cap.parent = capsule;
+  cap.material = makeMat('capMat', new BABYLON.Color3(0.95, 0.30, 0.40));
+  // Rope
+  const rope = BABYLON.MeshBuilder.CreateCylinder('bdRope', { diameter: 0.05, height: 6 }, scene);
+  rope.parent = capsule;
+  rope.position.y = -3;
+  rope.material = makeMat('rMat', new BABYLON.Color3(0.20, 0.20, 0.20));
+  return { root, type: 'bungee', info: RIDE_INFO.bungee, passengers: [], state: { y: 2, t: 0 }, update(dt) {
+    this.state.t += dt * 0.4;
+    this.state.y = 2 + (Math.sin(this.state.t) + 1) * 7;
+    capsule.position.y = this.state.y;
+  } };
+}
+
+function createPlayground(pos) {
+  const root = new BABYLON.TransformNode('pgRoot', scene);
+  root.position.copyFrom(pos);
+  // Floor
+  const floor = BABYLON.MeshBuilder.CreateBox('pgFloor', { width: 6, height: 0.3, depth: 6 }, scene);
+  floor.parent = root;
+  floor.position.y = 0.15;
+  floor.material = makeMat('pgFloorMat', new BABYLON.Color3(0.95, 0.85, 0.45));
+  // Slide
+  const slide = BABYLON.MeshBuilder.CreateBox('slide', { width: 1, height: 0.2, depth: 4 }, scene);
+  slide.parent = root;
+  slide.position.set(1.5, 2, -1);
+  slide.rotation.x = -Math.PI / 4;
+  slide.material = makeMat('slMat', new BABYLON.Color3(0.30, 0.65, 0.95));
+  // Slide platform
+  const plat = BABYLON.MeshBuilder.CreateBox('plat', { width: 2, height: 0.3, depth: 1.5 }, scene);
+  plat.parent = root;
+  plat.position.set(1.5, 3.5, -1);
+  plat.material = makeMat('platMat', new BABYLON.Color3(0.55, 0.85, 0.45));
+  // Posts
+  for (let i = -1; i <= 1; i += 2) {
+    const post = BABYLON.MeshBuilder.CreateBox('pgPost', { width: 0.2, height: 4, depth: 0.2 }, scene);
+    post.parent = root;
+    post.position.set(1.5 + i * 0.8, 2, -1);
+    post.material = makeMat('pgPostMat', new BABYLON.Color3(0.95, 0.65, 0.20));
+  }
+  // Swing set
+  for (let i = -1; i <= 1; i += 2) {
+    const swing = new BABYLON.TransformNode('sw', scene);
+    swing.parent = root;
+    swing.position.set(-2, 2, i * 1.5);
+    const seat = BABYLON.MeshBuilder.CreateBox('swSeat', { width: 0.8, height: 0.1, depth: 0.5 }, scene);
+    seat.parent = swing;
+    seat.material = makeMat('swSMat', new BABYLON.Color3(0.95, 0.45, 0.30));
+  }
+  shadowGen.addShadowCaster(floor);
+  return { root, type: 'playground', info: RIDE_INFO.playground, passengers: [], update(dt) {} };
+}
+
+function createBumperBoats(pos) {
+  const root = new BABYLON.TransformNode('bbRoot', scene);
+  root.position.copyFrom(pos);
+  // Pool (cylinder)
+  const pool = BABYLON.MeshBuilder.CreateCylinder('bbPool', { diameter: 8, height: 0.4 }, scene);
+  pool.parent = root;
+  pool.position.y = 0.2;
+  const poolMat = new BABYLON.StandardMaterial('poolMat', scene);
+  poolMat.diffuseColor = new BABYLON.Color3(0.30, 0.60, 0.95);
+  poolMat.alpha = 0.7;
+  pool.material = poolMat;
+  // Boats
+  const boats = [];
+  for (let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI * 2;
+    const boat = new BABYLON.TransformNode('boat_' + i, scene);
+    boat.parent = root;
+    boat.position.set(Math.cos(angle) * 2.5, 0.5, Math.sin(angle) * 2.5);
+    boats.push({ node: boat, baseAngle: angle });
+    const hull = BABYLON.MeshBuilder.CreateBox('bbHull', { width: 0.8, height: 0.4, depth: 0.8 }, scene);
+    hull.parent = boat;
+    hull.material = makeMat('bbHMat_' + i, new BABYLON.Color3(Math.random()*0.5+0.5, Math.random()*0.5+0.3, Math.random()*0.5+0.3));
+  }
+  return { root, type: 'boats', info: RIDE_INFO.boats, passengers: [], boats, update(dt) {
+    for (const b of boats) {
+      const t = performance.now() * 0.001 + b.baseAngle;
+      b.node.position.x = Math.cos(t) * 2.5;
+      b.node.position.z = Math.sin(t) * 2.5;
+      b.node.rotation.y = -t + Math.PI / 2;
+    }
+  } };
+}
+
+function createIceCream(pos) {
+  const root = new BABYLON.TransformNode('icRoot', scene);
+  root.position.copyFrom(pos);
+  const stall = BABYLON.MeshBuilder.CreateBox('icStall', { width: 2.5, height: 2.5, depth: 2 }, scene);
+  stall.parent = root;
+  stall.position.y = 1.25;
+  stall.material = makeMat('icStallMat', new BABYLON.Color3(0.95, 0.65, 0.85));
+  // Cone display
+  for (let i = -1; i <= 1; i++) {
+    const cone = BABYLON.MeshBuilder.CreateCylinder('cone', { diameter: 0.4, height: 1.2, tessellation: 8 }, scene);
+    cone.parent = root;
+    cone.position.set(i * 0.5, 2.8, 0);
+    cone.material = makeMat('coneMat', new BABYLON.Color3(0.95, 0.85, 0.85));
+    const scoop = BABYLON.MeshBuilder.CreateSphere('scoop', { diameter: 0.6, segments: 8 }, scene);
+    scoop.parent = root;
+    scoop.position.set(i * 0.5, 3.5, 0);
+    const colors = [[0.95, 0.55, 0.65], [0.95, 0.90, 0.55], [0.55, 0.85, 0.95]];
+    scoop.material = makeMat('scoopMat', new BABYLON.Color3(...colors[i + 1]));
+  }
+  // Sign
+  const sign = BABYLON.MeshBuilder.CreateBox('icSign', { width: 2, height: 0.6, depth: 0.1 }, scene);
+  sign.parent = root;
+  sign.position.set(0, 3.5, 1.05);
+  sign.material = makeMat('icSignMat', new BABYLON.Color3(0.95, 0.95, 0.95));
+  shadowGen.addShadowCaster(stall);
+  return { root, type: 'icecream', info: RIDE_INFO.icecream, passengers: [], update(dt) {} };
+}
+
+function createPopcorn(pos) {
+  const root = new BABYLON.TransformNode('pcRoot', scene);
+  root.position.copyFrom(pos);
+  const stall = BABYLON.MeshBuilder.CreateBox('pcStall', { width: 2.5, height: 2.5, depth: 2 }, scene);
+  stall.parent = root;
+  stall.position.y = 1.25;
+  stall.material = makeMat('pcStallMat', new BABYLON.Color3(0.95, 0.45, 0.45));
+  // Popcorn box on top
+  const box = BABYLON.MeshBuilder.CreateBox('pcBox', { width: 1.2, height: 1.2, depth: 1.2 }, scene);
+  box.parent = root;
+  box.position.set(0, 2.4, 0);
+  box.material = makeMat('pcBoxMat', new BABYLON.Color3(0.95, 0.95, 0.95));
+  // Stripes (red+white pattern via torus)
+  for (let i = 0; i < 3; i++) {
+    const stripe = BABYLON.MeshBuilder.CreateBox('pcStripe', { width: 1.3, height: 0.2, depth: 1.3 }, scene);
+    stripe.parent = root;
+    stripe.position.set(0, 2.7 + i * 0.3, 0);
+    stripe.material = makeMat('pcStripeMat_' + i, i % 2 === 0 ? new BABYLON.Color3(0.95, 0.30, 0.30) : new BABYLON.Color3(0.95, 0.95, 0.95));
+  }
+  shadowGen.addShadowCaster(stall);
+  return { root, type: 'popcorn', info: RIDE_INFO.popcorn, passengers: [], update(dt) {} };
+}
+
+function createHauntedHouse(pos) {
+  const root = new BABYLON.TransformNode('hhRoot', scene);
+  root.position.copyFrom(pos);
+  // Main building
+  const body = BABYLON.MeshBuilder.CreateBox('hhBody', { width: 6, height: 5, depth: 5 }, scene);
+  body.parent = root;
+  body.position.y = 2.5;
+  body.material = makeMat('hhMat', new BABYLON.Color3(0.30, 0.20, 0.40));
+  // Roof
+  const roof = BABYLON.MeshBuilder.CreateCylinder('hhRoof', { diameter: 7, height: 3, tessellation: 4 }, scene);
+  roof.parent = root;
+  roof.position.y = 6.5;
+  roof.rotation.y = Math.PI / 4;
+  roof.material = makeMat('hhRoofMat', new BABYLON.Color3(0.20, 0.10, 0.25));
+  // Door
+  const door = BABYLON.MeshBuilder.CreateBox('hhDoor', { width: 1.2, height: 2, depth: 0.1 }, scene);
+  door.parent = root;
+  door.position.set(0, 1, 2.55);
+  door.material = makeMat('hhDoorMat', new BABYLON.Color3(0.10, 0.05, 0.15));
+  // Windows
+  for (let i = -1; i <= 1; i += 2) {
+    const win = BABYLON.MeshBuilder.CreateBox('hhWin', { width: 1, height: 1, depth: 0.1 }, scene);
+    win.parent = root;
+    win.position.set(i * 1.8, 3, 2.55);
+    win.material = makeMat('hhWinMat', new BABYLON.Color3(0.95, 0.85, 0.30));
+  }
+  shadowGen.addShadowCaster(body);
+  return { root, type: 'haunted', info: RIDE_INFO.haunted, passengers: [], update(dt) {
+    // Slight flicker by adjusting emissive on body
+    const m = body.material;
+    if (m && m.diffuseColor) {
+      const f = (Math.sin(performance.now() * 0.005) + 1) * 0.05;
+      m.emissiveColor = new BABYLON.Color3(f * 0.3, 0, f * 0.4);
+    }
+  } };
+}
+
+function createMagicShow(pos) {
+  const root = new BABYLON.TransformNode('msRoot', scene);
+  root.position.copyFrom(pos);
+  // Tent (cone)
+  const tent = BABYLON.MeshBuilder.CreateCylinder('msTent', { diameter: 6, height: 5, tessellation: 8 }, scene);
+  tent.parent = root;
+  tent.position.y = 2.5;
+  tent.material = makeMat('msTentMat', new BABYLON.Color3(0.95, 0.20, 0.30));
+  // Stripes (white)
+  for (let i = 0; i < 4; i++) {
+    const stripe = BABYLON.MeshBuilder.CreateBox('msStripe', { width: 1, height: 5, depth: 6.1 }, scene);
+    stripe.parent = root;
+    const a = (i / 8) * Math.PI * 2;
+    stripe.position.set(Math.cos(a) * 3, 2.5, Math.sin(a) * 3);
+    stripe.rotation.y = -a;
+    stripe.material = makeMat('msStripeMat', new BABYLON.Color3(0.95, 0.95, 0.95));
+  }
+  // Star on top
+  const star = BABYLON.MeshBuilder.CreatePolyhedron('msStar', { type: 1, size: 0.5 }, scene);
+  star.parent = root;
+  star.position.y = 5.6;
+  star.material = makeMat('msStarMat', new BABYLON.Color3(0.95, 0.85, 0.20));
+  return { root, type: 'magic', info: RIDE_INFO.magic, passengers: [], update(dt) { star.rotation.y += dt * 1.5; } };
+}
+
 const rideFactories = {
+  // Original (v1.0)
   ferris: createFerrisWheel, carousel: createCarousel, tower: createDropTower,
   bumper: createBumperCars, coaster: createRollerCoaster, food: createFoodStall,
+  // v1.7 additions
+  swing: createSwingRide, teacup: createTeaCups, train: createMiniTrain,
+  balloon: createBalloon, pendulum: createPendulum, loop: createLoopCoaster,
+  pirate: createPirateShip, bungee: createBungeeDrop, playground: createPlayground,
+  boats: createBumperBoats, icecream: createIceCream, popcorn: createPopcorn,
+  haunted: createHauntedHouse, magic: createMagicShow,
 };
 
 // =========================================================================
@@ -1613,10 +2121,10 @@ const visitors = [];
 
 // v1.5: Visitor personality types
 const VISITOR_TYPES = {
-  kid:     { name: 'เด็ก',     emoji: '🧒', spawnWeight: 25, prefers: ['bumper', 'carousel', 'ferris'], tipMult: 0.5,  patienceMult: 0.5, maxRides: [2,3], decayMult: 1.4, colorTint: [0.95, 0.85, 0.40] },
-  family:  { name: 'ครอบครัว', emoji: '👨‍👩‍👧', spawnWeight: 35, prefers: ['food', 'ferris', 'carousel'], tipMult: 1.2,  patienceMult: 1.3, maxRides: [4,6], decayMult: 0.8, colorTint: [0.40, 0.85, 0.50] },
-  couple:  { name: 'คู่รัก',   emoji: '💑', spawnWeight: 25, prefers: ['tower', 'coaster', 'ferris'], tipMult: 1.5,  patienceMult: 1.0, maxRides: [3,4], decayMult: 1.0, colorTint: [0.95, 0.40, 0.65] },
-  rich:    { name: 'รวย',     emoji: '💰', spawnWeight: 15, prefers: ['coaster', 'tower', 'ferris'], tipMult: 2.5,  patienceMult: 0.7, maxRides: [5,7], decayMult: 0.9, colorTint: [0.95, 0.60, 0.30] },
+  kid:     { name: 'เด็ก',     emoji: '🧒', spawnWeight: 25, prefers: ['bumper', 'carousel', 'playground', 'teacup', 'ferris'], tipMult: 0.5,  patienceMult: 0.5, maxRides: [2,3], decayMult: 1.4, colorTint: [0.95, 0.85, 0.40] },
+  family:  { name: 'ครอบครัว', emoji: '👨‍👩‍👧', spawnWeight: 35, prefers: ['food', 'ferris', 'icecream', 'popcorn', 'carousel', 'train'], tipMult: 1.2,  patienceMult: 1.3, maxRides: [4,6], decayMult: 0.8, colorTint: [0.40, 0.85, 0.50] },
+  couple:  { name: 'คู่รัก',   emoji: '💑', spawnWeight: 25, prefers: ['tower', 'coaster', 'ferris', 'balloon', 'magic'], tipMult: 1.5,  patienceMult: 1.0, maxRides: [3,4], decayMult: 1.0, colorTint: [0.95, 0.40, 0.65] },
+  rich:    { name: 'รวย',     emoji: '💰', spawnWeight: 15, prefers: ['loop', 'coaster', 'pendulum', 'bungee', 'pirate', 'haunted'], tipMult: 2.5,  patienceMult: 0.7, maxRides: [5,7], decayMult: 0.9, colorTint: [0.95, 0.60, 0.30] },
 };
 
 function pickRandomVisitorType() {
@@ -1943,8 +2451,7 @@ const WEATHER_ORDER = ['sunny', 'cloudy', 'rain', 'storm', 'snow'];
 const ACHIEVEMENTS = {
   // Build
   first_ride:   { id: 'first_ride',   icon: '🎡', name: 'ขึ้นรถม้าหมุนครั้งแรก',     cat: 'build',  desc: 'วางเครื่องเล่นแรกของคุณ' },
-  full_set:     { id: 'full_set',     icon: '🎢', name: 'ครบทุกเครื่อง',           cat: 'build',  desc: 'มีครบ 6 เครื่องเล่น (Ferris/Carousel/Tower/Bumper/Coaster/Food)' },
-  tycoon_10:    { id: 'tycoon_10',    icon: '🏗️', name: 'นักพัฒนา',              cat: 'build',  desc: 'วางเครื่องเล่นครบ 10 ชิ้น' },
+  full_set:     { id: 'full_set',     icon: '🎢', name: 'ครบทุกเครื่อง',           cat: 'build',  desc: 'มีครบ 20 เครื่องเล่นจาก 5 หมวด' },  tycoon_10:    { id: 'tycoon_10',    icon: '🏗️', name: 'นักพัฒนา',              cat: 'build',  desc: 'วางเครื่องเล่นครบ 10 ชิ้น' },
   // Economy
   first_dollar: { id: 'first_dollar', icon: '💵', name: 'เงินแรก',                  cat: 'econ',   desc: 'มีรายได้ $100 แรก' },
   thousandaire: { id: 'thousandaire', icon: '💰', name: 'เศรษฐีพัน',               cat: 'econ',   desc: 'รายได้รวม $1,000' },
@@ -1983,7 +2490,7 @@ function checkAchievements() {
   const active = visitors.filter(v => v.state !== 'gone' && v.state !== 'leaving');
   // Build
   if (rides.length >= 1)         unlockAchievement('first_ride');
-  if (Object.keys(rideTypeCount).length >= 6) unlockAchievement('full_set');
+  if (Object.keys(rideTypeCount).length >= 20) unlockAchievement('full_set');
   if (rides.length >= 10)        unlockAchievement('tycoon_10');
   // Economy
   if (game.totalIncome >= 100)   unlockAchievement('first_dollar');
@@ -3998,6 +4505,7 @@ function updateUI() {
     const cost = RIDE_INFO[btn.dataset.ride].cost;
     btn.classList.toggle('disabled', game.money < cost);
   });
+  if (typeof refreshOwnedBadges === 'function') refreshOwnedBadges();  // v1.7
   updatePlotUI();  // v1.4: keep plot button states fresh
 }
 
@@ -4010,24 +4518,77 @@ function showHint(msg, duration = 2200) {
   hintTimer = setTimeout(() => h.classList.remove('show'), duration);
 }
 
-// Toolbar
-document.querySelectorAll('.ride-btn[data-ride]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const type = btn.dataset.ride;
-    if (game.money < RIDE_INFO[type].cost) {
-      showHint(`❌ เงินไม่พอสำหรับ ${RIDE_INFO[type].name}`);
-      return;
-    }
-    if (game.selectedRideType === type) { deselectRide(); return; }
-    document.querySelectorAll('.ride-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    game.selectedRideType = type;
-    makeGhost(type);
-    showHint(`คลิกบนพื้น เพื่อวาง ${RIDE_INFO[type].name}`);
-    playClick();
+// v1.7: Category-aware toolbar renderer
+let currentCategory = 'family';
+function renderCatTabs() {
+  const tabs = document.getElementById('cat-tabs');
+  if (!tabs) return;
+  tabs.innerHTML = Object.entries(RIDE_CATEGORIES).map(([key, c]) => {
+    const count = Object.values(RIDE_INFO).filter(r => r.cat === key).length;
+    return `<button class="cat-tab ${key === currentCategory ? 'active' : ''}" data-cat="${key}" style="--cat-color: ${c.color}">${c.name}<span class="cat-count">${count}</span></button>`;
+  }).join('');
+  tabs.querySelectorAll('.cat-tab').forEach(t => t.addEventListener('click', () => {
+    currentCategory = t.dataset.cat;
+    renderCatTabs();
+    renderRideGrid();
+  }));
+}
+function renderRideGrid() {
+  const grid = document.getElementById('ride-grid');
+  if (!grid) return;
+  const items = Object.entries(RIDE_INFO).filter(([k, r]) => r.cat === currentCategory);
+  grid.innerHTML = items.map(([key, r]) => {
+    const owned = rideTypeCount[key] || 0;
+    return `<button class="ride-btn" data-ride="${key}"><span class="emoji">${getRideEmoji(key)}</span>${r.name}<span class="cost">$${r.cost}</span>${owned > 0 ? `<span class="owned-badge">${owned}</span>` : ''}</button>`;
+  }).join('');
+  refreshOwnedBadges();
+  // Re-bind click handlers
+  grid.querySelectorAll('.ride-btn[data-ride]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const type = btn.dataset.ride;
+      if (game.money < RIDE_INFO[type].cost) {
+        showHint(`❌ เงินไม่พอสำหรับ ${RIDE_INFO[type].name}`);
+        return;
+      }
+      if (game.selectedRideType === type) { deselectRide(); return; }
+      grid.querySelectorAll('.ride-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      game.selectedRideType = type;
+      makeGhost(type);
+      showHint(`คลิกบนพื้น เพื่อวาง ${RIDE_INFO[type].name}`);
+      playClick();
+    });
   });
-});
+  // sync disabled state only (no recursion with updateUI)
+  document.querySelectorAll('.ride-btn[data-ride]').forEach(btn => {
+    const cost = RIDE_INFO[btn.dataset.ride].cost;
+    btn.classList.toggle('disabled', game.money < cost);
+  });
+}
+function getRideEmoji(key) {
+  const map = { ferris:'🎡', carousel:'🎠', swing:'🎠', teacup:'🍵', train:'🚂', balloon:'🎈', coaster:'🎢', tower:'🗼', pendulum:'🔄', loop:'🌀', pirate:'🏴\u200d☠️', bungee:'🎯', bumper:'🚗', playground:'🛝', boats:'🚤', food:'🍔', icecream:'🍦', popcorn:'🍿', haunted:'👻', magic:'🎭' };
+  return map[key] || '✨';
+}
+renderCatTabs();
+renderRideGrid();
 document.getElementById('cancel-btn').addEventListener('click', () => deselectRide());
+// v1.7: re-render owned badges after placement (no recursion: renderRideGrid does NOT call updateUI)
+function refreshOwnedBadges() {
+  document.querySelectorAll('.ride-btn[data-ride]').forEach(btn => {
+    const owned = rideTypeCount[btn.dataset.ride] || 0;
+    let badge = btn.querySelector('.owned-badge');
+    if (owned > 0) {
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'owned-badge';
+        btn.appendChild(badge);
+      }
+      badge.textContent = owned;
+    } else if (badge) {
+      badge.remove();
+    }
+  });
+}
 function deselectRide() {
   game.selectedRideType = null;
   disposeGhost();
