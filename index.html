@@ -365,6 +365,7 @@
   #leader-toggle { left: calc(50% + 116px); }
   #campaign-toggle { left: calc(50% + 156px); }
   #deco-toggle { left: calc(50% + 196px); }
+  #farm-toggle { left: calc(50% + 236px); }
   .campaign-indicator {
     position: absolute; top: 16px; left: calc(50% + 196px);
     height: 36px; padding: 0 10px; border-radius: 18px;
@@ -404,6 +405,127 @@
   }
   .campaign-btn:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); cursor: not-allowed; }
   .campaign-btn:not(:disabled):hover { transform: translateY(-1px); }
+
+  /* === v1.8: Farm === */
+  .farm-tabs {
+    display: flex; gap: 4px; justify-content: center;
+    margin: 14px 0 12px;
+  }
+  .farm-tab {
+    padding: 7px 14px; font-size: 13px; font-weight: 700;
+    background: rgba(255,255,255,0.08); color: #fff;
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 16px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .farm-tab:hover { background: rgba(255,255,255,0.18); }
+  .farm-tab.active {
+    background: linear-gradient(135deg, #84cc16, #65a30d);
+    border-color: #fff; box-shadow: 0 0 12px rgba(132,204,22,0.4);
+  }
+  .farm-content { min-height: 280px; }
+
+  /* Garden grid */
+  .farm-garden { padding: 8px 4px; }
+  .farm-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 8px; margin-bottom: 12px;
+  }
+  .farm-cell {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 8px 6px; cursor: pointer;
+    display: flex; flex-direction: column; gap: 4px; align-items: center;
+    transition: all 0.15s; min-height: 84px;
+  }
+  .farm-cell:hover { background: rgba(255,255,255,0.12); transform: translateY(-1px); }
+  .farm-cell.ready {
+    background: rgba(132,204,22,0.15); border-color: rgba(132,204,22,0.4);
+    box-shadow: 0 0 10px rgba(132,204,22,0.3);
+  }
+  .farm-emoji { font-size: 26px; line-height: 1; }
+  .farm-label { font-size: 10px; color: rgba(255,255,255,0.7); }
+  .farm-progress {
+    width: 100%; height: 5px;
+    background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;
+  }
+  .farm-bar {
+    height: 100%; background: linear-gradient(90deg, #84cc16, #fbbf24);
+    transition: width 0.3s;
+  }
+  .farm-help { font-size: 10px; color: rgba(255,255,255,0.5); text-align: center; margin-top: 4px; }
+
+  /* Crop picker */
+  .farm-picker { padding: 6px 4px; }
+  .picker-back {
+    background: rgba(255,255,255,0.08); color: #fff;
+    padding: 6px 10px; border-radius: 6px;
+    cursor: pointer; display: inline-block;
+    font-size: 12px; margin-bottom: 10px;
+  }
+  .picker-back:hover { background: rgba(255,255,255,0.15); }
+  .crop-picker-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+  }
+  .crop-pick-btn {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 10px 6px; cursor: pointer;
+    color: #fff; text-align: center;
+  }
+  .crop-pick-btn:hover {
+    background: rgba(132,204,22,0.15); border-color: rgba(132,204,22,0.4);
+  }
+  .crop-pick-emoji { font-size: 28px; margin-bottom: 4px; }
+  .crop-pick-name { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+  .crop-pick-info { font-size: 9px; color: rgba(255,255,255,0.6); }
+
+  /* Pond */
+  .farm-pond { text-align: center; padding: 24px 8px; }
+  .farm-emoji-big { font-size: 60px; margin-bottom: 12px; }
+  .farm-pond p { font-size: 13px; color: rgba(255,255,255,0.85); margin: 8px 0; }
+  .farm-pond .farm-progress { max-width: 280px; margin: 14px auto; }
+  .farm-action-btn {
+    background: linear-gradient(135deg, #06b6d4, #0284c7);
+    color: #fff; font-weight: 700; font-size: 14px;
+    padding: 10px 24px; border: none; border-radius: 8px;
+    cursor: pointer; margin-top: 16px;
+  }
+  .farm-action-btn:hover { transform: translateY(-1px); }
+  .farm-locked { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 8px; }
+
+  /* Cow */
+  .farm-cows { padding: 6px 4px; }
+  .farm-stats {
+    font-size: 13px; color: rgba(255,255,255,0.85);
+    margin-bottom: 12px; text-align: center;
+  }
+  .farm-empty {
+    text-align: center; font-size: 13px; color: rgba(255,255,255,0.5);
+    padding: 28px 0;
+  }
+  .farm-cow-list {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    margin-bottom: 14px;
+  }
+  .farm-cow {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px; padding: 8px;
+  }
+  .cow-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .cow-emoji { font-size: 24px; }
+  .cow-name { font-size: 12px; font-weight: 700; color: #fff; }
+  .cow-info { font-size: 10px; color: rgba(255,255,255,0.7); text-align: center; margin-top: 4px; }
+  .cow-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff; font-weight: 700; font-size: 10px;
+    padding: 4px 8px; border: none; border-radius: 5px; cursor: pointer;
+  }
+  .cow-btn:hover { transform: translateY(-1px); }
+  .farm-buy-btn {
+    width: 100%; padding: 10px;
+    background: linear-gradient(135deg, #84cc16, #65a30d);
+    color: #fff; font-weight: 700; font-size: 13px;
+    border: none; border-radius: 8px; cursor: pointer;
+  }
+  .farm-buy-btn:hover { transform: translateY(-1px); }
 
   /* === Bottom-left legend === */
   #legend {
@@ -760,10 +882,26 @@
 <button id="leader-toggle" class="topbar-btn" title="ดู Leaderboard">🏆</button>
 <button id="campaign-toggle" class="topbar-btn" title="Marketing Campaigns">📺</button>
 <button id="deco-toggle" class="topbar-btn" title="Decoration Shop">🌳</button>
+<button id="farm-toggle" class="topbar-btn" title="Farm">🚜</button>
 <div id="campaign-indicator" class="campaign-indicator"></div>
 
 <!-- Hint banner -->
 <div id="hint">Click on the ground to place 🎡</div>
+
+<!-- v1.8: Farm modal -->
+<div id="farm-modal" class="manage-modal">
+  <div class="manage-box" style="max-width: 640px;">
+    <h2>🚜 Farm</h2>
+    <div class="sub">ปลูกผัก ตกปลา เลี้ยวัว ทำกิน</div>
+    <div id="farm-tabs" class="farm-tabs">
+      <button class="farm-tab active" data-tab="garden">🌱 สวน</button>
+      <button class="farm-tab" data-tab="pond">🎣 บ่อปลา</button>
+      <button class="farm-tab" data-tab="cow">🐄 วัว</button>
+    </div>
+    <div id="farm-content" class="farm-content"></div>
+    <button class="close-btn" id="farm-close">ปิด</button>
+  </div>
+</div>
 
 <!-- v1.6: Decoration Shop modal -->
 <div id="deco-modal" class="manage-modal">
@@ -2896,6 +3034,12 @@ const game = {
   rideReviews: {},              // {rideId: [{stars, type, text, day, isPreferred}]}
   decorations: [],              // [{id, type, x, z}] placed items
   activeCampaign: null,         // {type, expiresDay, ...} from MARKETING_CAMPAIGNS
+  // v1.8 — Farm: Garden (3x3) + Pond + Cows
+  farm: {
+    garden: Array(9).fill(null), // each cell: {crop, plantedAt, growMs, ready}
+    pond: { casting: false, castAt: 0, catchMs: 0, catchValue: 0 },
+    cows: [],                    // [{boughtAt, lastMilkAt, name}]
+  },
 };
 
 // v1.6: Visitor review templates per personality
@@ -3144,7 +3288,270 @@ function cancelDecoration() {
   selectedDecoration = null;
 }
 
+// =========================================================================
+//                          v1.8: FARM SYSTEM
+// =========================================================================
+
+const CROPS = {
+  carrot:  { name: 'แครอท',   emoji: '🥕', seedCost: 10, growMs: 30000, harvestValue: 25,  color: '#fb923c' },
+  tomato:  { name: 'มะเขือเทศ', emoji: '🍅', seedCost: 25, growMs: 60000, harvestValue: 60,  color: '#ef4444' },
+  pumpkin: { name: 'ฟักทอง',  emoji: '🎃', seedCost: 60, growMs: 120000, harvestValue: 160, color: '#f97316' },
+};
+
+const COW_NAMES = ['น้องมอม','น้องดำ','น้องแดง','น้องโซดา','น้องมาเฟ','น้องเซียง','น้องตังเม','น้องลุง','น้องใหญ่','น้องนิ่ม'];
+
+function plantCrop(cellIndex, cropKey) {
+  const crop = CROPS[cropKey];
+  if (!crop) return false;
+  if (game.money < crop.seedCost) {
+    showHint(`❌ เงินไม่พอ (ต้องการ $${crop.seedCost})`);
+    return false;
+  }
+  if (game.farm.garden[cellIndex]) {
+    showHint(`❌ แปลงนี้ไม่ว่าง`);
+    return false;
+  }
+  game.money -= crop.seedCost;
+  game.farm.garden[cellIndex] = {
+    crop: cropKey,
+    plantedAt: performance.now(),
+    growMs: crop.growMs,
+    ready: false,
+  };
+  showHint(`🌱 ปลูก ${crop.name} แล้ว รอ ${Math.round(crop.growMs / 1000)} วิ`, 2000);
+  playClick();
+  updateFarmUIForce();
+  updateUI();
+  return true;
+}
+
+function harvestCrop(cellIndex) {
+  const cell = game.farm.garden[cellIndex];
+  if (!cell || !cell.ready) return false;
+  const crop = CROPS[cell.crop];
+  game.money += crop.harvestValue;
+  game.farm.garden[cellIndex] = null;
+  showHint(`🎉 เก็บ ${crop.name} ได้ $${crop.harvestValue}!`, 2500);
+  spawnConfetti(20);
+  playStarUp();
+  updateFarmUIForce();
+  updateUI();
+  return true;
+}
+
+function castFishing() {
+  if (game.farm.pond.casting) {
+    showHint(`🎣 เชือกยังถูกแล่งอยู่`);
+    return false;
+  }
+  const catchMs = 30000 + Math.random() * 60000;  // 30-90s
+  const catchValue = 30 + Math.floor(Math.random() * 70) * 1;  // $30-$100
+  game.farm.pond = { casting: true, castAt: performance.now(), catchMs, catchValue };
+  showHint(`🎣 ตกปลา… รอ ${Math.round(catchMs/1000)} วิ`, 2000);
+  playClick();
+  updateFarmUIForce();
+  return true;
+}
+
+function collectFish() {
+  const pond = game.farm.pond;
+  if (!pond.casting) return false;
+  game.money += pond.catchValue;
+  game.farm.pond = { casting: false, castAt: 0, catchMs: 0, catchValue: 0 };
+  showHint(`🐟 ได้ปลา ขายได้ $${pond.catchValue}!`, 2500);
+  spawnConfetti(15);
+  playStarUp();
+  updateFarmUIForce();
+  updateUI();
+  return true;
+}
+
+function buyCow() {
+  const cowCost = 200;
+  if (game.money < cowCost) {
+    showHint(`❌ เงินไม่พอ (ต้องการ $${cowCost})`);
+    return false;
+  }
+  game.money -= cowCost;
+  const now = performance.now();
+  game.farm.cows.push({
+    name: COW_NAMES[Math.floor(Math.random() * COW_NAMES.length)],
+    boughtAt: now,
+    lastMilkAt: now,
+  });
+  showHint(`🐄 ซื้อวัวตัวใหม่! $${cowCost}`, 2500);
+  playClick();
+  updateFarmUIForce();
+  updateUI();
+  return true;
+}
+
+function collectMilk(cowIndex) {
+  const cow = game.farm.cows[cowIndex];
+  if (!cow) return false;
+  const elapsed = performance.now() - cow.lastMilkAt;
+  const readyIn = 60000;
+  if (elapsed < readyIn) {
+    showHint(`⏰ ยังไม่ถึงเวลารีดนม`);
+    return false;
+  }
+  const milkValue = 50;
+  game.money += milkValue;
+  cow.lastMilkAt = performance.now();
+  showHint(`🥛 ได้นมจาก ${cow.name} $${milkValue}!`, 2500);
+  spawnConfetti(8);
+  playStarUp();
+  updateFarmUIForce();
+  updateUI();
+  return true;
+}
+
+function getCellState(cellIndex) {
+  const cell = game.farm.garden[cellIndex];
+  if (!cell) return { emoji: '➕', label: 'ว่าง', progress: 0, ready: false };
+  const crop = CROPS[cell.crop];
+  const elapsed = performance.now() - cell.plantedAt;
+  const progress = Math.min(1, elapsed / cell.growMs);
+  if (progress >= 1) {
+    return { emoji: crop.emoji, label: crop.name, progress: 1, ready: true };
+  }
+  return { emoji: '🌱', label: crop.name + ' ...', progress, ready: false };
+}
+
+function tickFarm() {
+  if (!game.farm) return;
+  // Auto-mark ready crops
+  let changed = false;
+  for (let i = 0; i < game.farm.garden.length; i++) {
+    const cell = game.farm.garden[i];
+    if (cell && !cell.ready) {
+      const elapsed = performance.now() - cell.plantedAt;
+      if (elapsed >= cell.growMs) { cell.ready = true; changed = true; }
+    }
+  }
+  if (changed && typeof updateFarmUI === 'function' && document.getElementById('farm-modal').classList.contains('show')) {
+    updateFarmUI();
+  }
+}
+
 // v1.6: Decoration Shop modal handlers
+// v1.8: Farm modal handlers
+let currentFarmTab = 'garden';
+document.getElementById('farm-toggle').addEventListener('click', () => {
+  document.getElementById('farm-modal').classList.add('show');
+  renderFarmTab();
+  playClick();
+});
+document.getElementById('farm-close').addEventListener('click', () => {
+  document.getElementById('farm-modal').classList.remove('show');
+  playClick();
+});
+document.querySelectorAll('.farm-tab').forEach(t => t.addEventListener('click', () => {
+  currentFarmTab = t.dataset.tab;
+  document.querySelectorAll('.farm-tab').forEach(b => b.classList.remove('active'));
+  t.classList.add('active');
+  renderFarmTab();
+  playClick();
+}));
+
+function renderFarmTab() {
+  const c = document.getElementById('farm-content');
+  if (!c) return;
+  if (currentFarmTab === 'garden') {
+    c.innerHTML = `
+      <div class="farm-garden">
+        <div class="farm-grid">
+          ${game.farm.garden.map((cell, i) => {
+            const s = getCellState(i);
+            const hasCrop = cell !== null;
+            const onclick = hasCrop
+              ? (s.ready ? `harvestCrop(${i})` : `void(0)`)
+              : `openCropPicker(${i})`;
+            return `<div class="farm-cell ${s.ready ? 'ready' : ''}" onclick="${onclick}">
+              <div class="farm-emoji">${s.emoji}</div>
+              <div class="farm-progress"><div class="farm-bar" style="width:${(s.progress*100).toFixed(0)}%"></div></div>
+              <div class="farm-label">${s.label}</div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div class="farm-help">คลิกช่องว่างเพื่อปลูก คลิกช่องที่โตแล้วเพื่อเก็บ</div>
+      </div>`;
+  } else if (currentFarmTab === 'pond') {
+    const p = game.farm.pond;
+    let html;
+    if (!p.casting) {
+      html = `<div class="farm-pond">
+        <div class="farm-emoji-big">🎣</div>
+        <p>ตกปลารอ $30-$100 ต่อครั้ง</p>
+        <button class="farm-action-btn" onclick="castFishing()">📽️ แล่เบ็ด</button>
+      </div>`;
+    } else {
+      const elapsed = performance.now() - p.castAt;
+      const progress = Math.min(1, elapsed / p.catchMs);
+      const secsLeft = Math.max(0, Math.ceil((p.catchMs - elapsed) / 1000));
+      html = `<div class="farm-pond">
+        <div class="farm-emoji-big">🐟</div>
+        <p>รออีก <strong>${secsLeft}</strong> วิ…</p>
+        <div class="farm-progress"><div class="farm-bar" style="width:${(progress*100).toFixed(0)}%"></div></div>
+        ${progress >= 1 ? `<button class="farm-action-btn" onclick="collectFish()">🐟 เก็บปลา ($${p.catchValue})</button>` : '<div class="farm-locked">⏳ ยังไม่ถึงเวลา</div>'}
+      </div>`;
+    }
+    c.innerHTML = html;
+  } else if (currentFarmTab === 'cow') {
+    let cowsHtml = game.farm.cows.length === 0
+      ? '<div class="farm-empty">🐄 ยังไม่มีวัว</div>'
+      : '<div class="farm-cow-list">' + game.farm.cows.map((cow, i) => {
+          const elapsed = performance.now() - cow.lastMilkAt;
+          const progress = Math.min(1, elapsed / 60000);
+          const secsLeft = Math.max(0, Math.ceil((60000 - elapsed) / 1000));
+          return `<div class="farm-cow">
+            <div class="cow-head">
+              <span class="cow-emoji">🐄</span>
+              <span class="cow-name">${cow.name}</span>
+            </div>
+            <div class="farm-progress"><div class="farm-bar" style="width:${(progress*100).toFixed(0)}%"></div></div>
+            <div class="cow-info">${progress >= 1 ? `<button class="cow-btn" onclick="collectMilk(${i})">🥛 รีดนม ($50)</button>` : `<span>⏳ อีก ${secsLeft} วิ</span>`}</div>
+          </div>`;
+        }).join('') + '</div>';
+    c.innerHTML = `
+      <div class="farm-cows">
+        <div class="farm-stats">🐄 มี <strong>${game.farm.cows.length}</strong> ตัว</div>
+        ${cowsHtml}
+        <button class="farm-buy-btn" onclick="buyCow()">🐄 ซื้อวัวตัวใหม่ ($200)</button>
+      </div>`;
+  }
+}
+
+let _cropPickerOpen = null;
+function openCropPicker(cellIndex) {
+  if (game.farm.garden[cellIndex]) return;
+  _cropPickerOpen = cellIndex;
+  const c = document.getElementById('farm-content');
+  const list = Object.entries(CROPS).map(([k, cr]) =>
+    `<button class="crop-pick-btn" onclick="plantCrop(${cellIndex}, '${k}')">
+      <div class="crop-pick-emoji">${cr.emoji}</div>
+      <div class="crop-pick-name">${cr.name}</div>
+      <div class="crop-pick-info">🌱 $${cr.seedCost} · ⏱️ ${Math.round(cr.growMs/1000)} วิ · 💰 $${cr.harvestValue}</div>
+    </button>`
+  ).join('');
+  c.innerHTML = `
+    <div class="farm-picker">
+      <div class="picker-back" onclick="renderFarmTab()">↩️ กลับ</div>
+      <h3>เลือกพืช</h3>
+      <div class="crop-picker-grid">${list}</div>
+    </div>`;
+}
+
+function updateFarmUI() {
+  if (!document.getElementById('farm-modal').classList.contains('show')) return;
+  renderFarmTab();
+}
+function updateFarmUIForce() {
+  renderFarmTab();
+}
+// Auto-tick farm every 250ms
+setInterval(tickFarm, 250);
+
 document.getElementById('deco-toggle').addEventListener('click', () => {
   renderDecoShop();
   document.getElementById('deco-modal').classList.add('show');
