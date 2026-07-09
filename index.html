@@ -131,6 +131,27 @@
   #ride-info.show { opacity: 1; }
   #ride-info .name { font-weight: 700; font-size: 14px; color: #FFD66B; margin-bottom: 4px; }
   #ride-info .row { display: flex; justify-content: space-between; gap: 8px; opacity: 0.85; }
+  #ride-info .health-row { margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1); }
+  #ride-fix-btn {
+    margin-top: 8px; width: 100%;
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    color: #fff; border: none; padding: 7px 10px; font-size: 12px;
+    font-weight: 700; border-radius: 6px; cursor: pointer;
+    transition: transform 0.15s;
+  }
+  #ride-fix-btn:hover { transform: translateY(-1px); }
+  /* v1.4: ride smoke particles */
+  .ride-smoke {
+    position: fixed; z-index: 5; pointer-events: none;
+    font-size: 32px; color: rgba(100,100,100,0.7);
+    animation: ride-smoke-rise 2.5s ease-out forwards;
+    transform: translate(-50%, -50%);
+  }
+  @keyframes ride-smoke-rise {
+    0% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.5); }
+    50% { opacity: 0.5; transform: translate(-50%, -100%) scale(1.2); }
+    100% { opacity: 0; transform: translate(-50%, -200%) scale(1.8); }
+  }
 
   /* === Hint === */
   #hint {
@@ -272,6 +293,16 @@
     display: flex; align-items: center; justify-content: center;
   }
   #sound-toggle:hover { background: rgba(40,45,60,0.9); }
+  /* === v1.4: Topbar buttons === */
+  .topbar-btn {
+    position: absolute; top: 16px; background: rgba(20, 25, 40, 0.78); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 50%; width: 44px; height: 44px;
+    color: #fff; font-size: 20px; cursor: pointer; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .topbar-btn:hover { background: rgba(40,45,60,0.9); }
+  #expand-toggle { left: calc(50% + 60px); }
 
   /* === Bottom-left legend === */
   #legend {
@@ -343,6 +374,83 @@
   #weather-indicator .wi-info { display: flex; flex-direction: column; }
   #weather-indicator .wi-name { font-weight: 600; }
   #weather-indicator .wi-stats { font-size: 10px; opacity: 0.7; }
+  /* v1.4: Weather forecast chips */
+  .wi-forecast {
+    display: flex; gap: 4px; margin-left: 8px;
+    padding-left: 8px; border-left: 1px solid rgba(255,255,255,0.15);
+  }
+  .wi-forecast-chip {
+    font-size: 16px; opacity: 0.55; transition: opacity 0.2s, transform 0.2s;
+    cursor: default;
+  }
+  .wi-forecast-chip:hover { opacity: 1; transform: scale(1.2); }
+
+  /* === v1.4: Quest panel === */
+  .quest-panel {
+    position: absolute; bottom: 90px; left: 16px; z-index: 10;
+    background: rgba(20, 25, 40, 0.85); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
+    padding: 10px 12px; min-width: 260px; max-width: 320px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    transition: all 0.3s;
+  }
+  .quest-panel.quest-ready {
+    border-color: #FFD66B;
+    box-shadow: 0 4px 20px rgba(255,215,107,0.35);
+    animation: quest-pulse 1.5s ease-in-out infinite;
+  }
+  .quest-panel.quest-claimed {
+    border-color: #84cc16; opacity: 0.65;
+  }
+  @keyframes quest-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
+  .quest-icon { font-size: 28px; line-height: 1; }
+  .quest-body { flex: 1; min-width: 0; }
+  .quest-label { font-size: 12px; color: #fff; font-weight: 600; margin-bottom: 4px; }
+  .quest-progress-bar {
+    height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px;
+    overflow: hidden; margin-bottom: 3px;
+  }
+  .quest-progress-fill {
+    height: 100%; background: linear-gradient(90deg, #FFD66B, #ff8a65);
+    border-radius: 3px; transition: width 0.4s ease;
+  }
+  .quest-panel.quest-ready .quest-progress-fill {
+    background: linear-gradient(90deg, #FFD66B, #84cc16);
+  }
+  .quest-meta { font-size: 10px; opacity: 0.7; }
+  .quest-panel.quest-claimed .quest-meta { color: #84cc16; }
+  .quest-reward {
+    font-size: 13px; font-weight: 700; color: #FFD66B;
+    text-align: center; min-width: 50px;
+  }
+  .quest-panel.quest-claimed .quest-reward { color: #84cc16; }
+
+  /* === v1.4: Plot grid (expansion modal) === */
+  .plot-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin: 16px 0;
+  }
+  .plot-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; padding: 12px 8px;
+    color: #fff; cursor: pointer; transition: all 0.15s;
+    text-align: center; font-family: inherit;
+  }
+  .plot-btn.owned { background: rgba(132,204,22,0.15); border-color: rgba(132,204,22,0.4); cursor: default; }
+  .plot-btn.can-buy {
+    background: linear-gradient(135deg, rgba(255,214,107,0.18) 0%, rgba(236,72,153,0.18) 100%);
+    border-color: rgba(255,214,107,0.4);
+    box-shadow: 0 0 12px rgba(255,214,107,0.18);
+  }
+  .plot-btn.can-buy:hover { transform: translateY(-2px); }
+  .plot-btn:not(.can-buy):not(.owned) { opacity: 0.55; }
+  .plot-name { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .plot-cost { font-size: 11px; opacity: 0.7; }
+  .plot-status { font-size: 10px; margin-top: 4px; color: #FFD66B; }
 
   /* === Modal: Save/Load/Staff === */
   .manage-modal {
@@ -474,6 +582,20 @@
     <span class="wi-name">Sunny</span>
     <span class="wi-stats">×1.0 visitors · ×1.0 tips</span>
   </div>
+  <div id="wi-forecast" class="wi-forecast"></div>
+</div>
+
+<!-- v1.4: Quest panel (bottom left, above info buttons) -->
+<div id="quest-panel" class="quest-panel" title="ภารกิจรายวัน — claim เมื่อสำเร็จ!"></div>
+
+<!-- v1.4: Park Expansion modal -->
+<div id="expand-modal" class="manage-modal">
+  <div class="manage-box" style="max-width: 640px;">
+    <h2>🗺️ Park Expansion</h2>
+    <div class="sub">ซื้อที่ดินเพิ่มเพื่อขยายพื้นที่สวนสนุก · ปลดล็อกเมื่อ rating สูงขึ้น</div>
+    <div class="plot-grid" id="plot-grid"></div>
+    <button class="close-btn" id="expand-close">ปิด</button>
+  </div>
 </div>
 
 <!-- Action buttons (next to sound toggle) -->
@@ -495,6 +617,7 @@
 
 <!-- Sound toggle -->
 <button id="sound-toggle" title="เปิด/ปิด เสียง">🔊</button>
+<button id="expand-toggle" class="topbar-btn" title="ซื้อที่ดินเพิ่ม">🗺️</button>
 
 <!-- Hint banner -->
 <div id="hint">Click on the ground to place 🎡</div>
@@ -522,6 +645,8 @@
   <div class="row"><span>Capacity:</span><span class="cap">--</span></div>
   <div class="row"><span>Income/ride:</span><span class="inc">--</span></div>
   <div class="row"><span>Fun:</span><span class="fun">--</span></div>
+  <div class="row health-row"><span>Health:</span><span class="hp">--</span></div>
+  <button id="ride-fix-btn" style="display:none;">🔧 ซ่อม ($<span class="fix-cost">0</span>)</button>
 </div>
 
 <!-- Stats modal -->
@@ -1526,6 +1651,8 @@ class Visitor {
           earnMoney(earned, 'ride');
           game.totalRiders++;
           recordDailyStat('riders', 1);  // v1.3: track daily rides taken
+          updateQuestProgress('riders', 1);  // v1.4
+          damageRide(this.targetRide, 1);  // v1.4: degrade ride health per use
           const idx = this.targetRide.passengers.indexOf(this);
           if (idx >= 0) this.targetRide.passengers.splice(idx, 1);
           this.happiness = Math.min(1, this.happiness + 0.15);
@@ -1572,6 +1699,9 @@ function lerpAngle(a, b, t) {
 }
 
 function promoteQueuer(ride) {
+  // v1.4: don't promote from broken rides
+  const h = game.rideHealth[ride.id];
+  if (h && h.broken) return;
   if (ride.passengers.length > 0 && ride.passengers.length < ride.info.capacity) {
     const next = ride.passengers.find(v => v.state === 'queuing');
     if (next) { next.state = 'riding'; next.rideTimer = 0; }
@@ -1698,6 +1828,208 @@ function recordWeatherDay(weather) {
   game.weatherDays[weather] += 1;
 }
 
+// =========================================================================
+//              v1.4 — DAILY QUESTS
+// =========================================================================
+const QUEST_POOL = [
+  { id: 'build_2',     type: 'build',       target: 2, reward: 200, icon: '🏗️', label: 'วางเครื่องเล่นใหม่ {n} ชิ้น' },
+  { id: 'build_3',     type: 'build',       target: 3, reward: 350, icon: '🏗️', label: 'วางเครื่องเล่นใหม่ {n} ชิ้น' },
+  { id: 'income_300',  type: 'income',      target: 300, reward: 150, icon: '💵', label: 'สร้างรายได้ ${n}' },
+  { id: 'income_800',  type: 'income',      target: 800, reward: 400, icon: '💰', label: 'สร้างรายได้ ${n}' },
+  { id: 'visitors_15', type: 'visitors',    target: 15, reward: 200, icon: '👥', label: 'ต้อนรับผู้เข้าชม {n} คน' },
+  { id: 'visitors_25', type: 'visitors',    target: 25, reward: 350, icon: '🧑‍🤝‍🧑', label: 'ต้อนรับผู้เข้าชม {n} คน' },
+  { id: 'riders_20',   type: 'riders',      target: 20, reward: 180, icon: '🎟️', label: 'ผู้เข้าชมนั่งเครื่องเล่น {n} รอบ' },
+  { id: 'riders_40',   type: 'riders',      target: 40, reward: 320, icon: '🎢', label: 'ผู้เข้าชมนั่งเครื่องเล่น {n} รอบ' },
+  { id: 'staff_1',     type: 'staff',       target: 1, reward: 250, icon: '👔', label: 'จ้างพนักงานใหม่ {n} คน' },
+  { id: 'staff_2',     type: 'staff',       target: 2, reward: 500, icon: '🎭', label: 'จ้างพนักงานใหม่ {n} คน' },
+  { id: 'rating_3',    type: 'rating',      target: 3, reward: 300, icon: '⭐', label: 'ทำ rating ให้ถึง {n} ดาว' },
+  { id: 'rating_4',    type: 'rating',      target: 4, reward: 600, icon: '🌟', label: 'ทำ rating ให้ถึง {n} ดาว' },
+  { id: 'no_storm',    type: 'survive',     target: 1, reward: 200, icon: '⛈️', label: 'ผ่านพายุให้ได้ {n} วัน' },
+];
+
+function generateDailyQuest() {
+  const tpl = QUEST_POOL[Math.floor(Math.random() * QUEST_POOL.length)];
+  return {
+    id: tpl.id,
+    type: tpl.type,
+    target: tpl.target,
+    progress: 0,
+    reward: tpl.reward,
+    icon: tpl.icon,
+    label: tpl.label.replace('{n}', tpl.target).replace('${n}', '$' + tpl.target),
+    claimed: false,
+    dayCreated: game.day,
+  };
+}
+
+function updateQuestProgress(type, amount = 1) {
+  if (!game.dailyQuest || game.dailyQuest.claimed) return;
+  if (game.dailyQuest.type !== type) return;
+  game.dailyQuest.progress = Math.min(game.dailyQuest.target, game.dailyQuest.progress + amount);
+  updateQuestUI();
+  // Auto-complete check
+  if (game.dailyQuest.progress >= game.dailyQuest.target && !game.dailyQuest.claimed) {
+    setTimeout(() => claimQuest(), 500);  // small delay for visual
+  }
+}
+
+function claimQuest() {
+  if (!game.dailyQuest || game.dailyQuest.claimed) return;
+  game.dailyQuest.claimed = true;
+  game.questCount++;
+  earnMoney(game.dailyQuest.reward, 'quest');
+  showHint(`✅ ภารกิจสำเร็จ! +$${game.dailyQuest.reward} (${game.dailyQuest.icon} ${game.dailyQuest.label})`, 3500);
+  playStarUp();
+  spawnConfetti(30);
+  updateQuestUI();
+}
+
+function updateQuestUI() {
+  const panel = document.getElementById('quest-panel');
+  if (!panel) return;
+  if (!game.dailyQuest) {
+    panel.style.display = 'none';
+    return;
+  }
+  panel.style.display = 'flex';
+  const q = game.dailyQuest;
+  const pct = Math.min(100, (q.progress / q.target) * 100);
+  const status = q.claimed ? 'claimed' : (pct >= 100 ? 'ready' : 'active');
+  panel.className = 'quest-panel quest-' + status;
+  panel.innerHTML = `
+    <div class="quest-icon">${q.icon}</div>
+    <div class="quest-body">
+      <div class="quest-label">${q.label}</div>
+      <div class="quest-progress-bar"><div class="quest-progress-fill" style="width:${pct}%"></div></div>
+      <div class="quest-meta">${q.progress} / ${q.target}${q.claimed ? ' ✓ Claimed' : (pct >= 100 ? ' • Ready!' : '')}</div>
+    </div>
+    <div class="quest-reward">${q.claimed ? '✓' : '+$' + q.reward}</div>
+  `;
+}
+
+// =========================================================================
+//              v1.4 — MECHANIC EVENT SYSTEM (Ride Breakdowns)
+// =========================================================================
+function damageRide(ride, amount = 1) {
+  if (!ride || ride.id == null) return;
+  const h = game.rideHealth[ride.id];
+  if (!h) return;
+  if (h.broken) return;  // can't damage further when broken
+  // Slight randomness: 2% chance to take DOUBLE damage
+  if (Math.random() < 0.02) amount *= 2;
+  h.health = Math.max(0, h.health - amount);
+  // If health drops below 30, it breaks on next use
+  if (h.health < 30 && Math.random() < 0.4) {
+    breakRide(ride);
+  }
+}
+
+function breakRide(ride) {
+  if (!ride || ride.id == null) return;
+  const h = game.rideHealth[ride.id];
+  if (!h || h.broken) return;
+  h.broken = true;
+  h.brokenAt = Date.now();
+  // Evict any current passengers
+  ride.passengers.forEach(v => {
+    if (v.state === 'riding') {
+      v.state = 'leaving';
+      v.happiness = Math.max(0, v.happiness - 0.3);
+    }
+  });
+  ride.passengers.length = 0;
+  showHint(`🔧 ${ride.info.name} พัง! ต้องซ่อมก่อนใช้งานต่อ (-$${mechanicFixCost(ride)})`, 3500);
+  spawnSmokeOnRide(ride);
+}
+
+function mechanicFixCost(ride) {
+  if (!ride) return 200;
+  const h = game.rideHealth[ride.id];
+  if (!h) return 200;
+  // Cost scales with how broken the ride is
+  const dmg = 100 - h.health;
+  return Math.round(150 + dmg * 4);  // $150-550 range
+}
+
+function fixRide(ride) {
+  if (!ride || ride.id == null) return;
+  const h = game.rideHealth[ride.id];
+  if (!h) return;
+  const cost = mechanicFixCost(ride);
+  if (game.money < cost) {
+    showHint(`❌ เงินไม่พอซ่อม (ต้องการ $${cost})`);
+    return;
+  }
+  game.money -= cost;
+  h.health = 100;
+  h.broken = false;
+  spawnCoinParticle(-cost);
+  showHint(`✅ ซ่อม ${ride.info.name} แล้ว! (-$${cost})`);
+  playClick();
+}
+
+function updateMechanicAutoRepair(dt) {
+  if (!game.staff) return;
+  const mechanics = game.staff.filter(s => s.type === 'mechanic');
+  if (mechanics.length === 0) return;
+  // Each mechanic auto-repairs the most broken ride within range
+  for (const m of mechanics) {
+    // Find the most broken (lowest health) ride within 20 units
+    let target = null, lowestHealth = 100;
+    for (const ride of rides) {
+      if (!game.rideHealth[ride.id]) continue;
+      const dx = ride.root.position.x - m.root.position.x;
+      const dz = ride.root.position.z - m.root.position.z;
+      if (Math.sqrt(dx*dx + dz*dz) > 20) continue;
+      const h = game.rideHealth[ride.id];
+      if (h.broken || h.health < lowestHealth) {
+        lowestHealth = h.health;
+        target = ride;
+      }
+    }
+    if (target && game.rideHealth[target.id]) {
+      // Repair rate: 8 HP/sec per mechanic
+      game.rideHealth[target.id].health = Math.min(100, game.rideHealth[target.id].health + 8 * dt);
+      if (game.rideHealth[target.id].health >= 80) {
+        game.rideHealth[target.id].broken = false;
+      }
+    }
+  }
+}
+
+function spawnSmokeOnRide(ride) {
+  // Create a small CSS particle at ride position
+  const m = document.createElement('div');
+  m.className = 'ride-smoke';
+  m.textContent = '💨';
+  m.dataset.rideId = ride.id;
+  // Project 3D to screen
+  const screen = projectToScreen(ride.root.position);
+  m.style.left = screen.x + 'px';
+  m.style.top = screen.y + 'px';
+  document.body.appendChild(m);
+  setTimeout(() => m.remove(), 3000);
+}
+
+function updateSmokeOverlays() {
+  // Spawn smoke from broken rides periodically
+  if (!rides) return;
+  for (const ride of rides) {
+    const h = game.rideHealth[ride.id];
+    if (!h || !h.broken) continue;
+    if (Math.random() < 0.02) spawnSmokeOnRide(ride);  // 2% per frame
+  }
+}
+
+function projectToScreen(pos) {
+  const engine = scene.getEngine();
+  const cam = scene.activeCamera;
+  const transformMatrix = scene.getTransformMatrix();
+  const viewport = cam.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+  const screenPos = BABYLON.Vector3.Project(pos, BABYLON.Matrix.Identity(), transformMatrix, viewport);
+  return { x: screenPos.x, y: screenPos.y };
+}
+
 function snapshotDailyHistory() {
   // Capture yesterday's stats at the moment of day increment
   game.ratingHistory.unshift({
@@ -1740,6 +2072,7 @@ const game = {
   weatherTimer: 0,
   weatherDuration: 90,  // seconds
   weatherParticles: [],
+  weatherForecast: [],  // v1.4: next 3 weathers in queue
   // Staff
   staff: [],            // [{type, hireDay, position}]
   dailyStaffCost: 0,    // total $ per day
@@ -1756,7 +2089,78 @@ const game = {
   stormFlashInterval: null,   // bug fix: track interval ID for cleanup
   lastDayRating: 0,           // rating at end of previous day
   lastDayWeather: 'sunny',    // weather at end of previous day
+  // v1.4 — Daily Quests + Park Expansion + Mechanic
+  dailyQuest: null,           // {id, type, target, progress, reward, label, icon, claimed}
+  questCount: 0,              // total quests completed (lifetime)
+  rideHealth: {},             // {rideIdx: {health: 0-100, broken: bool}}
+  mechanicFixCooldown: 0,     // prevents spam on auto-fix
+  ownedPlots: ['center'],     // park plot ownership for v1.4.4
 };
+
+// v1.4: Park expansion plot definitions (3x3 grid + center)
+const PARK_PLOTS = [
+  { id: 'center', name: 'ศูนย์กลาง',         x: 0,   z: 0,   radius: 18, cost: 0,    reqRating: 0, owned: true },
+  { id: 'n',      name: 'เหนือ',           x: 0,   z: -35, radius: 15, cost: 600,  reqRating: 3 },
+  { id: 's',      name: 'ใต้',             x: 0,   z: 35,  radius: 15, cost: 600,  reqRating: 3 },
+  { id: 'e',      name: 'ตะวันออก',       x: 35,  z: 0,   radius: 15, cost: 600,  reqRating: 3 },
+  { id: 'w',      name: 'ตะวันตก',         x: -35, z: 0,   radius: 15, cost: 600,  reqRating: 3 },
+  { id: 'ne',     name: 'ตะวันออกเฉียงเหนือ', x: 25, z: -25, radius: 13, cost: 1200, reqRating: 4 },
+  { id: 'nw',     name: 'ตะวันตกเฉียงเหนือ', x: -25, z: -25, radius: 13, cost: 1200, reqRating: 4 },
+  { id: 'se',     name: 'ตะวันออกเฉียงใต้',  x: 25, z: 25,  radius: 13, cost: 1200, reqRating: 4 },
+  { id: 'sw',     name: 'ตะวันตกเฉียงใต้',  x: -25, z: 25,  radius: 13, cost: 1200, reqRating: 4 },
+];
+
+function getPlotByPos(x, z) {
+  // Find which owned plot a position belongs to
+  let best = null, bestDist = Infinity;
+  for (const plot of PARK_PLOTS) {
+    if (!game.ownedPlots.includes(plot.id)) continue;
+    const dx = x - plot.x;
+    const dz = z - plot.z;
+    const dist = Math.sqrt(dx*dx + dz*dz);
+    if (dist < plot.radius && dist < bestDist) {
+      bestDist = dist;
+      best = plot;
+    }
+  }
+  return best;
+}
+
+function buyPlot(plotId) {
+  const plot = PARK_PLOTS.find(p => p.id === plotId);
+  if (!plot || game.ownedPlots.includes(plotId)) return;
+  if (game.parkRating < plot.reqRating) {
+    showHint(`❌ ต้องการ rating ขั้นต่ำ ${plot.reqRating} ดาว (ปัจจุบัน ${game.parkRating.toFixed(1)})`);
+    return;
+  }
+  if (game.money < plot.cost) {
+    showHint(`❌ เงินไม่พอซื้อที่ดิน (ต้องการ $${plot.cost})`);
+    return;
+  }
+  game.money -= plot.cost;
+  game.ownedPlots.push(plotId);
+  spawnConfetti(40);
+  showHint(`🗺️ ซื้อที่ดิน${plot.name}แล้ว! ปลดล็อกพื้นที่วาง ride เพิ่ม`, 3500);
+  playStarUp();
+  updatePlotUI();
+}
+
+function updatePlotUI() {
+  document.querySelectorAll('.plot-btn').forEach(btn => {
+    const plotId = btn.dataset.plotId;
+    const plot = PARK_PLOTS.find(p => p.id === plotId);
+    if (!plot) return;
+    const owned = game.ownedPlots.includes(plotId);
+    const canBuy = !owned && game.parkRating >= plot.reqRating && game.money >= plot.cost;
+    btn.classList.toggle('owned', owned);
+    btn.classList.toggle('can-buy', canBuy);
+    btn.disabled = owned;
+    const status = owned ? '✅ เป็นเจ้าของแล้ว' :
+                   game.parkRating < plot.reqRating ? `🔒 ต้องการ ${plot.reqRating}★` :
+                   game.money < plot.cost ? `💰 $${plot.cost}` : `ซื้อ $${plot.cost}`;
+    btn.querySelector('.plot-status').textContent = status;
+  });
+}
 
 function calculateRating() {
   // 0-5 stars
@@ -1911,12 +2315,27 @@ function setWeather(newWeather) {
   // Show cloud/fog overlay for cloudy/storm
   document.querySelector('.cloud-overlay')?.classList.toggle('show', newWeather === 'cloudy' || newWeather === 'storm');
   document.querySelector('.fog-overlay')?.classList.toggle('show', newWeather === 'rain');
+  // v1.4: rotate forecast queue — shift and add one new
+  if (!game.weatherForecast) game.weatherForecast = [];
+  if (game.weatherForecast.length > 0) game.weatherForecast.shift();
+  const lastInQueue = game.weatherForecast[game.weatherForecast.length - 1] || newWeather;
+  let candidates = WEATHER_ORDER.filter(w => w !== lastInQueue);
+  if (Math.random() < 0.3) candidates.push(lastInQueue);
+  game.weatherForecast.push(candidates[Math.floor(Math.random() * candidates.length)]);
+  // v1.4: update background music mood
+  updateMusicForWeather(newWeather);
   // Hint
   const info = WEATHERS[newWeather];
   showHint(`${info.icon} ${info.name} — spawn ×${info.spawnMult}, tip ×${info.tipMult}`, 2500);
+  updateWeatherUI();
 }
 
 function rotateWeather() {
+  // v1.4: consume the next forecast if available, otherwise pick random
+  if (game.weatherForecast && game.weatherForecast.length > 0) {
+    setWeather(game.weatherForecast[0]);
+    return;
+  }
   // Pick a different weather randomly (not always change)
   if (Math.random() < 0.3) return; // 30% chance to keep same weather
   let candidates = WEATHER_ORDER.filter(w => w !== game.weather);
@@ -1931,6 +2350,29 @@ function updateWeatherUI() {
   el.querySelector('.wi-icon').textContent = w.icon;
   el.querySelector('.wi-name').textContent = w.name;
   el.querySelector('.wi-stats').textContent = `×${w.spawnMult} คน · ×${w.tipMult} ทิป`;
+  // v1.4: render forecast chips
+  const fcEl = document.getElementById('wi-forecast');
+  if (fcEl) {
+    fcEl.innerHTML = (game.weatherForecast || []).map(w => {
+      const info = WEATHERS[w];
+      return `<span class="wi-forecast-chip" title="${info.name} · ×${info.spawnMult} คน · ×${info.tipMult} ทิป">${info.icon}</span>`;
+    }).join('');
+  }
+}
+
+function generateWeatherForecast(count = 3) {
+  // v1.4: generate forecast using same distribution logic as rotateWeather
+  const arr = [];
+  let last = game.weather;
+  for (let i = 0; i < count; i++) {
+    let candidates = WEATHER_ORDER.filter(w => w !== last);
+    // 30% chance to keep same as previous (more natural)
+    if (Math.random() < 0.3) candidates.push(last);
+    const next = candidates[Math.floor(Math.random() * candidates.length)];
+    arr.push(next);
+    last = next;
+  }
+  return arr;
 }
 
 function spawnRain() {
@@ -2094,6 +2536,7 @@ function hireStaff(type) {
   renderStaffModal();
   playStarUp();
   showHint(`✅ จ้าง ${STAFF_TYPES[type].name} แล้ว! (-$${STAFF_TYPES[type].cost * 3})`);
+  updateQuestProgress('staff', 1);  // v1.4
 }
 
 function fireStaff(idx) {
@@ -2498,6 +2941,23 @@ scene.onPointerObservable.add((pointerInfo) => {
         info.querySelector('.cap').textContent = r.info.capacity || '∞';
         info.querySelector('.inc').textContent = '$' + Math.round(r.info.income * (1 + game.parkRating * 0.1));
         info.querySelector('.fun').textContent = '★'.repeat(Math.min(5, Math.ceil(r.info.fun / 2)));
+        // v1.4: health + fix button
+        const h = game.rideHealth[r.id];
+        const hpEl = info.querySelector('.hp');
+        const fixBtn = document.getElementById('ride-fix-btn');
+        if (h) {
+          const hp = Math.round(h.health);
+          const color = h.broken ? '#ef4444' : hp < 30 ? '#f59e0b' : hp < 60 ? '#fbbf24' : '#84cc16';
+          hpEl.innerHTML = `<span style="color:${color};font-weight:700">${hp}${h.broken ? ' ⚠️ พัง!' : ''}</span>`;
+          if (h.broken || hp < 50) {
+            fixBtn.style.display = 'block';
+            fixBtn.querySelector('.fix-cost').textContent = mechanicFixCost(r);
+            fixBtn.dataset.rideId = r.id;
+            fixBtn.onclick = (e) => { e.stopPropagation(); fixRide(r); };
+          } else {
+            fixBtn.style.display = 'none';
+          }
+        }
       } else { info.classList.remove('show'); }
     } else { document.getElementById('ride-info').classList.remove('show'); }
   }
@@ -2518,6 +2978,7 @@ scene.onPointerObservable.add((pointerInfo) => {
             game.money -= cost;
             updateUI();
             showHint(`✅ วาง ${ride.info.name} แล้ว! (-$${cost})`);
+            updateQuestProgress('build', 1);  // v1.4
             playClick();
             const tempGhost = makeGhost(game.selectedRideType);
             tempGhost.update = () => {};
@@ -2529,6 +2990,12 @@ scene.onPointerObservable.add((pointerInfo) => {
 });
 
 function tagRideMeshes(ride) {
+  // v1.4: assign unique id + initialize health (lazy via game.rideHealth map)
+  if (typeof ride.id === 'undefined') {
+    if (!game._rideIdCounter) game._rideIdCounter = 0;
+    ride.id = ++game._rideIdCounter;
+    game.rideHealth[ride.id] = { health: 100, broken: false, brokenAt: 0 };
+  }
   ride.root.getChildMeshes().forEach(m => { m.metadata = { isRide: true, rideRef: ride }; });
 }
 function setGhostColor(c) {
@@ -2565,6 +3032,7 @@ function earnMoney(amount, source) {
   game.money += amount;
   game.totalIncome += amount;
   recordDailyStat('income', amount);  // v1.3: track daily income
+  if (source === 'ride') updateQuestProgress('income', amount);  // v1.4
   updateUI();
   spawnCoinParticle(amount);
 }
@@ -2660,9 +3128,120 @@ function playStarUp() {
   });
 }
 
+// =========================================================================
+//              v1.4 — PROCEDURAL BACKGROUND MUSIC
+// =========================================================================
+// Mood presets — each defines oscillator freqs + filter settings
+const MUSIC_MOODS = {
+  sunny:  { freqs: [110, 165, 220, 330], filter: 800,  rate: 0.4, type: 'sine' },
+  cloudy: { freqs: [98, 147, 196, 294],  filter: 600,  rate: 0.3, type: 'sine' },
+  rain:   { freqs: [87, 130, 174, 261],  filter: 500,  rate: 0.5, type: 'triangle' },
+  storm:  { freqs: [65, 98, 130, 196],   filter: 350,  rate: 0.7, type: 'sawtooth' },
+  snow:   { freqs: [130, 196, 262, 392], filter: 1200, rate: 0.25, type: 'sine' },
+};
+
+let musicNodes = null;  // {oscs, gains, lfo, filter, masterGain}
+let currentMood = 'sunny';
+
+function startMusic() {
+  if (musicNodes) return;
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const mood = MUSIC_MOODS[currentMood] || MUSIC_MOODS.sunny;
+  // Master gain
+  const masterGain = ctx.createGain();
+  masterGain.gain.value = 0;  // fade in
+  masterGain.connect(ctx.destination);
+  // Lowpass filter
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = mood.filter;
+  filter.Q.value = 1.5;
+  filter.connect(masterGain);
+  // LFO for filter movement
+  const lfo = ctx.createOscillator();
+  const lfoGain = ctx.createGain();
+  lfo.frequency.value = mood.rate;
+  lfoGain.gain.value = mood.filter * 0.3;  // sweep amplitude
+  lfo.connect(lfoGain);
+  lfoGain.connect(filter.frequency);
+  lfo.start();
+  // Oscillators
+  const oscs = [];
+  const gains = [];
+  mood.freqs.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    osc.type = mood.type;
+    osc.frequency.value = freq;
+    const g = ctx.createGain();
+    g.gain.value = 0;  // fade in
+    // Slow detune LFO for movement
+    const detuneLfo = ctx.createOscillator();
+    const detuneGain = ctx.createGain();
+    detuneLfo.frequency.value = mood.rate * (0.7 + i * 0.1);
+    detuneLfo.type = 'sine';
+    detuneGain.gain.value = 8;  // cents
+    detuneLfo.connect(detuneGain);
+    detuneGain.connect(osc.detune);
+    detuneLfo.start();
+    osc.connect(g);
+    g.connect(filter);
+    osc.start();
+    oscs.push(osc);
+    gains.push(g);
+    // Fade in individual gain
+    const now = ctx.currentTime;
+    g.gain.linearRampToValueAtTime(0.012 / mood.freqs.length, now + 2);
+  });
+  // Fade in master
+  masterGain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 2);
+  musicNodes = { oscs, gains, lfo, filter, masterGain };
+}
+
+function stopMusic() {
+  if (!musicNodes) return;
+  const ctx = audioCtx;
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  // Fade out
+  musicNodes.masterGain.gain.cancelScheduledValues(now);
+  musicNodes.masterGain.gain.linearRampToValueAtTime(0, now + 0.5);
+  // Stop after fade
+  setTimeout(() => {
+    if (!musicNodes) return;
+    try {
+      musicNodes.oscs.forEach(o => o.stop());
+      musicNodes.lfo.stop();
+      musicNodes.masterGain.disconnect();
+    } catch (e) {}
+    musicNodes = null;
+  }, 600);
+}
+
+function updateMusicForWeather(weather) {
+  if (!musicNodes || !soundEnabled) return;
+  if (weather === currentMood) return;
+  currentMood = weather;
+  const ctx = audioCtx;
+  if (!ctx) return;
+  const mood = MUSIC_MOODS[weather] || MUSIC_MOODS.sunny;
+  const now = ctx.currentTime;
+  // Smooth transition: ramp filter + recreate oscillators
+  musicNodes.filter.frequency.cancelScheduledValues(now);
+  musicNodes.filter.frequency.linearRampToValueAtTime(mood.filter, now + 4);
+  // For simplicity, just update existing osc frequencies slightly (no full recreate)
+  musicNodes.oscs.forEach((osc, i) => {
+    if (mood.freqs[i] !== undefined) {
+      osc.frequency.cancelScheduledValues(now);
+      osc.frequency.linearRampToValueAtTime(mood.freqs[i], now + 4);
+    }
+  });
+}
+
 document.getElementById('sound-toggle').addEventListener('click', () => {
   soundEnabled = !soundEnabled;
   document.getElementById('sound-toggle').textContent = soundEnabled ? '🔊' : '🔇';
+  if (soundEnabled) startMusic(); else stopMusic();  // v1.4: also toggle music
   if (soundEnabled) playClick();
 });
 
@@ -2679,6 +3258,7 @@ function updateUI() {
     const cost = RIDE_INFO[btn.dataset.ride].cost;
     btn.classList.toggle('disabled', game.money < cost);
   });
+  updatePlotUI();  // v1.4: keep plot button states fresh
 }
 
 let hintTimer = null;
@@ -2720,6 +3300,16 @@ document.getElementById('rating-card').addEventListener('click', openStats);
 document.getElementById('day-card').addEventListener('click', openStats);
 document.getElementById('stats-close').addEventListener('click', () => {
   document.getElementById('stats-modal').classList.remove('show');
+  playClick();
+});
+// v1.4: Park expansion modal handlers
+document.getElementById('expand-toggle').addEventListener('click', () => {
+  updatePlotUI();
+  document.getElementById('expand-modal').classList.add('show');
+  playClick();
+});
+document.getElementById('expand-close').addEventListener('click', () => {
+  document.getElementById('expand-modal').classList.remove('show');
   playClick();
 });
 function openStats() {
@@ -2845,6 +3435,10 @@ scene.registerBeforeRender(() => {
 
   rides.forEach(r => r.update && r.update(dt));
 
+  // v1.4: mechanic auto-repair + smoke overlays
+  updateMechanicAutoRepair(dt);
+  updateSmokeOverlays();
+
   // Update staff (patrol AI + happiness bonus applied per-frame)
   updateStaff(dt);
 
@@ -2859,6 +3453,7 @@ scene.registerBeforeRender(() => {
     spawnVisitor();
     game.totalVisitors++;
     recordDailyStat('visitors', 1);  // v1.3: track daily visitors
+    updateQuestProgress('visitors', 1);  // v1.4
     game.spawnTimer = 0;
     // 30% chance of family group (2-3 visitors)
     if (Math.random() < 0.3) {
@@ -2868,6 +3463,7 @@ scene.registerBeforeRender(() => {
         spawnVisitor(new BABYLON.Vector3(offsetX, 0, 92), Date.now());
         game.totalVisitors++;
         recordDailyStat('visitors', 1);
+        updateQuestProgress('visitors', 1);
       }
     }
   }
@@ -2902,6 +3498,10 @@ scene.registerBeforeRender(() => {
 
     game.day++;
     game.dayTimer = 0;
+    // v1.4: generate new daily quest
+    game.dailyQuest = generateDailyQuest();
+    updateQuestUI();
+    showHint(`📜 ภารกิจวันนี้: ${game.dailyQuest.icon} ${game.dailyQuest.label} (+$${game.dailyQuest.reward})`, 3500);
     // Deduct daily staff cost
     if (game.dailyStaffCost > 0) {
       game.money -= game.dailyStaffCost;
@@ -2928,6 +3528,11 @@ scene.registerBeforeRender(() => {
 
   // v1.3: check achievements every frame (idempotent — unlocks once)
   checkAchievements();
+  // v1.4: check rating-based quest progress
+  if (game.dailyQuest && game.dailyQuest.type === 'rating' && !game.dailyQuest.claimed) {
+    game.dailyQuest.progress = Math.max(game.dailyQuest.progress, game.parkRating);
+    updateQuestUI();
+  }
 
   // Time of day
   updateTimeOfDay();
@@ -2949,13 +3554,31 @@ window.addEventListener('resize', () => engine.resize());
 // Initial state
 updateUI();
 updateWeatherUI();  // v1.2: weather HUD
+// v1.4: initialize weather forecast queue
+game.weatherForecast = generateWeatherForecast(3);
+updateWeatherUI();
+// v1.4: initialize first daily quest
+game.dailyQuest = generateDailyQuest();
+updateQuestUI();
+// v1.4: render plot buttons
+const plotGrid = document.getElementById('plot-grid');
+if (plotGrid) {
+  plotGrid.innerHTML = PARK_PLOTS.map(p => `
+    <button class="plot-btn" data-plot-id="${p.id}" onclick="buyPlot('${p.id}')">
+      <div class="plot-name">${p.name}</div>
+      <div class="plot-cost">$${p.cost.toLocaleString()}</div>
+      <div class="plot-status">—</div>
+    </button>
+  `).join('');
+}
+updatePlotUI();
 
 // Hover info for rides (already handled in pointer observer)
 
 // Prevent context menu
 canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-console.log('🎢 SJ88 Wonder Park v1.3 loaded', { rides: rides.length, visitors: visitors.length, weather: game.weather, achievements: Object.keys(game.achievements).length });
+console.log('🎢 SJ88 Wonder Park v1.4 loaded', { rides: rides.length, visitors: visitors.length, weather: game.weather, achievements: Object.keys(game.achievements).length, plots: game.ownedPlots.length });
 </script>
 
 </body>
