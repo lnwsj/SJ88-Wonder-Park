@@ -364,6 +364,7 @@
   #expand-toggle { left: calc(50% + 60px); }
   #leader-toggle { left: calc(50% + 116px); }
   #campaign-toggle { left: calc(50% + 156px); }
+  #map-toggle { left: calc(50% + 116px); }
   #deco-toggle { left: calc(50% + 196px); }
   #farm-toggle { left: calc(50% + 236px); }
   .campaign-indicator {
@@ -526,6 +527,37 @@
     border: none; border-radius: 8px; cursor: pointer;
   }
   .farm-buy-btn:hover { transform: translateY(-1px); }
+
+  /* === v2.0: Map selector === */
+  .map-list { display: flex; gap: 12px; margin: 16px 0; }
+  .map-card {
+    flex: 1; padding: 16px;
+    background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 12px; cursor: pointer; transition: all 0.15s;
+    text-align: center;
+  }
+  .map-card:hover {
+    background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3);
+    transform: translateY(-2px);
+  }
+  .map-card.active {
+    border-color: rgba(132,204,22,0.5);
+    background: rgba(132,204,22,0.1);
+  }
+  .map-icon { font-size: 48px; margin-bottom: 8px; }
+  .map-name { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .map-desc { font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
+  .map-tag {
+    display: inline-block; padding: 4px 10px;
+    background: rgba(132,204,22,0.25); color: #84cc16;
+    border-radius: 12px; font-size: 11px; font-weight: 700;
+  }
+  .map-btn {
+    display: inline-block; padding: 4px 10px;
+    background: linear-gradient(135deg, #a855f7, #6d28d9);
+    color: #fff; border-radius: 12px;
+    font-size: 11px; font-weight: 700;
+  }
 
   /* === v1.9: Deco shop section title === */
   .deco-section-title {
@@ -927,6 +959,7 @@
 <button id="sound-toggle" title="เปิด/ปิด เสียง">🔊</button>
 <button id="expand-toggle" class="topbar-btn" title="ซื้อที่ดินเพิ่ม">🗺️</button>
 <button id="leader-toggle" class="topbar-btn" title="ดู Leaderboard">🏆</button>
+<button id="map-toggle" class="topbar-btn" title="เปลี่ยนแผนที่">🗺️</button>
 <button id="campaign-toggle" class="topbar-btn" title="Marketing Campaigns">📺</button>
 <button id="deco-toggle" class="topbar-btn" title="Decoration Shop">🌳</button>
 <button id="farm-toggle" class="topbar-btn" title="วางอุปกรณ์ฟาร์ม">🚜</button>
@@ -941,6 +974,16 @@
     <div class="picker-title">🌱 เลือกพืชที่จะปลูก</div>
     <div class="picker-list"></div>
     <button class="picker-close" onclick="closeCropPickerModal()">✕</button>
+  </div>
+</div>
+
+<!-- v2.0: Map selector modal -->
+<div id="map-modal" class="manage-modal">
+  <div class="manage-box" style="max-width: 460px;">
+    <h2>🗺️ เลือกแผนที่</h2>
+    <div class="sub">ไปเที่ยวที่อื่น หรือกลับสวนสนุก</div>
+    <div class="map-list" id="map-list"></div>
+    <button class="close-btn" id="map-close">ปิด</button>
   </div>
 </div>
 
@@ -1214,6 +1257,118 @@ groundMat.diffuseTexture.uScale = 25;
 groundMat.diffuseTexture.vScale = 25;
 ground.material = groundMat;
 ground.receiveShadows = true;
+
+// === FARM MAP GROUND (separate area for v2.0) ===
+const parkGround = ground;  // v2.0: alias for map system
+const farmGround = BABYLON.MeshBuilder.CreateGround('farmGround', { width: 160, height: 160, subdivisions: 4 }, scene);
+farmGround.position.set(0, 0, -120);
+const farmGroundMat = makeMat('farmGroundMat', new BABYLON.Color3(0.50, 0.40, 0.25), { specularPower: 8 });
+farmGroundMat.diffuseTexture = makeCheckerTexture('farmTex', 16, new BABYLON.Color3(0.55, 0.42, 0.28), new BABYLON.Color3(0.62, 0.50, 0.32));
+farmGroundMat.diffuseTexture.uScale = 20;
+farmGroundMat.diffuseTexture.vScale = 20;
+farmGround.material = farmGroundMat;
+farmGround.receiveShadows = true;
+farmGround.setEnabled(false);  // hidden initially
+
+// Farm fence (around perimeter)
+for (let i = 0; i < 4; i++) {
+  const fence = BABYLON.MeshBuilder.CreateBox('farm_fence_' + i, { width: 75, height: 1.5, depth: 0.4 }, scene);
+  fence.position.set(0, 0.75, -120 + (i < 2 ? -37 : 37) * (i % 2 === 0 ? 1 : -1));
+  if (i % 2 === 0) fence.rotation.y = Math.PI / 2;
+  const fenceMat = new BABYLON.StandardMaterial('fenceMat_' + i, scene);
+  fenceMat.diffuseColor = new BABYLON.Color3(0.55, 0.40, 0.20);
+  fence.material = fenceMat;
+  fence.setEnabled(false);
+  // Mark with parent root for visibility toggle
+  if (!farmGround._fences) farmGround._fences = [];
+  farmGround._fences.push(fence);
+}
+
+// Farm barn
+const farmBarn = new BABYLON.TransformNode('farmBarn', scene);
+farmBarn.position.set(35, 0, -150);
+// Barn body
+const barnBody = BABYLON.MeshBuilder.CreateBox('barnBody', { width: 12, height: 8, depth: 8 }, scene);
+barnBody.parent = farmBarn;
+barnBody.position.y = 4;
+const barnMat = new BABYLON.StandardMaterial('barnMat', scene);
+barnMat.diffuseColor = new BABYLON.Color3(0.75, 0.30, 0.30);
+barnBody.material = barnMat;
+// Barn roof (red)
+const barnRoof = BABYLON.MeshBuilder.CreateCylinder('barnRoof', { diameter: 14, height: 4, tessellation: 4 }, scene);
+barnRoof.parent = farmBarn;
+barnRoof.position.y = 10;
+barnRoof.rotation.y = Math.PI / 4;
+const barnRoofMat = new BABYLON.StandardMaterial('barnRoofMat', scene);
+barnRoofMat.diffuseColor = new BABYLON.Color3(0.55, 0.20, 0.20);
+barnRoof.material = barnRoofMat;
+// Barn door
+const barnDoor = BABYLON.MeshBuilder.CreateBox('barnDoor', { width: 3, height: 4, depth: 0.1 }, scene);
+barnDoor.parent = farmBarn;
+barnDoor.position.set(0, 2, 4.05);
+const barnDoorMat = new BABYLON.StandardMaterial('barnDoorMat', scene);
+barnDoorMat.diffuseColor = new BABYLON.Color3(0.40, 0.25, 0.15);
+barnDoor.material = barnDoorMat;
+farmBarn.setEnabled(false);
+
+// Farm trees (decorative)
+const farmTrees = [];
+for (let i = 0; i < 12; i++) {
+  const angle = (i / 12) * Math.PI * 2;
+  const radius = 35 + Math.random() * 5;
+  const tree = new BABYLON.TransformNode('farmTree_' + i, scene);
+  tree.position.set(Math.cos(angle) * radius, 0, -120 + Math.sin(angle) * radius);
+  const trunk = BABYLON.MeshBuilder.CreateCylinder('ft_trunk_' + i, { diameter: 0.6, height: 2 }, scene);
+  trunk.parent = tree;
+  trunk.position.y = 1;
+  const trunkMat = new BABYLON.StandardMaterial('ft_trunkMat_' + i, scene);
+  trunkMat.diffuseColor = new BABYLON.Color3(0.40, 0.25, 0.15);
+  trunk.material = trunkMat;
+  const leaves = BABYLON.MeshBuilder.CreateCylinder('ft_leaves_' + i, { diameter: 3, height: 3.5, tessellation: 6 }, scene);
+  leaves.parent = tree;
+  leaves.position.y = 3.5;
+  const leavesMat = new BABYLON.StandardMaterial('ft_leavesMat_' + i, scene);
+  leavesMat.diffuseColor = new BABYLON.Color3(0.25, 0.55, 0.25);
+  leaves.material = leavesMat;
+  tree.setEnabled(false);
+  farmTrees.push(tree);
+}
+
+// Farm entrance sign (so player knows where they are)
+const farmSign = new BABYLON.TransformNode('farmSign', scene);
+farmSign.position.set(-40, 0, -85);
+// Pole
+const signPole = BABYLON.MeshBuilder.CreateCylinder('signPole', { diameter: 0.4, height: 5 }, scene);
+signPole.parent = farmSign;
+signPole.position.y = 2.5;
+const signPoleMat = new BABYLON.StandardMaterial('signPoleMat', scene);
+signPoleMat.diffuseColor = new BABYLON.Color3(0.40, 0.25, 0.15);
+signPole.material = signPoleMat;
+// Sign board
+const signBoard = BABYLON.MeshBuilder.CreateBox('signBoard', { width: 6, height: 2.5, depth: 0.2 }, scene);
+signBoard.parent = farmSign;
+signBoard.position.y = 4.5;
+const signBoardMat = new BABYLON.StandardMaterial('signBoardMat', scene);
+signBoardMat.diffuseColor = new BABYLON.Color3(0.95, 0.85, 0.30);
+signBoard.material = signBoardMat;
+// Sign text "🚜 Farm"
+const signText = BABYLON.MeshBuilder.CreatePlane('signText', { width: 5.5, height: 2.2 }, scene);
+signText.parent = farmSign;
+signText.position.set(0, 4.5, 0.15);
+const signTextMat = new BABYLON.StandardMaterial('signTextMat', scene);
+signTextMat.diffuseTexture = (() => {
+  const tex = new BABYLON.DynamicTexture('signTextTex', { width: 256, height: 128 }, scene, false);
+  const ctx = tex.getContext();
+  ctx.fillStyle = '#FFD66B'; ctx.fillRect(0, 0, 256, 128);
+  ctx.fillStyle = '#222'; ctx.font = 'bold 48px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('🚜 Farm', 128, 80);
+  tex.update();
+  return tex;
+})();
+signTextMat.emissiveColor = new BABYLON.Color3(0.7, 0.6, 0.2);
+signText.material = signTextMat;
+signText.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+farmSign.setEnabled(false);
 
 // === PATHS ===
 function makePath(name, w, h, x, z, rot = 0) {
@@ -2321,6 +2476,90 @@ const VISITOR_TYPES = {
   rich:    { name: 'รวย',     emoji: '💰', spawnWeight: 15, prefers: ['loop', 'coaster', 'pendulum', 'bungee', 'pirate', 'haunted'], tipMult: 2.5,  patienceMult: 0.7, maxRides: [5,7], decayMult: 0.9, colorTint: [0.95, 0.60, 0.30] },
 };
 
+// v2.0: Maps — separate park and farm areas
+const MAPS = {
+  park: { name: '🎢 สวนสนุก', icon: '🎢', center: BABYLON.Vector3.Zero(),      groundType: 'park' },
+  farm: { name: '🚜 ฟาร์ม',     icon: '🚜', center: new BABYLON.Vector3(0, 0, -120), groundType: 'farm' },
+};
+
+let cameraAnimating = false;
+function switchMap(targetMapId) {
+  if (game.currentMap === targetMapId) return;
+  const map = MAPS[targetMapId];
+  if (!map) return;
+  game.currentMap = targetMapId;
+  showHint(`🗺️ ไปยัง${map.name}`, 2500);
+  playClick();
+  cameraAnimating = true;
+  // Animate camera position
+  const startPos = camera.position.clone();
+  const targetPos = new BABYLON.Vector3(map.center.x + 0, 25, map.center.z - 45);
+  const startTarget = camera.target ? camera.target.clone() : BABYLON.Vector3.Zero();
+  const targetTarget = map.center.clone();
+  const duration = 1500; // ms
+  const startTime = performance.now();
+  function step() {
+    const t = Math.min(1, (performance.now() - startTime) / duration);
+    const e = t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2)/2;  // ease-in-out
+    camera.position.set(
+      startPos.x + (targetPos.x - startPos.x) * e,
+      startPos.y + (targetPos.y - startPos.y) * e,
+      startPos.z + (targetPos.z - startPos.z) * e
+    );
+    const tgt = new BABYLON.Vector3(
+      startTarget.x + (targetTarget.x - startTarget.x) * e,
+      startTarget.y + (targetTarget.y - startTarget.y) * e,
+      startTarget.z + (targetTarget.z - startTarget.z) * e
+    );
+    camera.setTarget(tgt);
+    if (t < 1) requestAnimationFrame(step);
+    else { cameraAnimating = false; updateMapUI(); }
+  }
+  requestAnimationFrame(step);
+  // Update visibility immediately for ground
+  updateMapVisibility();
+  updateMapUI();
+}
+
+function updateMapUI() {
+  const map = MAPS[game.currentMap];
+  // Update topbar indicator (sub-header of weather)
+  const indicator = document.getElementById('map-indicator');
+  if (indicator) indicator.textContent = map.icon;
+}
+
+function updateMapVisibility() {
+  if (!game.decorations || !rides) return;
+  // Decorations: hide if on other map
+  for (const d of game.decorations) {
+    if (!d.result) continue;
+    const visible = (d.mapId || 'park') === game.currentMap;
+    if (d.result.root && d.result.root.setEnabled) d.result.root.setEnabled(visible);
+    else if (d.result.setEnabled) d.result.setEnabled(visible);
+  }
+  // Rides: hide if on other map
+  for (const r of rides) {
+    const visible = (r.mapId || 'park') === game.currentMap;
+    if (r.root) r.root.setEnabled(visible);
+  }
+  // Ground: show only one at a time
+  if (typeof parkGround !== 'undefined') parkGround.setEnabled(game.currentMap === 'park');
+  if (typeof farmGround !== 'undefined') farmGround.setEnabled(game.currentMap === 'farm');
+  // Hide visitors from other map
+  if (visitors) {
+    for (const v of visitors) {
+      v.visible = (v.mapId || 'park') === game.currentMap;
+      if (v.mesh) v.mesh.setEnabled(v.visible);
+    }
+  }
+  // Farm map ambient
+  const isFarm = game.currentMap === 'farm';
+  farmBarn.setEnabled(isFarm);
+  farmSign.setEnabled(isFarm);
+  for (const tree of farmTrees) tree.setEnabled(isFarm);
+  if (farmGround._fences) for (const f of farmGround._fences) f.setEnabled(isFarm);
+}
+
 function pickRandomVisitorType() {
   // v1.5: weighted random pick
   const totalWeight = Object.values(VISITOR_TYPES).reduce((s, t) => s + t.spawnWeight, 0);
@@ -2622,6 +2861,7 @@ function promoteQueuer(ride) {
 function spawnVisitor(pos = null, groupId = null) {
   const p = pos || new BABYLON.Vector3((Math.random() - 0.5) * 4, 0, 92);
   const v = new Visitor(p, groupId);
+  v.mapId = game.currentMap;  // v2.0
   visitors.push(v);
   return v;
 }
@@ -3041,6 +3281,8 @@ const game = {
   ghost: null,
   ghostColor: 'green',
   spawnTimer: 0,
+  // v2.0: Map system
+  currentMap: 'park',
   parkRating: 0,
   displayedRating: 0,
   ratingTier: 0,
@@ -3242,6 +3484,8 @@ const DECORATION_TYPES = {
   farm_plot:{name: '🌱 แปลงผัก 3×3', cost: 300, color: [0.55, 0.40, 0.25], height: 0.1, shape: 'farm_plot' },
   farm_pond:{name: '🎣 บ่อปลา',      cost: 250, color: [0.30, 0.65, 0.95], height: 0.4, shape: 'farm_pond' },
   farm_cow: {name: '🐄 วัว',         cost: 200, color: [0.95, 0.95, 0.95], height: 2, shape: 'farm_cow' },
+  // v2.0: Map portal — click to switch maps
+  map_portal:{name:'🚪 ประตูเปลี่ยนแผนที่', cost: 1000, color:[0.65,0.30,0.85], height:4, shape:'map_portal' },
 };
 
 function createDecorationMesh(type, x, z) {
@@ -3370,6 +3614,51 @@ function createDecorationMesh(type, x, z) {
     fish.material = fishMat;
     fish.setEnabled(false);
     return { root, water, fish, waterMat, fishMat, farmType: 'pond' };
+  } else if (type === 'map_portal') {
+    // v2.0: Portal door — click to switch map
+    const root = new BABYLON.TransformNode('map_portal_root_' + Date.now(), scene);
+    root.position.set(x, 0, z);
+    // Frame
+    const frameMat = new BABYLON.StandardMaterial('portalFrameMat_' + Date.now(), scene);
+    frameMat.diffuseColor = new BABYLON.Color3(0.85, 0.55, 0.20);
+    frameMat.specularColor = new BABYLON.Color3(0.5, 0.3, 0.1);
+    // 4 sides
+    for (const [w, h, d, px, py, pz] of [
+      [3, 0.4, 0.4, 0, 4.4, 1.6],     // top
+      [3, 0.4, 0.4, 0, 4.4, -1.6],    // bottom
+      [0.4, 4.8, 0.4, -1.4, 2.4, 0],   // left
+      [0.4, 4.8, 0.4, 1.4, 2.4, 0],    // right
+    ]) {
+      const side = BABYLON.MeshBuilder.CreateBox('portalSide_' + px, { width: w, height: h, depth: d }, scene);
+      side.parent = root;
+      side.position.set(px, py, pz);
+      side.material = frameMat;
+    }
+    // Door surface (glowing portal)
+    const door = BABYLON.MeshBuilder.CreatePlane('portalDoor', { width: 2.4, height: 4 }, scene);
+    door.parent = root;
+    door.position.set(0, 2.4, 0);
+    const doorMat = new BABYLON.StandardMaterial('portalDoorMat_' + Date.now(), scene);
+    doorMat.diffuseTexture = (() => {
+      const tex = new BABYLON.DynamicTexture('portalTex_' + Date.now(), { width: 256, height: 512 }, scene, false);
+      const ctx = tex.getContext();
+      const grad = ctx.createLinearGradient(0, 0, 0, 512);
+      grad.addColorStop(0, '#a855f7');
+      grad.addColorStop(1, '#06b6d4');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, 256, 512);
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 48px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('🚪', 128, 100);
+      ctx.fillText('ไป', 128, 256);
+      ctx.fillText('แผนที่', 128, 350);
+      tex.update();
+      return tex;
+    })();
+    doorMat.emissiveColor = new BABYLON.Color3(0.6, 0.4, 0.9);
+    doorMat.backFaceCulling = false;
+    door.material = doorMat;
+    door.metadata = { decoType: 'map_portal' };
+    door.isPickable = true;
+    return { root, door, doorMat, farmType: 'map_portal' };
   } else if (type === 'farm_cow') {
     // v1.9: Cow (clickable to milk)
     const root = new BABYLON.TransformNode('farm_cow_root_' + Date.now(), scene);
@@ -3461,6 +3750,7 @@ function placeDecoration(x, z) {
     deco.state = { name, boughtAt: performance.now(), lastMilkAt: performance.now() };
   }
   game.decorations.push(deco);
+  deco.mapId = game.currentMap;  // v2.0: tag with current map
   showHint(`🛒 วาง ${def.name} เรียบร้อย!`, 2000);
   playClick();
   updateUI();
@@ -3979,6 +4269,33 @@ function renderDecoShop() {
 }
 
 // v1.6: Campaign modal handlers
+// v2.0: Map selector modal handlers
+document.getElementById('map-toggle').addEventListener('click', () => {
+  renderMapModal();
+  document.getElementById('map-modal').classList.add('show');
+  playClick();
+});
+document.getElementById('map-close').addEventListener('click', () => {
+  document.getElementById('map-modal').classList.remove('show');
+  playClick();
+});
+function renderMapModal() {
+  const list = document.getElementById('map-list');
+  if (!list) return;
+  list.innerHTML = Object.entries(MAPS).map(([key, m]) => {
+    const active = key === game.currentMap;
+    return `<div class="map-card ${active ? 'active' : ''}" onclick="closeMapAndGo('${key}')">
+      <div class="map-icon">${m.icon}</div>
+      <div class="map-name">${m.name}</div>
+      <div class="map-desc">${key === 'park' ? 'สร้างเครื่องเล่น รับแขก' : 'ปลูกผัก เลี้ยววัว ตกปลา'}</div>
+      ${active ? '<div class="map-tag">📍 อยู่ที่นี่</div>' : '<div class="map-btn">→ ไป</div>'}
+    </div>`;
+  }).join('');
+}
+function closeMapAndGo(mapId) {
+  document.getElementById('map-modal').classList.remove('show');
+  if (game.currentMap !== mapId) switchMap(mapId);
+}
 document.getElementById('campaign-toggle').addEventListener('click', () => {
   renderCampaigns();
   document.getElementById('campaign-modal').classList.add('show');
@@ -4699,6 +5016,7 @@ function loadGame(slot = 0) {
     if (data.rides) {
       data.rides.forEach(rd => {
         const ride = rideFactories[rd.type](new BABYLON.Vector3(rd.pos.x, 0, rd.pos.z));
+        ride.mapId = rd.mapId || 'park';  // v2.0: restore mapId
         rides.push(ride);
         tagRideMeshes(ride);
       });
@@ -4772,6 +5090,7 @@ document.getElementById('import-file-input')?.addEventListener('change', (e) => 
       if (data.rides) {
         data.rides.forEach(rd => {
           const ride = rideFactories[rd.type](new BABYLON.Vector3(rd.pos.x, 0, rd.pos.z));
+          ride.mapId = rd.mapId || 'park';  // v2.0
           rides.push(ride);
           tagRideMeshes(ride);
         });
@@ -5009,6 +5328,7 @@ scene.onPointerObservable.add((pointerInfo) => {
           const cost = RIDE_INFO[game.selectedRideType].cost;
           if (game.money >= cost) {
             const ride = rideFactories[game.selectedRideType](p);
+            ride.mapId = game.currentMap;  // v2.0: tag with current map
             rides.push(ride);
             tagRideMeshes(ride);
             rideTypeCount[game.selectedRideType] = (rideTypeCount[game.selectedRideType] || 0) + 1;
@@ -5039,7 +5359,7 @@ scene.onPointerObservable.add((pointerInfo) => {
     }
     // v1.9: Farm decoration interaction (click on placed farm)
     else if (pointerInfo.event.button === 0 && !selectedDecoration) {
-      const farmPick = scene.pick(scene.pointerX, scene.pointerY, m => m.metadata && (m.metadata.decoType === 'farm_plot' || m.metadata.decoType === 'farm_pond' || m.metadata.decoType === 'farm_cow'));
+      const farmPick = scene.pick(scene.pointerX, scene.pointerY, m => m.metadata && (m.metadata.decoType === 'farm_plot' || m.metadata.decoType === 'farm_pond' || m.metadata.decoType === 'farm_cow' || m.metadata.decoType === 'map_portal'));
       if (farmPick.hit && farmPick.pickedMesh) {
         const meta = farmPick.pickedMesh.metadata;
         if (meta.decoType === 'farm_plot') {
@@ -5052,6 +5372,10 @@ scene.onPointerObservable.add((pointerInfo) => {
         } else if (meta.decoType === 'farm_cow') {
           const deco = game.decorations.find(d => d.type === 'farm_cow' && d.result && d.result.body === farmPick.pickedMesh);
           if (deco) handleCowClick(deco);
+        } else if (meta.decoType === 'map_portal') {
+          // Switch to the OTHER map
+          const otherMap = game.currentMap === 'park' ? 'farm' : 'park';
+          switchMap(otherMap);
         }
       }
     }
