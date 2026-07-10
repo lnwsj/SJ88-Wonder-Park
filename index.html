@@ -366,6 +366,8 @@
   #campaign-toggle { left: calc(50% + 156px); }
   #map-toggle { left: calc(50% + 116px); }
   #transport-toggle { left: calc(50% + 316px); }
+  #move-toggle { left: calc(50% + 356px); }
+  #profile-toggle { left: calc(50% + 396px); }
   #time-pause { left: calc(50% + 76px); }
   #time-speed { left: calc(50% + 36px); }
   #firework-btn { left: calc(50% - 4px); }
@@ -970,6 +972,8 @@
 <button id="leader-toggle" class="topbar-btn" title="ดู Leaderboard">🏆</button>
 <button id="map-toggle" class="topbar-btn" title="เปลี่ยนแผนที่">🗺️</button>
 <button id="transport-toggle" class="topbar-btn" title="ข้ามแผนที่ด้วยยานพาหนะ">🚌</button>
+<button id="move-toggle" class="topbar-btn" title="โหมดย้ายเครื่องเล่น (ลากเพื่อย้าย)">✋</button>
+<button id="profile-toggle" class="topbar-btn" title="ส่ง Park Profile ให้เพื่อนเทียบคะแนน">👥</button>
 <button id="time-pause" class="topbar-btn" title="หยุด/เล่น">⏸️</button>
 <button id="time-speed" class="topbar-btn" title="ความเร็ว">1x</button>
 <button id="firework-btn" class="topbar-btn" title="ยิ่งพลุ">🎆</button>
@@ -1023,6 +1027,9 @@
     <div class="sub">ตกแต่งสวนสนุกให้สวยงาม · เลือกของแล้วคลิกบนพื้น</div>
     <div class="campaign-grid" id="deco-grid"></div>
     <button class="close-btn" id="deco-close">ปิด</button>
+    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.82rem; color: rgba(255,255,255,0.6);">
+      🎨 <b>v2.5.2 Custom:</b> คลิกของแต่ละชิ้นบนพื้น เพื่อเปลี่ยนชื่อ/สี (ยังไม่ได้ทำ v2.5.2 นะ 😜)
+    </div>
   </div>
 </div>
 
@@ -1080,6 +1087,53 @@
   </div>
 </div>
 
+<!-- v2.5.2: Decoration Editor (rename + recolor) -->
+<div id="deco-editor-modal" class="manage-modal">
+  <div class="manage-box" style="max-width: 460px;">
+    <h2>🎨 แก้ไขของตกแต่ง</h2>
+    <div class="sub">ตั้งชื่อและเปลี่ยนสี</div>
+    <div style="margin: 16px 0;">
+      <label style="display:block; font-size: 0.85rem; color: #FFD66B; margin-bottom: 6px; font-weight: 600;">ชื่อ</label>
+      <input id="deco-editor-name" type="text" maxlength="20" style="width:100%; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff; font-size: 15px; box-sizing: border-box; font-family: inherit;" />
+    </div>
+    <div style="margin: 16px 0;">
+      <label style="display:block; font-size: 0.85rem; color: #FFD66B; margin-bottom: 8px; font-weight: 600;">สี</label>
+      <div id="deco-editor-colors" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;"></div>
+    </div>
+    <div style="display: flex; gap: 8px; margin-top: 16px;">
+      <button id="deco-editor-save" style="flex: 1; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; background: linear-gradient(135deg, #FFD66B, #ff9d3d); color: #2a1810; font-weight: 700;">💾 บันทึก</button>
+      <button id="deco-editor-delete" style="padding: 10px 16px; border-radius: 8px; border: 1px solid #dc2626; cursor: pointer; background: rgba(220,38,38,0.1); color: #fca5a5;">🗑️ ลบ</button>
+    </div>
+    <button class="close-btn" id="deco-editor-close" style="margin-top: 14px;">ปิด</button>
+  </div>
+</div>
+
+<!-- v2.5.5: Park Profile (multiplayer lite) -->
+<div id="profile-modal" class="manage-modal">
+  <div class="manage-box" style="max-width: 500px;">
+    <h2>👥 Park Profile</h2>
+    <div class="sub">แบ่งปันสถิติให้เพื่อนเปรียบเทียบ</div>
+    <div id="profile-my-stats" style="margin: 16px 0; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 10px;"></div>
+    <div style="margin: 16px 0;">
+      <label style="display:block; font-size: 0.85rem; color: #FFD66B; margin-bottom: 8px; font-weight: 600;">📤 ส่งโค้ดของฉัน</label>
+      <div style="display:flex; gap: 8px;">
+        <button id="profile-generate" style="flex: 1; padding: 10px 14px; border-radius: 8px; border: none; cursor: pointer; background: linear-gradient(135deg, #FFD66B, #ff9d3d); color: #2a1810; font-weight: 700;">🔐 สร้างโค้ด</button>
+        <button id="profile-copy" style="padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;">📋 คัดลอก</button>
+      </div>
+      <textarea id="profile-my-code" readonly style="width: 100%; height: 60px; margin-top: 8px; padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.4); color: #FFD66B; font-family: monospace; font-size: 11px; resize: none; box-sizing: border-box;"></textarea>
+    </div>
+    <div style="margin: 16px 0; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.1);">
+      <label style="display:block; font-size: 0.85rem; color: #FFD66B; margin-bottom: 8px; font-weight: 600;">📥 โค้ดเพื่ออน</label>
+      <div style="display:flex; gap: 8px;">
+        <input id="profile-friend-code" type="text" placeholder="วางโค้ดที่นี่..." style="flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff; font-size: 13px; box-sizing: border-box; font-family: monospace;" />
+        <button id="profile-compare" style="padding: 10px 14px; border-radius: 8px; border: none; cursor: pointer; background: linear-gradient(135deg, #ec4899, #a855f7); color: #fff; font-weight: 700;">📊 เปรียบเทียบ</button>
+      </div>
+      <div id="profile-friend-result" style="margin-top: 10px;"></div>
+    </div>
+    <button class="close-btn" id="profile-close" style="margin-top: 14px;">ปิด</button>
+  </div>
+</div>
+
 <!-- Toolbar -->
 <div id="toolbar">
   <div id="cat-tabs"></div>
@@ -1121,6 +1175,15 @@
     <!-- v1.3: Multi-day rating history graph -->
     <div class="stats-section-title">📈 7-Day Rating Trend</div>
     <div id="rating-graph" class="rating-graph"></div>
+    <!-- v2.5.1: New analytics sections -->
+    <div class="stats-section-title">💰 7-Day Income Trend</div>
+    <div id="income-graph" class="rating-graph"></div>
+    <div class="stats-section-title">👥 Visitors by Personality</div>
+    <div id="visitors-pie" class="rating-graph"></div>
+    <div class="stats-section-title">🎢 Top 5 Rides</div>
+    <div id="top-rides" class="rating-graph"></div>
+    <div class="stats-section-title">⛅ Weather Distribution</div>
+    <div id="weather-bars" class="rating-graph"></div>
     <div id="rating-graph-empty" class="rating-graph-empty">ยังไม่มีข้อมูลย้อนหลัง — เล่นครบ 1 วันเพื่อเริ่มบันทึก</div>
     <!-- v1.3: Achievements grid -->
     <div class="stats-section-title">🏆 Achievements <span class="ach-progress" id="ach-progress">0 / 0</span></div>
@@ -2915,6 +2978,22 @@ const VISITOR_TYPES = {
   ghost:   { name: 'ผี',     emoji: '👻', spawnWeight: 10, prefers: ['haunted', 'magic', 'pendulum', 'bungee'], tipMult: 1.8, patienceMult: 0.5, maxRides: [3,5], decayMult: 0.6, colorTint: [0.70, 0.85, 0.95], nightOnly: true },
 };
 
+// v2.5.3: Thai first names for visitors
+const THAI_NAMES_KID = ['น้องมิ้น', 'น้องเจ', 'น้องบีม', 'น้องน่าน', 'น้องฟ้า', 'น้องปัน', 'น้องข้าว'];
+const THAI_NAMES_FAMILY = ['ครอบครัวสมศักดิ์', 'ครอบครัวใจดี', 'ครอบครัวร่ำรวย', 'ครอบครัวมีสุข', 'ครอบครัวเก่งกล้า'];
+const THAI_NAMES_COUPLE = ['วิว+ฟ้าใส', 'เจมส์+มิ้น', 'เบสท์+เจ', 'ภีม+เม', 'เล้+มายด์'];
+const THAI_NAMES_RICH = ['คุณวินเซนต์', 'คุณหมูเอ็ม', 'คุณซาร่า', 'คุณเบนซ์', 'คุณมิ้นท์'];
+const THAI_NAMES_DATE = ['คู่เดทลับ', 'คู่โรแมนติก', 'คู่แสบ', 'คู่หวาน', 'คู่รักแท้'];
+const THAI_NAMES_GHOST = ['ผีสาวน้อย', 'ผีบ้านร้าง', 'ผีตาเดียว', 'ผีส้ม', 'ผีเปรี้ยว'];
+const VISITOR_NAME_POOL = {
+  kid: THAI_NAMES_KID, family: THAI_NAMES_FAMILY, couple: THAI_NAMES_COUPLE, rich: THAI_NAMES_RICH,
+  date: THAI_NAMES_DATE, ghost: THAI_NAMES_GHOST,
+};
+function randomVisitorName(type) {
+  const pool = VISITOR_NAME_POOL[type] || ['ไม่ระบุ'];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 function pickRandomVisitorType() {
   const nf = game.nightFactor || 0;
   const eligible = Object.entries(VISITOR_TYPES).filter(([k, v]) => !v.nightOnly || nf > 0.5);
@@ -3044,6 +3123,9 @@ class Visitor {
     this.type = pickRandomVisitorType();
     this.personality = VISITOR_TYPES[this.type];
     this.ridePreferenceMatched = 0;  // count of preferred rides taken
+    // v2.5.3: name + memory
+    this.name = randomVisitorName(this.type);
+    this.memory = { ridesTaken: [], firstSeenDay: game.day, totalSpent: 0, favoriteRide: null, returned: 0 };
 
     const colorIdx = Math.floor(Math.random() * 6);
     const bodyColor = [
@@ -3242,6 +3324,10 @@ class Visitor {
           damageRide(this.targetRide, 1);  // v1.4: degrade ride health per use
           const idx = this.targetRide.passengers.indexOf(this);
           if (idx >= 0) this.targetRide.passengers.splice(idx, 1);
+          // v2.5.3: update visitor memory
+          this.memory.ridesTaken.push({ type: this.targetRide.type, day: game.day, earned });
+          this.memory.totalSpent += earned;
+          this.memory.favoriteRide = isPreferred ? this.targetRide.type : this.memory.favoriteRide;
           // v1.5: extra happiness for preferred rides, less for kids
           const happinessGain = isPreferred ? 0.25 : 0.15;
           this.happiness = Math.min(1, this.happiness + happinessGain);
@@ -3896,6 +3982,7 @@ const game = {
   },
   // v2.4.1 — Park name + random events + cross-map transport
   parkName: 'Wonder Park',      // customizable name shown on banner + title
+  moveMode: false,               // v2.5.4: drag-to-move-ride mode
   activeEvent: null,            // {type, expiresAt, label, icon, effects, startedAt}
   eventLog: [],                 // [{day, type, label, icon, ts}] for review
   customRides: [],              // [{id, type, x, z, color, capacity, income, level}]
@@ -4387,6 +4474,20 @@ function createDecorationMesh(type, x, z) {
   return mesh;
 }
 
+// v2.5.2: post-process decoration to make it clickable for custom edit
+function attachDecoMetadata(result, decoId) {
+  if (!result) return;
+  const meshes = result.root ? result.root.getChildMeshes() : (result.getChildMeshes ? result.getChildMeshes() : [result]);
+  meshes.forEach(m => {
+    if (!m || !m.isPickable && m.setEnabled) m.isPickable = true;
+    if (!m.metadata) m.metadata = {};
+    m.metadata.decoId = decoId;
+    if (m.metadata.decoType !== 'farm_plot' && m.metadata.decoType !== 'farm_pond' && m.metadata.decoType !== 'farm_cow' && m.metadata.decoType !== 'map_portal') {
+      m.metadata.decoType = 'plain_deco';
+    }
+  });
+}
+
 let selectedDecoration = null;
 function selectDecoration(type) {
   const def = DECORATION_TYPES[type];
@@ -4422,7 +4523,8 @@ function placeDecoration(x, z) {
   }
   game.decorations.push(deco);
   deco.mapId = game.currentMap;  // v2.0: tag with current map
-  showHint(`🛒 วาง ${def.name} เรียบร้อย!`, 2000);
+  attachDecoMetadata(result, deco.id);  // v2.5.2: make pickable for edit
+  showHint(`🛒 วาง ${def.name} เรียบร้อย! (คลิกอีกครั้งเพื่อแก้ไข)`, 2500);
   playClick();
   updateUI();
   // Keep decoration tool active for multiple placements; user can press ESC
@@ -5230,6 +5332,275 @@ function startTransport(targetMap) {
 document.getElementById('transport-toggle').addEventListener('click', openTransport);
 document.getElementById('transport-close').addEventListener('click', closeTransport);
 
+// v2.5.2: Decoration editor (rename + recolor)
+const DECO_COLORS = [
+  { name: 'ชมพู',  hex: '#ec4899' }, { name: 'แดง',  hex: '#ef4444' }, { name: 'ส้ม',  hex: '#f97316' },
+  { name: 'เหลือง',hex: '#fbbf24' }, { name: 'เขียว',hex: '#10b981' }, { name: 'ฟ้า',  hex: '#3b82f6' },
+  { name: 'น้ำเงิน',hex: '#6366f1' }, { name: 'ม่วง',hex: '#a855f7' }, { name: 'ชา',   hex: '#14b8a6' },
+  { name: 'น้ำตาล',hex: '#92400e' }, { name: 'เทา',  hex: '#6b7280' }, { name: 'ขาว',  hex: '#f3f4f6' },
+];
+let editingDecoId = null;
+function openDecoEditor(deco) {
+  editingDecoId = deco.id;
+  const def = DECORATION_TYPES[deco.type] || { name: deco.type };
+  const input = document.getElementById('deco-editor-name');
+  if (input) input.value = deco.customName || def.name;
+  const colorGrid = document.getElementById('deco-editor-colors');
+  if (colorGrid) {
+    colorGrid.innerHTML = DECO_COLORS.map(c => {
+      const isSelected = (deco.customColor || def.color?.[0]?.toString()) === c.hex;
+      return `<button class="deco-color-btn" data-hex="${c.hex}" data-name="${c.name}" style="background: ${c.hex}; border: 2px solid ${isSelected ? '#FFD66B' : 'rgba(255,255,255,0.2)'}; border-radius: 8px; height: 44px; cursor: pointer;" title="${c.name}"></button>`;
+    }).join('');
+    colorGrid.querySelectorAll('.deco-color-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        colorGrid.querySelectorAll('.deco-color-btn').forEach(b => b.style.border = '2px solid rgba(255,255,255,0.2)');
+        btn.style.border = '2px solid #FFD66B';
+      });
+    });
+  }
+  document.getElementById('deco-editor-modal').classList.add('show');
+  playClick();
+}
+function closeDecoEditor() {
+  document.getElementById('deco-editor-modal').classList.remove('show');
+  editingDecoId = null;
+  playClick();
+}
+function saveDecoEditor() {
+  if (editingDecoId == null) return;
+  const deco = game.decorations.find(d => d.id === editingDecoId);
+  if (!deco) { closeDecoEditor(); return; }
+  const name = (document.getElementById('deco-editor-name').value || '').trim().slice(0, 20);
+  const selectedColor = document.querySelector('.deco-color-btn[style*="FFD66B"]');
+  const newColorHex = selectedColor ? selectedColor.dataset.hex : null;
+  const newColorName = selectedColor ? selectedColor.dataset.name : null;
+  deco.customName = name || (DECORATION_TYPES[deco.type] || {}).name;
+  if (newColorHex) {
+    deco.customColor = newColorHex;
+    // Apply to meshes
+    if (deco.result && deco.result.root) {
+      deco.result.root.getChildMeshes().forEach(m => {
+        if (m.material && m.material.diffuseColor) {
+          const r = parseInt(newColorHex.slice(1, 3), 16) / 255;
+          const g = parseInt(newColorHex.slice(3, 5), 16) / 255;
+          const b = parseInt(newColorHex.slice(5, 7), 16) / 255;
+          m.material.diffuseColor = new BABYLON.Color3(r, g, b);
+        }
+      });
+    }
+  }
+  deco.customColorName = newColorName;
+  showHint(`🎨 แก้ไขแล้ว: ${deco.customName} (${newColorName || 'เดิม'})`);
+  saveGame(0, true);
+  closeDecoEditor();
+}
+function deleteDecoEditor() {
+  if (editingDecoId == null) return;
+  if (!confirm('ลบของตกแต่งชิ้นนี้? (จะได้เงินคืนครึ่งหนึ่ง)')) return;
+  const idx = game.decorations.findIndex(d => d.id === editingDecoId);
+  if (idx < 0) { closeDecoEditor(); return; }
+  const deco = game.decorations[idx];
+  const def = DECORATION_TYPES[deco.type] || { cost: 0 };
+  try { deco.result?.root?.dispose?.(); } catch(e){}
+  game.decorations.splice(idx, 1);
+  game.money += Math.floor(def.cost / 2);
+  showHint(`🗑️ ลบแล้ว · ได้เงินคืน $${Math.floor(def.cost/2)}`);
+  playClick();
+  saveGame(0, true);
+  closeDecoEditor();
+}
+document.getElementById('deco-editor-close').addEventListener('click', closeDecoEditor);
+document.getElementById('deco-editor-save').addEventListener('click', saveDecoEditor);
+document.getElementById('deco-editor-delete').addEventListener('click', deleteDecoEditor);
+
+// v2.5.4: Move mode — drag rides to reposition
+let draggingRide = null;
+let dragOffset = { x: 0, z: 0 };
+function toggleMoveMode() {
+  game.moveMode = !game.moveMode;
+  if (game.moveMode) {
+    // disable other modes
+    if (selectedDecoration) cancelDecoration();
+    if (game.selectedRideType) deselectRide();
+    document.getElementById('move-toggle').classList.add('active');
+    document.getElementById('move-toggle').style.background = 'rgba(255, 159, 28, 0.9)';
+    showHint('✋ Move mode · คลิก+ลากเครื่องเล่นเพื่อย้าย · กด ESC หรือคลิกปุ่มอีกครั้งเพื่อออก', 5000);
+  } else {
+    document.getElementById('move-toggle').classList.remove('active');
+    document.getElementById('move-toggle').style.background = '';
+    if (draggingRide) finishDrag();
+  }
+  playClick();
+}
+function startDrag(ride, pickPoint) {
+  draggingRide = ride;
+  dragOffset.x = ride.root.position.x - pickPoint.x;
+  dragOffset.z = ride.root.position.z - pickPoint.z;
+  // highlight
+  ride.root.getChildMeshes().forEach(m => {
+    if (m.material) m.material.emissiveColor = new BABYLON.Color3(0.4, 0.3, 0.1);
+  });
+}
+function updateDrag(pickPoint) {
+  if (!draggingRide) return;
+  const nx = Math.round((pickPoint.x + dragOffset.x) / 2) * 2;
+  const nz = Math.round((pickPoint.z + dragOffset.z) / 2) * 2;
+  draggingRide.root.position.x = nx;
+  draggingRide.root.position.z = nz;
+}
+function finishDrag() {
+  if (!draggingRide) return;
+  // restore materials
+  draggingRide.root.getChildMeshes().forEach(m => {
+    if (m.material) m.material.emissiveColor = new BABYLON.Color3(0.1, 0.05, 0.0);
+  });
+  showHint(`✋ ย้าย ${draggingRide.info.name} ไปยัง (${Math.round(draggingRide.root.position.x)}, ${Math.round(draggingRide.root.position.z)})`);
+  draggingRide = null;
+  playClick();
+  saveGame(0, true);
+}
+document.getElementById('move-toggle').addEventListener('click', toggleMoveMode);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && game.moveMode) toggleMoveMode();
+});
+// Hook into pointer move for drag tracking
+scene.onPointerObservable.add((pi) => {
+  if (pi.type === BABYLON.PointerEventTypes.POINTERMOVE && draggingRide) {
+    const pick = scene.pick(scene.pointerX, scene.pointerY, m => m === ground || m === plaza);
+    if (pick.hit) updateDrag(pick.pickedPoint);
+  } else if (pi.type === BABYLON.PointerEventTypes.POINTERUP && draggingRide) {
+    finishDrag();
+  }
+});
+
+// v2.5.5: Park Profile (multiplayer lite — share code)
+function encodeProfile() {
+  const data = {
+    v: 'wpp1',
+    name: game.parkName || 'Wonder Park',
+    rating: +(game.parkRating || 0).toFixed(2),
+    income: Math.floor(game.totalIncome || 0),
+    visitors: game.totalVisitors || 0,
+    riders: game.totalRiders || 0,
+    rides: rides.length,
+    achievements: Object.keys(game.achievements || {}).length,
+    day: game.day,
+  };
+  return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+}
+function decodeProfile(code) {
+  try {
+    const json = decodeURIComponent(escape(atob(code.trim())));
+    const d = JSON.parse(json);
+    if (d.v !== 'wpp1') return null;
+    return d;
+  } catch (e) { return null; }
+}
+function openProfile() {
+  const my = document.getElementById('profile-my-stats');
+  if (my) my.innerHTML = renderProfileRow({ name: '⭐ ' + (game.parkName || 'Wonder Park') + ' (คุณ)', rating: +game.parkRating.toFixed(2), income: Math.floor(game.totalIncome), visitors: game.totalVisitors, riders: game.totalRiders, rides: rides.length, achievements: Object.keys(game.achievements||{}).length, day: game.day, mine: true });
+  document.getElementById('profile-modal').classList.add('show');
+  playClick();
+}
+function closeProfile() {
+  document.getElementById('profile-modal').classList.remove('show');
+  playClick();
+}
+function renderProfileRow(p, mine = false) {
+  const color = mine ? '#FFD66B' : '#06b6d4';
+  return `<div style="background: rgba(${mine ? '255,214,107' : '6,182,212'}, 0.1); border: 1px solid ${color}; border-radius: 8px; padding: 12px;">
+    <div style="font-weight: 700; font-size: 1.05rem; color: ${color}; margin-bottom: 8px;">${p.name}</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.85rem;">
+      <div>⭐ Rating: <b>${p.rating} / 5</b></div>
+      <div>📅 Day: <b>${p.day}</b></div>
+      <div>💰 Income: <b>$${(p.income || 0).toLocaleString()}</b></div>
+      <div>👥 Visitors: <b>${(p.visitors || 0).toLocaleString()}</b></div>
+      <div>🎟️ Riders: <b>${(p.riders || 0).toLocaleString()}</b></div>
+      <div>🎢 Rides: <b>${p.rides || 0}</b></div>
+      <div>🏆 Achievements: <b>${p.achievements || 0} / 22</b></div>
+    </div>
+  </div>`;
+}
+function generateProfileCode() {
+  const code = encodeProfile();
+  const ta = document.getElementById('profile-my-code');
+  if (ta) ta.value = code;
+  showHint('🔐 สร้างโค้ดสำเร็จ! (กดปุ่ม Copy เพื่อคัดลอก)');
+  playClick();
+}
+function copyProfileCode() {
+  const code = document.getElementById('profile-my-code').value;
+  if (!code) { showHint('⚠️ กดสร้างโค้ดก่อน'); return; }
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(code).then(() => {
+      showHint('📋 คัดลอกโค้ดแล้ว! ส่งให้เพื่ออนได้เลย');
+    }).catch(() => {
+      document.getElementById('profile-my-code').select();
+      document.execCommand('copy');
+      showHint('📋 คัดลอกแล้ว (fallback)');
+    });
+  } else {
+    document.getElementById('profile-my-code').select();
+    document.execCommand('copy');
+    showHint('📋 คัดลอกแล้ว (fallback)');
+  }
+  playClick();
+}
+function compareFriend() {
+  const code = document.getElementById('profile-friend-code').value;
+  if (!code) { showHint('⚠️ วางโค้ดเพื่ออนก่อน'); return; }
+  const f = decodeProfile(code);
+  if (!f) { showHint('❌ โค้ดไม่ถูกต้อง'); return; }
+  const me = {
+    name: '⭐ ' + (game.parkName || 'Wonder Park') + ' (คุณ)',
+    rating: +game.parkRating.toFixed(2),
+    income: Math.floor(game.totalIncome),
+    visitors: game.totalVisitors,
+    riders: game.totalRiders,
+    rides: rides.length,
+    achievements: Object.keys(game.achievements||{}).length,
+    day: game.day,
+  };
+  // Build comparison
+  const cmp = [
+    { key: 'rating', label: '⭐ Rating', my: me.rating, fr: f.rating, hi: (a,b) => a > b ? 'me' : (a < b ? 'fr' : 'tie') },
+    { key: 'income', label: '💰 Income', my: me.income, fr: f.income, hi: (a,b) => a > b ? 'me' : (a < b ? 'fr' : 'tie') },
+    { key: 'visitors', label: '👥 Visitors', my: me.visitors, fr: f.visitors, hi: (a,b) => a > b ? 'me' : (a < b ? 'fr' : 'tie') },
+    { key: 'riders', label: '🎟️ Riders', my: me.riders, fr: f.riders, hi: (a,b) => a > b ? 'me' : (a < b ? 'fr' : 'tie') },
+    { key: 'rides', label: '🎢 Rides', my: me.rides, fr: f.rides, hi: (a,b) => a > b ? 'me' : (a < b ? 'fr' : 'tie') },
+    { key: 'day', label: '📅 Day', my: me.day, fr: f.day, hi: (a,b) => a > b ? 'me' : (a < b ? 'fr' : 'tie') },
+  ];
+  const rows = cmp.map(c => {
+    const winner = c.hi(c.my, c.fr);
+    const mineStyle = winner === 'me' ? 'background: rgba(255,214,107,0.15); color: #FFD66B; font-weight: 700;' : '';
+    const frStyle = winner === 'fr' ? 'background: rgba(6,182,212,0.15); color: #67e8f9; font-weight: 700;' : '';
+    return `<div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; padding: 5px 0; font-size: 0.85rem;">
+      <div style="text-align: right; ${mineStyle}">${c.my.toLocaleString()}</div>
+      <div style="text-align: center; color: rgba(255,255,255,0.6);">${c.label}</div>
+      <div style="text-align: left; ${frStyle}">${c.fr.toLocaleString()}</div>
+    </div>`;
+  }).join('');
+  let meWins = 0, frWins = 0;
+  cmp.forEach(c => { if (c.hi(c.my, c.fr) === 'me') meWins++; else if (c.hi(c.my, c.fr) === 'fr') frWins++; });
+  const verdict = meWins > frWins ? '🎉 คุณชนะ! ' + (meWins - frWins) + '-' + frWins : (frWins > meWins ? '😅 เพื่ออนชนะ ' + frWins + '-' + meWins : '🤝 เสมอ! ' + meWins + '-' + frWins);
+  const friendName = f.name || 'เพื่ออน';
+  document.getElementById('profile-friend-result').innerHTML = `
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+      <div style="font-size: 0.78rem; color: rgba(255,255,255,0.5); text-align: right;">คุณ</div>
+      <div style="font-size: 0.78rem; color: rgba(255,255,255,0.5);">👥 ${friendName}</div>
+    </div>
+    ${rows}
+    <div style="margin-top: 10px; padding: 10px; text-align: center; font-weight: 700; font-size: 1rem; background: linear-gradient(135deg, rgba(255,214,107,0.15), rgba(236,72,153,0.15)); border-radius: 8px;">${verdict}</div>
+  `;
+  showHint(meWins >= frWins ? '🏆 คุณชนะ!' : '😅 เพื่ออนชนะ สู้ต่อไป!');
+  playStarUp();
+}
+document.getElementById('profile-toggle').addEventListener('click', openProfile);
+document.getElementById('profile-close').addEventListener('click', closeProfile);
+document.getElementById('profile-generate').addEventListener('click', generateProfileCode);
+document.getElementById('profile-copy').addEventListener('click', copyProfileCode);
+document.getElementById('profile-compare').addEventListener('click', compareFriend);
+
 function renderLeaderboard() {
   const grid = document.getElementById('leader-grid');
   if (!grid) return;
@@ -5840,7 +6211,7 @@ function serializeGame() {
     lastDayMoney: game.lastDayMoney || 0,
     // v2.4.1: park name + decorations (with mapId) + custom rides + events + cross-map
     parkName: game.parkName || 'Wonder Park',
-    decorations: (game.decorations || []).map(d => ({ id: d.id, type: d.type, x: d.x, z: d.z, mapId: d.mapId || 'park', state: d.state || null })),
+    decorations: (game.decorations || []).map(d => ({ id: d.id, type: d.type, x: d.x, z: d.z, mapId: d.mapId || 'park', state: d.state || null, customName: d.customName || null, customColor: d.customColor || null, customColorName: d.customColorName || null })),
     customRides: (game.customRides || []).map(r => ({ id: r.id, type: r.type, x: r.x, z: r.z, color: r.color, capacity: r.capacity, income: r.income, level: r.level || 1 })),
     eventLog: (game.eventLog || []).slice(-20),
     savedAt: Date.now(),
@@ -5924,8 +6295,20 @@ function loadGame(slot = 0) {
       data.decorations.forEach(dd => {
         if ((dd.mapId || 'park') !== game.currentMap) return;  // only restore for current map
         const result = createDecorationMesh(dd.type, dd.x, dd.z);
-        const deco = { id: dd.id, type: dd.type, x: dd.x, z: dd.z, result, mapId: dd.mapId || 'park', state: dd.state || null };
+        const deco = { id: dd.id, type: dd.type, x: dd.x, z: dd.z, result, mapId: dd.mapId || 'park', state: dd.state || null, customName: dd.customName || null, customColor: dd.customColor || null, customColorName: dd.customColorName || null };
         game.decorations.push(deco);
+        // v2.5.2: apply custom color + make pickable for edit
+        if (dd.customColor) {
+          const r = parseInt(dd.customColor.slice(1, 3), 16) / 255;
+          const g = parseInt(dd.customColor.slice(3, 5), 16) / 255;
+          const b = parseInt(dd.customColor.slice(5, 7), 16) / 255;
+          deco.result.root.getChildMeshes().forEach(m => {
+            if (m.material && m.material.diffuseColor) {
+              m.material.diffuseColor = new BABYLON.Color3(r, g, b);
+            }
+          });
+        }
+        attachDecoMetadata(result, deco.id);
       });
     }
     if (data.rides) {
@@ -6170,6 +6553,12 @@ scene.onPointerObservable.add((pointerInfo) => {
       const pick = scene.pick(scene.pointerX, scene.pointerY, m => m.metadata?.isRide);
       const info = document.getElementById('ride-info');
       if (pick.hit && pick.pickedMesh?.metadata?.rideRef) {
+        // v2.5.4: move mode → start drag instead of showing info
+        if (game.moveMode && pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+          const r2 = pick.pickedMesh.metadata.rideRef;
+          startDrag(r2, pick.pickedPoint);
+          return;
+        }
         const r = pick.pickedMesh.metadata.rideRef;
         info.classList.add('show');
         info.style.left = (pointerInfo.event.clientX + 12) + 'px';
@@ -6233,6 +6622,14 @@ scene.onPointerObservable.add((pointerInfo) => {
     } else { document.getElementById('ride-info').classList.remove('show'); }
   }
   else if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+    // v2.5.4: move mode — start drag on ride click
+    if (game.moveMode && !game.selectedRideType) {
+      const pick = scene.pick(scene.pointerX, scene.pointerY, m => m.metadata?.isRide);
+      if (pick.hit && pick.pickedMesh?.metadata?.rideRef) {
+        startDrag(pick.pickedMesh.metadata.rideRef, pick.pickedPoint);
+        return;
+      }
+    }
     if (pointerInfo.event.button === 0 && game.selectedRideType) {
       const pick = scene.pick(scene.pointerX, scene.pointerY, m => m === ground || m === plaza);
       if (pick.hit) {
@@ -6291,6 +6688,14 @@ scene.onPointerObservable.add((pointerInfo) => {
           // Switch to the OTHER map
           const otherMap = game.currentMap === 'park' ? 'farm' : 'park';
           switchMap(otherMap);
+        } else if (meta.decoType === 'custom_deco') {
+          // v2.5.2: edit custom decoration
+          const deco = game.decorations.find(d => d.id === meta.decoId);
+          if (deco) openDecoEditor(deco);
+        } else if (meta.decoType === 'plain_deco') {
+          // v2.5.2: edit any decoration by clicking it
+          const deco = game.decorations.find(d => d.id === meta.decoId);
+          if (deco) openDecoEditor(deco);
         }
       }
     }
@@ -6822,8 +7227,104 @@ function openStats() {
   // v1.3: render rating history graph + achievements grid
   renderRatingGraph();
   renderAchievementsGrid();
+  // v2.5.1: new analytics
+  renderIncomeGraph();
+  renderVisitorsPie();
+  renderTopRides();
+  renderWeatherBars();
   modal.classList.add('show');
   playClick();
+}
+
+// v2.5.1: Income graph (7-day bar chart)
+function renderIncomeGraph() {
+  const el = document.getElementById('income-graph');
+  if (!el) return;
+  const history = game.ratingHistory || [];
+  if (history.length === 0) { el.innerHTML = '<div class="rating-graph-empty">ยังไม่มีข้อมูล</div>'; return; }
+  const data = history.slice(-7);
+  const maxInc = Math.max(...data.map(d => d.income || 0), 1);
+  const bars = data.map((d, i) => {
+    const h = Math.max(2, (d.income / maxInc) * 50);
+    return `<div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
+      <div style="font-size:0.7rem; color: #FFD66B;">$${Math.floor(d.income/100)/10}k</div>
+      <div style="width: 100%; height: ${h}px; background: linear-gradient(180deg, #FFD66B, #f59e0b); border-radius: 4px 4px 0 0;"></div>
+      <div style="font-size:0.65rem; color: rgba(255,255,255,0.6);">D${d.day}</div>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div style="display:flex; align-items:flex-end; gap:4px; height: 100px; padding: 4px;">${bars}</div>`;
+}
+
+// v2.5.1: Visitors by personality (pie-ish using flex bars)
+function renderVisitorsPie() {
+  const el = document.getElementById('visitors-pie');
+  if (!el) return;
+  const byType = (game.visitorStats && game.visitorStats.byType) || {};
+  const total = Object.values(byType).reduce((s, v) => s + (v.count || 0), 0);
+  if (total === 0) { el.innerHTML = '<div class="rating-graph-empty">ยังไม่มีผู้เข้าชม</div>'; return; }
+  const colors = { kid: '#fbbf24', family: '#10b981', couple: '#ec4899', rich: '#a855f7', date: '#f43f5e', ghost: '#06b6d4' };
+  const bars = Object.entries(byType).map(([type, s]) => {
+    const pct = Math.round((s.count / total) * 100);
+    const color = colors[type] || '#6b7280';
+    const label = (VISITOR_TYPES && VISITOR_TYPES[type] && VISITOR_TYPES[type].name) || type;
+    return `<div style="display:flex; align-items:center; gap:8px; margin: 6px 0;">
+      <div style="width: 14px; height: 14px; background: ${color}; border-radius: 3px;"></div>
+      <div style="flex: 1; min-width: 60px; font-size: 0.85rem; color: rgba(255,255,255,0.9);">${label}</div>
+      <div style="flex: 2; height: 12px; background: rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden;">
+        <div style="width: ${pct}%; height: 100%; background: ${color}; border-radius: 6px;"></div>
+      </div>
+      <div style="width: 50px; text-align: right; font-size: 0.85rem; color: #FFD66B; font-weight: 600;">${s.count} (${pct}%)</div>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div style="padding: 8px 4px;">${bars}<div style="font-size:0.75rem; color: rgba(255,255,255,0.5); margin-top: 8px; text-align:center;">รวม: ${total} คน</div></div>`;
+}
+
+// v2.5.1: Top 5 rides (bar chart)
+function renderTopRides() {
+  const el = document.getElementById('top-rides');
+  if (!el) return;
+  const pop = game.ridePopularity || {};
+  const entries = Object.entries(pop).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  if (entries.length === 0) { el.innerHTML = '<div class="rating-graph-empty">ยังไม่มีข้อมูล</div>'; return; }
+  const max = entries[0][1];
+  const rows = entries.map(([type, count], i) => {
+    const w = Math.max(8, (count / max) * 100);
+    const name = RIDE_INFO[type]?.name || type;
+    const emoji = (typeof getRideEmoji === 'function' ? getRideEmoji(type) : '✨');
+    return `<div style="display:flex; align-items:center; gap:8px; margin: 5px 0;">
+      <div style="width: 18px; text-align: center; font-weight: 700; color: #FFD66B;">${i+1}</div>
+      <div style="font-size: 1.1rem;">${emoji}</div>
+      <div style="flex: 1; min-width: 60px; font-size: 0.85rem; color: rgba(255,255,255,0.9);">${name}</div>
+      <div style="flex: 2; height: 12px; background: rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden;">
+        <div style="width: ${w}%; height: 100%; background: linear-gradient(90deg, #FFD66B, #ec4899); border-radius: 6px;"></div>
+      </div>
+      <div style="width: 40px; text-align: right; font-size: 0.85rem; color: #FFD66B; font-weight: 600;">${count}</div>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div style="padding: 8px 4px;">${rows}</div>`;
+}
+
+// v2.5.1: Weather distribution (bar chart)
+function renderWeatherBars() {
+  const el = document.getElementById('weather-bars');
+  if (!el) return;
+  const wd = game.weatherDays || { sunny:0, cloudy:0, rain:0, storm:0, snow:0 };
+  const total = Object.values(wd).reduce((s, v) => s + v, 0);
+  if (total === 0) { el.innerHTML = '<div class="rating-graph-empty">ยังไม่มีข้อมูลอากาศ</div>'; return; }
+  const colors = { sunny: '#fbbf24', cloudy: '#94a3b8', rain: '#3b82f6', storm: '#7c3aed', snow: '#e0f2fe' };
+  const icons = { sunny: '☀️', cloudy: '☁️', rain: '🌧️', storm: '⛈️', snow: '❄️' };
+  const labels = { sunny: 'แดด', cloudy: 'เมฆ', rain: 'ฝน', storm: 'พายุ', snow: 'หิมะ' };
+  const max = Math.max(...Object.values(wd));
+  const rows = Object.entries(wd).map(([w, count]) => {
+    const h = Math.max(2, (count / Math.max(max, 1)) * 60);
+    return `<div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+      <div style="font-size: 0.7rem; color: #FFD66B; font-weight: 600;">${count}</div>
+      <div style="width: 100%; height: ${h}px; background: ${colors[w]}; border-radius: 4px 4px 0 0; opacity: 0.85;"></div>
+      <div style="font-size: 1.2rem;">${icons[w]}</div>
+      <div style="font-size: 0.65rem; color: rgba(255,255,255,0.7);">${labels[w]}</div>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div style="display:flex; align-items:flex-end; gap:6px; height: 120px; padding: 4px 0;">${rows}</div><div style="font-size:0.75rem; color: rgba(255,255,255,0.5); text-align:center; margin-top: 4px;">รวม: ${total} วัน</div>`;
 }
 
 function renderRatingGraph() {
