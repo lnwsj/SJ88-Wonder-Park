@@ -365,6 +365,9 @@
   #leader-toggle { left: calc(50% + 116px); }
   #campaign-toggle { left: calc(50% + 156px); }
   #map-toggle { left: calc(50% + 116px); }
+  #time-pause { left: calc(50% + 76px); }
+  #time-speed { left: calc(50% + 36px); }
+  #firework-btn { left: calc(50% - 4px); }
   #deco-toggle { left: calc(50% + 196px); }
   #farm-toggle { left: calc(50% + 236px); }
   .campaign-indicator {
@@ -960,6 +963,9 @@
 <button id="expand-toggle" class="topbar-btn" title="ซื้อที่ดินเพิ่ม">🗺️</button>
 <button id="leader-toggle" class="topbar-btn" title="ดู Leaderboard">🏆</button>
 <button id="map-toggle" class="topbar-btn" title="เปลี่ยนแผนที่">🗺️</button>
+<button id="time-pause" class="topbar-btn" title="หยุด/เล่น">⏸️</button>
+<button id="time-speed" class="topbar-btn" title="ความเร็ว">1x</button>
+<button id="firework-btn" class="topbar-btn" title="ยิ่งพลุ">🎆</button>
 <button id="campaign-toggle" class="topbar-btn" title="Marketing Campaigns">📺</button>
 <button id="deco-toggle" class="topbar-btn" title="Decoration Shop">🌳</button>
 <button id="farm-toggle" class="topbar-btn" title="วางอุปกรณ์ฟาร์ม">🚜</button>
@@ -2777,7 +2783,22 @@ const VISITOR_TYPES = {
   family:  { name: 'ครอบครัว', emoji: '👨‍👩‍👧', spawnWeight: 35, prefers: ['food', 'ferris', 'icecream', 'popcorn', 'carousel', 'train'], tipMult: 1.2,  patienceMult: 1.3, maxRides: [4,6], decayMult: 0.8, colorTint: [0.40, 0.85, 0.50] },
   couple:  { name: 'คู่รัก',   emoji: '💑', spawnWeight: 25, prefers: ['tower', 'coaster', 'ferris', 'balloon', 'magic'], tipMult: 1.5,  patienceMult: 1.0, maxRides: [3,4], decayMult: 1.0, colorTint: [0.95, 0.40, 0.65] },
   rich:    { name: 'รวย',     emoji: '💰', spawnWeight: 15, prefers: ['loop', 'coaster', 'pendulum', 'bungee', 'pirate', 'haunted'], tipMult: 2.5,  patienceMult: 0.7, maxRides: [5,7], decayMult: 0.9, colorTint: [0.95, 0.60, 0.30] },
+  // v2.3: Night-only visitor types
+  date:    { name: 'คู่เดท',   emoji: '🌹', spawnWeight: 20, prefers: ['ferris', 'magic', 'haunted', 'carousel'], tipMult: 2.0, patienceMult: 0.8, maxRides: [2,3], decayMult: 0.7, colorTint: [0.95, 0.30, 0.50], nightOnly: true },
+  ghost:   { name: 'ผี',     emoji: '👻', spawnWeight: 10, prefers: ['haunted', 'magic', 'pendulum', 'bungee'], tipMult: 1.8, patienceMult: 0.5, maxRides: [3,5], decayMult: 0.6, colorTint: [0.70, 0.85, 0.95], nightOnly: true },
 };
+
+function pickRandomVisitorType() {
+  const nf = game.nightFactor || 0;
+  const eligible = Object.entries(VISITOR_TYPES).filter(([k, v]) => !v.nightOnly || nf > 0.5);
+  // Adjust weights for night types
+  const weighted = eligible.flatMap(([k, v]) => {
+    let weight = v.spawnWeight;
+    if (v.nightOnly) weight *= nf;  // 0 at day, full at night
+    return Array(Math.max(1, Math.round(weight))).fill(k);
+  });
+  return weighted[Math.floor(Math.random() * weighted.length)];
+}
 
 // v2.0: Maps — separate park and farm areas
 const MAPS = {
@@ -2884,17 +2905,6 @@ function updateMapVisibility() {
   beachWater.setEnabled(isBeach);
   for (const p of beachPalms) p.setEnabled(isBeach);
   for (const r of beachRocks) r.setEnabled(isBeach);
-}
-
-function pickRandomVisitorType() {
-  // v1.5: weighted random pick
-  const totalWeight = Object.values(VISITOR_TYPES).reduce((s, t) => s + t.spawnWeight, 0);
-  let r = Math.random() * totalWeight;
-  for (const [key, t] of Object.entries(VISITOR_TYPES)) {
-    r -= t.spawnWeight;
-    if (r <= 0) return key;
-  }
-  return 'family';
 }
 
 class Visitor {
@@ -3625,6 +3635,9 @@ const game = {
   ghost: null,
   ghostColor: 'green',
   spawnTimer: 0,
+  // v2.3: Time controls
+  timeScale: 1.0,              // 0 = pause, 1, 2, 4
+  timePaused: false,
   // v2.0: Map system
   currentMap: 'park',
   parkRating: 0,
@@ -4723,6 +4736,32 @@ function renderDecoShop() {
 
 // v1.6: Campaign modal handlers
 // v2.0: Map selector modal handlers
+// v2.3: Time controls
+document.getElementById('time-pause').addEventListener('click', () => {
+  game.timePaused = !game.timePaused;
+  document.getElementById('time-pause').textContent = game.timePaused ? '▶️' : '⏸️';
+  playClick();
+});
+// v2.3: Firework button
+document.getElementById('firework-btn').addEventListener('click', () => {
+  if (game.money < 50) { showHint('❌ เงินไม่พอ (ต้องการ $50 ต่อลูก)'); return; }
+  game.money -= 50;
+  launchFirework();
+  showHint('🎆 ปล่อยพลุ! (-$50)', 2000);
+  updateUI();
+});
+document.getElementById('time-speed').addEventListener('click', () => {
+  if (game.timeScale === 1) game.timeScale = 2;
+  else if (game.timeScale === 2) game.timeScale = 4;
+  else game.timeScale = 1;
+  document.getElementById('time-speed').textContent = game.timeScale + 'x';
+  if (game.timeScale > 1 && !game.timePaused) {
+    document.getElementById('time-speed').style.color = '#fbbf24';
+  } else {
+    document.getElementById('time-speed').style.color = '';
+  }
+  playClick();
+});
 document.getElementById('map-toggle').addEventListener('click', () => {
   renderMapModal();
   document.getElementById('map-modal').classList.add('show');
@@ -5958,6 +5997,108 @@ function spawnConfetti(count = 50) {
   }
 }
 
+// v2.3: Fireworks system (3D particles)
+let fireworks = [];
+function launchFirework(color) {
+  const startX = (Math.random() - 0.5) * 60;
+  const startZ = (Math.random() - 0.5) * 60;
+  const peakY = 50 + Math.random() * 30;
+  const colors = color ? [color] : ['#ff6b6b', '#ffd66b', '#4ecdc4', '#ff8a65', '#aa96da', '#95e1d3', '#fbbf24'];
+  const fwColor = colors[Math.floor(Math.random() * colors.length)];
+  // Rocket (rising sphere)
+  const rocket = BABYLON.MeshBuilder.CreateSphere('rocket_' + Date.now(), { diameter: 0.6, segments: 6 }, scene);
+  const rMat = new BABYLON.StandardMaterial('rocketMat', scene);
+  rMat.diffuseColor = BABYLON.Color3.FromHexString(fwColor);
+  rMat.emissiveColor = BABYLON.Color3.FromHexString(fwColor);
+  rocket.material = rMat;
+  rocket.position.set(startX, 0, startZ);
+  fireworks.push({
+    type: 'rocket',
+    mesh: rocket,
+    mat: rMat,
+    startX, startZ,
+    targetY: peakY,
+    speed: 30 + Math.random() * 20,
+    startTime: performance.now(),
+    color: BABYLON.Color3.FromHexString(fwColor),
+    explosionParticles: null,
+  });
+  playDing();
+}
+
+function explodeFirework(x, y, z, color) {
+  const particleCount = 40 + Math.floor(Math.random() * 30);
+  for (let i = 0; i < particleCount; i++) {
+    const angle = (i / particleCount) * Math.PI * 2;
+    const elev = (Math.random() - 0.5) * Math.PI * 0.8;
+    const speed = 15 + Math.random() * 15;
+    const dx = Math.cos(angle) * Math.cos(elev) * speed;
+    const dy = Math.sin(elev) * speed;
+    const dz = Math.sin(angle) * Math.cos(elev) * speed;
+    const p = BABYLON.MeshBuilder.CreateSphere('fw_p_' + Date.now() + '_' + i, { diameter: 0.5, segments: 4 }, scene);
+    p.position.set(x, y, z);
+    const pMat = new BABYLON.StandardMaterial('fw_pMat_' + i, scene);
+    pMat.diffuseColor = color;
+    pMat.emissiveColor = color;
+    p.material = pMat;
+    fireworks.push({
+      type: 'particle',
+      mesh: p,
+      mat: pMat,
+      vx: dx, vy: dy, vz: dz,
+      startTime: performance.now(),
+      lifeMs: 1500 + Math.random() * 500,
+    });
+  }
+}
+
+function updateFireworks(realDt) {
+  const now = performance.now();
+  const toRemove = [];
+  for (let i = 0; i < fireworks.length; i++) {
+    const fw = fireworks[i];
+    const elapsed = (now - fw.startTime) / 1000;
+    if (fw.type === 'rocket') {
+      fw.mesh.position.y = Math.min(fw.targetY, elapsed * fw.speed);
+      fw.mesh.position.x = fw.startX;
+      fw.mesh.position.z = fw.startZ;
+      if (fw.mesh.position.y >= fw.targetY) {
+        // Explode
+        explodeFirework(fw.mesh.position.x, fw.mesh.position.y, fw.mesh.position.z, fw.color);
+        fw.mesh.dispose();
+        fw.mat.dispose();
+        toRemove.push(i);
+      }
+    } else if (fw.type === 'particle') {
+      fw.mesh.position.x += fw.vx * realDt;
+      fw.mesh.position.y += fw.vy * realDt;
+      fw.mesh.position.z += fw.vz * realDt;
+      fw.vy -= 15 * realDt;  // gravity
+      // Fade out
+      const lifeProgress = (now - fw.startTime) / fw.lifeMs;
+      if (lifeProgress >= 1) {
+        fw.mesh.dispose();
+        fw.mat.dispose();
+        toRemove.push(i);
+      } else {
+        fw.mat.alpha = 1 - lifeProgress;
+      }
+    }
+  }
+  for (let i = toRemove.length - 1; i >= 0; i--) {
+    fireworks.splice(toRemove[i], 1);
+  }
+}
+
+// Auto-launch fireworks at night
+let lastFireworkTime = 0;
+function maybeAutoFirework(now) {
+  if (game.nightFactor > 0.7 && now - lastFireworkTime > 8000) {
+    lastFireworkTime = now;
+    if (Math.random() < 0.3) launchFirework();
+  }
+}
+
 // =========================================================================
 //                          SOUND SYSTEM (Web Audio synthesis)
 // =========================================================================
@@ -6444,8 +6585,13 @@ scene.registerBeforeRender(() => {
     }
   }
 
-  // Day cycle
-  game.dayTimer += dt;
+  // Day cycle (v2.3: timeScale)
+  const realDt = dt;
+  if (game.timePaused) {
+    game.dayTimer += 0;
+  } else {
+    game.dayTimer += dt * (game.timeScale || 1);
+  }
   if (game.dayTimer > game.dayLength) {
     // v1.3: snapshot previous day's stats before incrementing
     game.lastDayRating = game.parkRating;
@@ -6499,6 +6645,12 @@ scene.registerBeforeRender(() => {
         }
       }
     }
+  }
+
+  // v2.3: Update fireworks + auto-launch at night
+  if (!game.timePaused) {
+    updateFireworks(realDt);
+    maybeAutoFirework(performance.now());
   }
   updateLeaderboard();  // v1.5
   // v1.4: check rating-based quest progress
