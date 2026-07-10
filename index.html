@@ -368,6 +368,9 @@
   #transport-toggle { left: calc(50% + 316px); }
   #move-toggle { left: calc(50% + 356px); }
   #profile-toggle { left: calc(50% + 396px); }
+  #challenges-toggle { left: calc(50% + 436px); }
+  #screenshot-btn { left: calc(50% + 476px); }
+  #lang-toggle { left: calc(50% + 516px); }
   #time-pause { left: calc(50% + 76px); }
   #time-speed { left: calc(50% + 36px); }
   #firework-btn { left: calc(50% - 4px); }
@@ -974,6 +977,9 @@
 <button id="transport-toggle" class="topbar-btn" title="ข้ามแผนที่ด้วยยานพาหนะ">🚌</button>
 <button id="move-toggle" class="topbar-btn" title="โหมดย้ายเครื่องเล่น (ลากเพื่อย้าย)">✋</button>
 <button id="profile-toggle" class="topbar-btn" title="ส่ง Park Profile ให้เพื่อนเทียบคะแนน">👥</button>
+<button id="challenges-toggle" class="topbar-btn" title="Daily Challenges (3 อัน/วัน)">📅</button>
+<button id="screenshot-btn" class="topbar-btn" title="แคปจอเป็น PNG">📷</button>
+<button id="lang-toggle" class="topbar-btn" title="ภาษา / Language / 语言" style="font-size: 13px; font-weight: 700;">TH</button>
 <button id="time-pause" class="topbar-btn" title="หยุด/เล่น">⏸️</button>
 <button id="time-speed" class="topbar-btn" title="ความเร็ว">1x</button>
 <button id="firework-btn" class="topbar-btn" title="ยิ่งพลุ">🎆</button>
@@ -1131,6 +1137,17 @@
       <div id="profile-friend-result" style="margin-top: 10px;"></div>
     </div>
     <button class="close-btn" id="profile-close" style="margin-top: 14px;">ปิด</button>
+  </div>
+</div>
+
+<!-- v2.6.1: Daily Challenges modal -->
+<div id="challenges-modal" class="manage-modal">
+  <div class="manage-box" style="max-width: 480px;">
+    <h2>📅 Daily Challenges</h2>
+    <div class="sub">3 อันท้าใหม่ทุกวัน · ทำให้ครบเพื่อรับรางวัล</div>
+    <div id="challenges-list" style="margin: 16px 0;"></div>
+    <div id="challenges-streak" style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.25); border-radius: 8px; text-align: center; font-size: 0.9rem; color: #FFD66B;"></div>
+    <button class="close-btn" id="challenges-close" style="margin-top: 14px;">ปิด</button>
   </div>
 </div>
 
@@ -3316,7 +3333,7 @@ class Visitor {
           // v1.5: preferred ride bonus (10% extra tip if matches preference)
           const isPreferred = this.personality.prefers.includes(this.targetRide.type);
           const preferenceBonus = isPreferred ? 1.1 : 1.0;
-          const earned = Math.round(baseIncome * incomeMult * tipMult * personalityTipMult * preferenceBonus * getEventMult('income'));
+          const earned = Math.round(baseIncome * incomeMult * tipMult * personalityTipMult * preferenceBonus * getEventMult('income') * (1 + (game.staffIncomeBonus || 0)));
           earnMoney(earned, 'ride');
           game.totalRiders++;
           recordDailyStat('riders', 1);  // v1.3: track daily rides taken
@@ -3566,6 +3583,15 @@ function checkStreakOnDayEnd() {
   }
   // v1.6: Check campaign expiry
   checkCampaignExpiry();
+  // v2.6.1: update challenges based on day-end state
+  updateChallengeProgress('daily_income', game.dailyStats.income || 0);
+  // For reach_rating: set progress to current rating
+  if (game.dailyChallenges) {
+    for (const ch of game.dailyChallenges) {
+      if (ch.type === 'reach_rating') ch.progress = game.parkRating || 0;
+      if (ch.type === 'no_break') ch.progress = (Object.values(game.rideHealth || {}).some(h => h.broken)) ? 0 : 0; // 0 means "kept no break"
+    }
+  }
 }
 
 function recordWeatherDay(weather) {
@@ -3591,6 +3617,68 @@ const QUEST_POOL = [
   { id: 'rating_4',    type: 'rating',      target: 4, reward: 600, icon: '🌟', label: 'ทำ rating ให้ถึง {n} ดาว' },
   { id: 'no_storm',    type: 'survive',     target: 1, reward: 200, icon: '⛈️', label: 'ผ่านพายุให้ได้ {n} วัน' },
 ];
+
+// v2.6.1: Daily Challenges (3 per day, streak bonus)
+const CHALLENGE_POOL = [
+  { id: 'c_place_rides',  target: 3,  reward: 400, icon: '🏗️', label: 'วางเครื่องเล่น {n} ชิ้น',  type: 'place_rides' },
+  { id: 'c_collect_milk', target: 5,  reward: 300, icon: '🥛', label: 'รีดนมวัว {n} ครั้ง',     type: 'collect_milk' },
+  { id: 'c_harvest_crops',target: 4,  reward: 250, icon: '🥕', label: 'เก็บเกี่ยวพืช {n} ครั้ง',  type: 'harvest_crops' },
+  { id: 'c_catch_fish',   target: 3,  reward: 200, icon: '🐟', label: 'จับปลา {n} ตัว',          type: 'catch_fish' },
+  { id: 'c_fireworks',    target: 2,  reward: 350, icon: '🎆', label: 'ยิ่งพลุ {n} ครั้ง',         type: 'fireworks' },
+  { id: 'c_decorate',     target: 5,  reward: 500, icon: '🎨', label: 'วาง decoration {n} ชิ้น', type: 'place_deco' },
+  { id: 'c_custom_rides', target: 2,  reward: 600, icon: '🎪', label: 'วาง custom ride {n} ชิ้น', type: 'place_custom' },
+  { id: 'c_travel',       target: 2,  reward: 250, icon: '🚌', label: 'ข้ามแผนที่ {n} ครั้ง',     type: 'travel' },
+  { id: 'c_move_rides',   target: 3,  reward: 300, icon: '✋', label: 'ย้ายเครื่องเล่น {n} ครั้ง', type: 'move_rides' },
+  { id: 'c_5star',        target: 1,  reward: 700, icon: '⭐', label: 'ได้ rating {n} ดาว',         type: 'reach_rating' },
+  { id: 'c_1000_income',  target: 1000,reward: 500, icon: '💰', label: 'รายได้วันนี้ ${n}',       type: 'daily_income' },
+  { id: 'c_no_break',     target: 0,  reward: 400, icon: '🛡️', label: 'ไม่มีเครื่องเล่นพัง',      type: 'no_break' },
+];
+function generateDailyChallenges() {
+  // pick 3 random unique challenges
+  const shuffled = [...CHALLENGE_POOL].sort(() => Math.random() - 0.5);
+  const picked = shuffled.slice(0, 3);
+  return picked.map(tpl => ({
+    id: tpl.id,
+    type: tpl.type,
+    target: tpl.target,
+    progress: 0,
+    reward: tpl.reward,
+    icon: tpl.icon,
+    label: tpl.label.replace('{n}', tpl.target).replace('${n}', '$' + tpl.target),
+    claimed: false,
+  }));
+}
+function updateChallengeProgress(type, amount = 1) {
+  if (!game.dailyChallenges) return;
+  for (const ch of game.dailyChallenges) {
+    if (ch.claimed) continue;
+    if (ch.type !== type) continue;
+    if (type === 'reach_rating') {
+      // for rating, set to current rating
+      ch.progress = Math.max(ch.progress, game.parkRating);
+    } else if (type === 'no_break') {
+      // no_break is "kept at 0" - we just check no rides are broken
+      ch.progress = 0;
+    } else {
+      ch.progress = Math.min(ch.target, ch.progress + amount);
+    }
+  }
+  updateChallengesUI();
+}
+function claimChallenge(challengeId) {
+  const ch = game.dailyChallenges?.find(c => c.id === challengeId);
+  if (!ch || ch.claimed) return;
+  if (ch.progress < ch.target) return;
+  ch.claimed = true;
+  game.money += ch.reward;
+  spawnCoinParticle(ch.reward);
+  game.challengeStreak = (game.challengeStreak || 0) + 1;
+  game.challengesCompleted = (game.challengesCompleted || 0) + 1;
+  showHint(`🏆 Challenge: ${ch.label} — +$${ch.reward}! (Streak: ${game.challengeStreak})`);
+  playStarUp();
+  saveGame(0, true);
+  updateChallengesUI();
+}
 
 // v2.4.3: Random events
 const EVENT_POOL = [
@@ -3684,6 +3772,8 @@ function updateQuestProgress(type, amount = 1) {
   if (game.dailyQuest.type !== type) return;
   game.dailyQuest.progress = Math.min(game.dailyQuest.target, game.dailyQuest.progress + amount);
   updateQuestUI();
+  // v2.6.1: also update challenges (different type names mostly)
+  updateChallengeProgress(type, amount);
   // Auto-complete check
   if (game.dailyQuest.progress >= game.dailyQuest.target && !game.dailyQuest.claimed) {
     setTimeout(() => claimQuest(), 500);  // small delay for visual
@@ -3732,6 +3822,8 @@ function damageRide(ride, amount = 1) {
   const h = game.rideHealth[ride.id];
   if (!h) return;
   if (h.broken) return;  // can't damage further when broken
+  // v2.6.3: security staff reduces damage
+  if (game.staffSafetyBonus && Math.random() < game.staffSafetyBonus) return;
   // Slight randomness: 2% chance to take DOUBLE damage
   if (Math.random() < 0.02) amount *= 2;
   h.health = Math.max(0, h.health - amount);
@@ -3907,6 +3999,10 @@ const STAFF_TYPES = {
   janitor:  { name: 'คนกวาด', emoji: '🧹', cost: 30,  color: '#84cc16', bodyColor: [0.40, 0.55, 0.20], headColor: [0.85, 0.70, 0.55], effect: 'happiness', rate: 0.5, desc: '+ความสุข +0.5/นาที' },
   mechanic: { name: 'ช่างซ่อม', emoji: '🔧', cost: 60,  color: '#06b6d4', bodyColor: [0.30, 0.40, 0.55], headColor: [0.85, 0.70, 0.55], effect: 'reliability', rate: 0.3, desc: '+ความเสถียร +30%' },
   mascot:   { name: 'มาสคอต', emoji: '🎭', cost: 80,  color: '#ec4899', bodyColor: [0.90, 0.30, 0.60], headColor: [0.95, 0.75, 0.70], effect: 'spawn', rate: 0.2, desc: '+คนมาเยอะขึ้น +20%' },
+  // v2.6.3: new staff types
+  security:  { name: 'รปภ.', emoji: '🛡️', cost: 100, color: '#f59e0b', bodyColor: [0.55, 0.40, 0.15], headColor: [0.85, 0.70, 0.55], effect: 'safety', rate: 0.4, desc: '-50% โอกาสเครื่องเล่นพัง' },
+  performer: { name: 'นักแสดง', emoji: '🎤', cost: 120, color: '#a855f7', bodyColor: [0.55, 0.25, 0.85], headColor: [0.95, 0.75, 0.70], effect: 'rating', rate: 0.15, desc: '+0.05 rating/นาที' },
+  vendor:    { name: 'แม่ค้า', emoji: '🛒', cost: 90,  color: '#fbbf24', bodyColor: [0.95, 0.70, 0.20], headColor: [0.85, 0.70, 0.55], effect: 'income', rate: 0.25, desc: '+10% รายได้' },
 };
 
 const game = {
@@ -3943,6 +4039,9 @@ const game = {
   dailyStaffCost: 0,    // total $ per day
   staffHappinessBonus: 0,
   staffSpawnBonus: 0,   // 0-1
+  staffSafetyBonus: 0,  // v2.6.3: chance to prevent ride damage
+  staffRatingBonus: 0,  // v2.6.3: rating boost per minute
+  staffIncomeBonus: 0,  // v2.6.3: income multiplier
   // Save/Load
   saveSlots: [null, null, null],
   autoSaveTimer: 0,
@@ -3983,6 +4082,10 @@ const game = {
   // v2.4.1 — Park name + random events + cross-map transport
   parkName: 'Wonder Park',      // customizable name shown on banner + title
   moveMode: false,               // v2.5.4: drag-to-move-ride mode
+  // v2.6.1: Daily challenges
+  dailyChallenges: [],           // [{id, type, target, progress, reward, icon, label, claimed}]
+  challengeStreak: 0,            // consecutive days completing at least 1 challenge
+  challengesCompleted: 0,        // lifetime challenges completed
   activeEvent: null,            // {type, expiresAt, label, icon, effects, startedAt}
   eventLog: [],                 // [{day, type, label, icon, ts}] for review
   customRides: [],              // [{id, type, x, z, color, capacity, income, level}]
@@ -4143,6 +4246,31 @@ const DECORATION_TYPES = {
   palm_tree: {name:'🌴 ต้นมะพร้าว',     cost: 300, color:[0.30,0.55,0.25], height:6,  shape:'palm_tree' },
   rock_deco: {name:'🪨 ก้อนหิน',         cost: 80,  color:[0.55,0.55,0.58], height:1,  shape:'rock' },
   campfire:  {name:'🔥 กองไฟ',           cost: 200, color:[0.95,0.45,0.10], height:1,  shape:'campfire_deco' },
+  // v2.6.4: New 10 items in 4 categories
+  // 🌳 Nature
+  bush:      {name:'🌿 พุ่มไม้',     cost: 70,  color:[0.25,0.55,0.30], height:0.8, shape:'sphere' },
+  cactus:    {name:'🌵 กระบองเพชร', cost: 90,  color:[0.40,0.65,0.30], height:2,  shape:'sphere' },
+  mushroom:  {name:'🍄 เห็ด',       cost: 110, color:[0.85,0.30,0.30], height:1,  shape:'sphere' },
+  // 💡 Lighting
+  lantern:   {name:'🏮 โคมลอย',    cost: 180, color:[0.95,0.45,0.20], height:3,  shape:'lamp' },
+  spotlight: {name:'🔦 สปอตไลท์',  cost: 220, color:[0.95,0.95,0.85], height:2,  shape:'box' },
+  // 🛋️ Furniture
+  table:     {name:'🪑 โต๊ะ',       cost: 200, color:[0.50,0.35,0.20], height:1,  shape:'box' },
+  umbrella:  {name:'⛱️ ร่ม',       cost: 150, color:[0.95,0.65,0.30], height:3,  shape:'flag' },
+  trash:     {name:'🗑️ ถังขยะ',    cost: 50,  color:[0.40,0.40,0.45], height:1,  shape:'box' },
+  // 🎉 Decorative
+  balloon:   {name:'🎈 ลูกโป่ง',   cost: 80,  color:[0.95,0.30,0.50], height:2,  shape:'flag' },
+  present:   {name:'🎁 ของขวัญ',    cost: 100, color:[0.95,0.20,0.30], height:1,  shape:'box' },
+};
+
+// v2.6.4: Decoration categories
+const DECO_CATEGORIES = {
+  nature:    { name: '🌳 Nature',   color: '#10b981', items: ['tree', 'big_tree', 'palm_tree', 'bush', 'cactus', 'mushroom', 'flowers', 'rock_deco'] },
+  lighting:  { name: '💡 Lighting', color: '#fbbf24', items: ['lamp', 'lantern', 'spotlight', 'campfire'] },
+  furniture: { name: '🛋️ Furniture', color: '#06b6d4', items: ['bench', 'table', 'umbrella', 'trash'] },
+  decor:     { name: '🎉 Decor',    color: '#ec4899', items: ['flag', 'fountain', 'balloon', 'present'] },
+  farm:      { name: '🚜 Farm',     color: '#84cc16', items: ['farm_plot', 'farm_pond', 'farm_cow'] },
+  portal:    { name: '🚪 Portal',   color: '#a855f7', items: ['map_portal'] },
 };
 
 function createDecorationMesh(type, x, z) {
@@ -4471,6 +4599,102 @@ function createDecorationMesh(type, x, z) {
     milkIndicator.setEnabled(false);
     return { root, body, milkIndicator, milkMat, farmType: 'cow' };
   }
+  // v2.6.4: New shape handlers
+  if (type === 'bush' || type === 'cactus' || type === 'mushroom' || type === 'flowers') {
+    // already handled above (flowers), add others
+    if (type === 'bush') {
+      const bush = BABYLON.MeshBuilder.CreateSphere('bush_' + Date.now(), { diameter: def.height * 1.5, segments: 6 }, scene);
+      bush.position.set(x, def.height * 0.4, z);
+      bush.material = mat;
+      shadowGen.addShadowCaster(bush);
+      mesh = bush;
+    } else if (type === 'cactus') {
+      const cactus = BABYLON.MeshBuilder.CreateSphere('cactus_' + Date.now(), { diameter: def.height * 0.5, segments: 6 }, scene);
+      cactus.position.set(x, def.height * 0.5, z);
+      cactus.scaling.y = 1.5;
+      cactus.material = mat;
+      shadowGen.addShadowCaster(cactus);
+      mesh = cactus;
+    } else if (type === 'mushroom') {
+      const stem = BABYLON.MeshBuilder.CreateCylinder('mush_stem_' + Date.now(), { diameter: 0.4, height: 0.5 }, scene);
+      stem.position.set(x, 0.25, z);
+      const stemMat = new BABYLON.StandardMaterial('mush_stemMat', scene);
+      stemMat.diffuseColor = new BABYLON.Color3(0.95, 0.90, 0.75);
+      stem.material = stemMat;
+      const cap = BABYLON.MeshBuilder.CreateSphere('mush_cap_' + Date.now(), { diameter: 1.2, segments: 8 }, scene);
+      cap.position.set(x, 0.7, z);
+      cap.scaling.y = 0.6;
+      cap.material = mat;
+      shadowGen.addShadowCaster(stem);
+      shadowGen.addShadowCaster(cap);
+      mesh = cap;
+    }
+  } else if (type === 'lantern') {
+    const pole = BABYLON.MeshBuilder.CreateCylinder('lantern_pole_' + Date.now(), { diameter: 0.1, height: 3 }, scene);
+    pole.position.set(x, 1.5, z);
+    const poleMat = new BABYLON.StandardMaterial('lantern_poleMat', scene);
+    poleMat.diffuseColor = new BABYLON.Color3(0.30, 0.30, 0.30);
+    pole.material = poleMat;
+    const head = BABYLON.MeshBuilder.CreateSphere('lantern_head_' + Date.now(), { diameter: 0.8, segments: 8 }, scene);
+    head.position.set(x, 3, z);
+    head.material = mat;
+    const bulb = new BABYLON.PointLight('lantern_bulb_' + Date.now(), new BABYLON.Vector3(x, 3, z), scene);
+    bulb.intensity = 0.4;
+    bulb.range = 8;
+    bulb.diffuse = new BABYLON.Color3(0.95, 0.45, 0.20);
+    shadowGen.addShadowCaster(pole);
+    mesh = head;
+  } else if (type === 'spotlight') {
+    const base = BABYLON.MeshBuilder.CreateBox('spot_base_' + Date.now(), { width: 0.5, height: 1.5, depth: 0.5 }, scene);
+    base.position.set(x, 0.75, z);
+    base.material = mat;
+    shadowGen.addShadowCaster(base);
+    mesh = base;
+  } else if (type === 'table') {
+    const top = BABYLON.MeshBuilder.CreateBox('tbl_top_' + Date.now(), { width: 2, height: 0.15, depth: 2 }, scene);
+    top.position.set(x, 1, z);
+    top.material = mat;
+    for (let i = -1; i <= 1; i += 2) {
+      for (let j = -1; j <= 1; j += 2) {
+        const leg = BABYLON.MeshBuilder.CreateBox('tbl_leg_' + i + j, { width: 0.15, height: 1, depth: 0.15 }, scene);
+        leg.position.set(x + i * 0.85, 0.5, z + j * 0.85);
+        leg.material = mat;
+        shadowGen.addShadowCaster(leg);
+      }
+    }
+    mesh = top;
+  } else if (type === 'umbrella') {
+    const pole = BABYLON.MeshBuilder.CreateCylinder('umb_pole_' + Date.now(), { diameter: 0.1, height: 3 }, scene);
+    pole.position.set(x, 1.5, z);
+    pole.material = mat;
+    const top = BABYLON.MeshBuilder.CreateSphere('umb_top_' + Date.now(), { diameter: 2.5, segments: 8 }, scene);
+    top.position.set(x, 2.5, z);
+    top.scaling.y = 0.3;
+    top.material = mat;
+    shadowGen.addShadowCaster(pole);
+    mesh = top;
+  } else if (type === 'trash') {
+    const body = BABYLON.MeshBuilder.CreateCylinder('trash_' + Date.now(), { diameter: 0.7, height: 1, tessellation: 8 }, scene);
+    body.position.set(x, 0.5, z);
+    body.material = mat;
+    shadowGen.addShadowCaster(body);
+    mesh = body;
+  } else if (type === 'balloon') {
+    const string = BABYLON.MeshBuilder.CreateCylinder('bal_str_' + Date.now(), { diameter: 0.02, height: 2 }, scene);
+    string.position.set(x, 1, z);
+    string.material = mat;
+    const head = BABYLON.MeshBuilder.CreateSphere('bal_head_' + Date.now(), { diameter: 1.2, segments: 8 }, scene);
+    head.position.set(x, 2, z);
+    head.material = mat;
+    shadowGen.addShadowCaster(head);
+    mesh = head;
+  } else if (type === 'present') {
+    const body = BABYLON.MeshBuilder.CreateBox('present_' + Date.now(), { width: 1, height: 1, depth: 1 }, scene);
+    body.position.set(x, 0.5, z);
+    body.material = mat;
+    shadowGen.addShadowCaster(body);
+    mesh = body;
+  }
   return mesh;
 }
 
@@ -4524,6 +4748,7 @@ function placeDecoration(x, z) {
   game.decorations.push(deco);
   deco.mapId = game.currentMap;  // v2.0: tag with current map
   attachDecoMetadata(result, deco.id);  // v2.5.2: make pickable for edit
+  updateChallengeProgress('place_deco', 1);  // v2.6.1
   showHint(`🛒 วาง ${def.name} เรียบร้อย! (คลิกอีกครั้งเพื่อแก้ไข)`, 2500);
   playClick();
   updateUI();
@@ -5017,13 +5242,13 @@ function renderDecoShop() {
   const grid = document.getElementById('deco-grid');
   if (!grid) return;
   const farmKeys = ['farm_plot', 'farm_pond', 'farm_cow'];
-  const mapKeys = ['map_portal', 'big_tree', 'palm_tree', 'rock_deco', 'campfire'];
-  const decoKeys = Object.keys(DECORATION_TYPES).filter(k => !farmKeys.includes(k) && !mapKeys.includes(k));
   const renderCard = (key) => {
     const d = DECORATION_TYPES[key];
+    if (!d) return '';
     const canBuy = game.money >= d.cost;
+    const colorRgb = d.color.map(c => Math.round(c*255)).join(',');
     return `
-      <div class="campaign-card ${canBuy ? 'can-buy' : 'locked'}" style="border-left: 4px solid ${d.color.map(c => Math.round(c*255)).join(',')};">
+      <div class="campaign-card ${canBuy ? 'can-buy' : 'locked'}" style="border-left: 4px solid rgb(${colorRgb});">
         <div class="campaign-head">
           <div class="campaign-name">${d.name}</div>
           <div class="campaign-cost">$${d.cost}</div>
@@ -5035,13 +5260,13 @@ function renderDecoShop() {
       </div>
     `;
   };
-  grid.innerHTML =
-    `<div class="deco-section-title">🌳 ของตกแต่ง</div>` +
-    decoKeys.map(renderCard).join('') +
-    `<div class="deco-section-title" style="margin-top: 14px">🚪 Map / เฉพาะแผนที่</div>` +
-    mapKeys.map(renderCard).join('') +
-    `<div class="deco-section-title" style="margin-top: 14px">🚜 ฟาร์ม (คลิกหลังวางได้เลย)</div>` +
-    farmKeys.map(renderCard).join('');
+  // v2.6.4: render by category
+  let html = '';
+  for (const [catKey, cat] of Object.entries(DECO_CATEGORIES)) {
+    html += `<div class="deco-section-title" style="color: ${cat.color};">${cat.name}</div>`;
+    cat.items.forEach(key => { html += renderCard(key); });
+  }
+  grid.innerHTML = html;
 }
 
 // v1.6: Campaign modal handlers
@@ -5057,6 +5282,7 @@ document.getElementById('firework-btn').addEventListener('click', () => {
   if (game.money < 50) { showHint('❌ เงินไม่พอ (ต้องการ $50 ต่อลูก)'); return; }
   game.money -= 50;
   launchFirework();
+  updateChallengeProgress('fireworks', 1);  // v2.6.1
   showHint('🎆 ปล่อยพลุ! (-$50)', 2000);
   updateUI();
 });
@@ -5301,6 +5527,7 @@ function renderTransportGrid() {
 }
 function startTransport(targetMap) {
   if (game.transportActive || targetMap === game.currentMap) return;
+  updateChallengeProgress('travel', 1);  // v2.6.1
   const fromMap = game.currentMap;
   const vehicle = TRANSPORT_VEHICLES[fromMap];
   game.transportActive = {
@@ -5436,6 +5663,7 @@ function startDrag(ride, pickPoint) {
   draggingRide = ride;
   dragOffset.x = ride.root.position.x - pickPoint.x;
   dragOffset.z = ride.root.position.z - pickPoint.z;
+  updateChallengeProgress('move_rides', 1);  // v2.6.1
   // highlight
   ride.root.getChildMeshes().forEach(m => {
     if (m.material) m.material.emissiveColor = new BABYLON.Color3(0.4, 0.3, 0.1);
@@ -5601,6 +5829,208 @@ document.getElementById('profile-generate').addEventListener('click', generatePr
 document.getElementById('profile-copy').addEventListener('click', copyProfileCode);
 document.getElementById('profile-compare').addEventListener('click', compareFriend);
 
+// v2.6.1: Daily Challenges UI
+function openChallenges() {
+  document.getElementById('challenges-modal').classList.add('show');
+  updateChallengesUI();
+  playClick();
+}
+function closeChallenges() {
+  document.getElementById('challenges-modal').classList.remove('show');
+  playClick();
+}
+function updateChallengesUI() {
+  const list = document.getElementById('challenges-list');
+  if (!list) return;
+  if (!game.dailyChallenges || game.dailyChallenges.length === 0) {
+    list.innerHTML = '<div style="padding: 24px; text-align: center; color: rgba(255,255,255,0.5);">ยังไม่มี challenge สำหรับวันนี้<br/><small>จะสร้างเมื่อเริ่มวันใหม่</small></div>';
+  } else {
+    list.innerHTML = game.dailyChallenges.map((ch, i) => {
+      const pct = ch.target > 0 ? Math.min(100, (ch.progress / ch.target) * 100) : (ch.progress === ch.target ? 100 : 0);
+      const done = ch.claimed;
+      const ready = !done && ch.progress >= ch.target;
+      const bg = done ? 'rgba(132,204,22,0.15)' : (ready ? 'rgba(255,214,107,0.18)' : 'rgba(0,0,0,0.25)');
+      const border = done ? '#84cc16' : (ready ? '#FFD66B' : 'rgba(255,255,255,0.1)');
+      const label = done ? '✅ สำเร็จ' : (ready ? '✨ พร้อมรับ!' : `${ch.progress} / ${ch.target}`);
+      return `<div style="background: ${bg}; border: 1px solid ${border}; border-radius: 10px; padding: 12px; margin-bottom: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+          <div style="font-size: 1.5rem;">${ch.icon}</div>
+          <div style="flex: 1;">
+            <div style="font-weight: 600; color: #fff; font-size: 0.95rem;">${ch.label}</div>
+            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">รางวัล: $${ch.reward}</div>
+          </div>
+          <div style="font-size: 0.8rem; color: ${done ? '#84cc16' : (ready ? '#FFD66B' : 'rgba(255,255,255,0.6)')}; font-weight: 600;">${label}</div>
+        </div>
+        <div style="height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden;">
+          <div style="width: ${pct}%; height: 100%; background: ${done ? 'linear-gradient(90deg, #84cc16, #10b981)' : 'linear-gradient(90deg, #FFD66B, #ec4899)'}; border-radius: 4px; transition: width 0.3s;"></div>
+        </div>
+        ${ready ? `<button onclick="claimChallenge('${ch.id}')" style="width: 100%; margin-top: 8px; padding: 8px 12px; border-radius: 6px; border: none; cursor: pointer; background: linear-gradient(135deg, #FFD66B, #ff9d3d); color: #2a1810; font-weight: 700;">💰 รับ $${ch.reward}</button>` : ''}
+      </div>`;
+    }).join('');
+  }
+  const streak = document.getElementById('challenges-streak');
+  if (streak) {
+    const completed = (game.dailyChallenges || []).filter(c => c.claimed).length;
+    const total = (game.dailyChallenges || []).length;
+    streak.innerHTML = `🔥 Streak: <b>${game.challengeStreak || 0}</b> วัน · วันนี้ทำได้ <b>${completed}/${total}</b> · Lifetime: <b>${game.challengesCompleted || 0}</b> ชาเลนจ์`;
+  }
+}
+document.getElementById('challenges-toggle').addEventListener('click', openChallenges);
+document.getElementById('challenges-close').addEventListener('click', closeChallenges);
+
+// v2.6.2: Screenshot/Share
+function takeScreenshot() {
+  if (!canvas) { showHint('❌ ไม่พบ canvas'); return; }
+  try {
+    // Create 2D overlay with banner + stats
+    const W = canvas.width, H = canvas.height;
+    const out = document.createElement('canvas');
+    out.width = W; out.height = H + 80;  // extra 80 for banner
+    const ctx = out.getContext('2d');
+    // Banner background
+    const grad = ctx.createLinearGradient(0, 0, W, 80);
+    grad.addColorStop(0, '#0f172a');
+    grad.addColorStop(1, '#1e293b');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, 80);
+    // Title
+    ctx.fillStyle = '#FFD66B';
+    ctx.font = 'bold 32px "Kanit", "FreeSerif", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🎢 ' + (game.parkName || 'Wonder Park'), 20, 28);
+    // Subtitle
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = '16px "Kanit", sans-serif';
+    ctx.fillText('Day ' + game.day + ' · ⭐ ' + (game.parkRating || 0).toFixed(1) + ' · 💰 $' + Math.floor(game.money).toLocaleString() + ' · 👥 ' + (game.totalVisitors || 0).toLocaleString() + ' คน', 20, 58);
+    // Date + brand
+    ctx.fillStyle = 'rgba(255,214,107,0.8)';
+    ctx.textAlign = 'right';
+    ctx.font = 'bold 14px sans-serif';
+    const date = new Date().toISOString().slice(0, 10);
+    ctx.fillText('sj88wonderpark.sj88ai.com · ' + date, W - 20, 28);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('🎮 SJ88 Wonder Park v' + '2.6', W - 20, 56);
+    // Draw the Babylon canvas below
+    ctx.drawImage(canvas, 0, 80);
+    // Convert to PNG
+    const url = out.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    const filename = (game.parkName || 'wonder-park').replace(/[^a-zA-Z0-9\u0E00-\u0E7F]/g, '-') + '-day' + game.day + '.png';
+    a.download = filename;
+    a.click();
+    showHint('📷 แคปจอแล้ว! (' + filename + ')', 3000);
+    playClick();
+  } catch (e) {
+    showHint('❌ แคปจอไม่สำเร็จ: ' + e.message);
+  }
+}
+document.getElementById('screenshot-btn').addEventListener('click', takeScreenshot);
+
+// v2.6.5: Multi-language (i18n) — TH/EN/CH
+const I18N = {
+  th: {
+    code: 'TH', flag: '🇹🇭', name: 'ไทย',
+    welcome_title: '🎢 SJ88 Wonder Park',
+    welcome_sub: 'สร้างสวนสนุกในฝัน ด้วย Babylon.js',
+    welcome_li1: 'คลิกปุ่มด้านล่าง เลือก ride ที่อยากสร้าง',
+    welcome_li2: 'คลิกบนพื้น เพื่อวาง ride (เงินจะหักอัตโนมัติ)',
+    welcome_li3: 'ผู้เข้าชมจะเดินเข้ามาเอง ขึ้น ride และจ่ายเงิน',
+    welcome_li4: '⭐ Park Rating ดีขึ้น → คนเข้ามาเยอะขึ้น → รายได้เพิ่ม!',
+    welcome_li5: 'ลากเมาส์ขวา หรือใช้ลูกศร/WASD เพื่อเลื่อนกล้อง',
+    start_btn: 'เริ่มสร้างสวนสนุก! 🎉',
+    no_money: 'เงินไม่พอ',
+    settings: 'ตั้งค่า', transport: 'ข้ามแผนที่', move: 'ย้ายเครื่องเล่น',
+    profile: 'Profile', challenges: 'Challenges', screenshot: 'แคปจอ',
+    day: 'Day', money: 'Money', visitors: 'Visitors', rating: 'Rating',
+  },
+  en: {
+    code: 'EN', flag: '🇺🇸', name: 'English',
+    welcome_title: '🎢 SJ88 Wonder Park',
+    welcome_sub: 'Build your dream amusement park with Babylon.js',
+    welcome_li1: 'Click a button below to choose a ride to build',
+    welcome_li2: 'Click on the ground to place the ride (money is auto-deducted)',
+    welcome_li3: 'Visitors will walk in, ride rides, and pay you',
+    welcome_li4: '⭐ Better Park Rating → More visitors → More income!',
+    welcome_li5: 'Right-click drag or use arrow keys/WASD to move the camera',
+    start_btn: 'Start building! 🎉',
+    no_money: 'Not enough money',
+    settings: 'Settings', transport: 'Transport', move: 'Move ride',
+    profile: 'Profile', challenges: 'Challenges', screenshot: 'Screenshot',
+    day: 'Day', money: 'Money', visitors: 'Visitors', rating: 'Rating',
+  },
+  zh: {
+    code: 'CN', flag: '🇨🇳', name: '中文',
+    welcome_title: '🎢 SJ88 梦幻乐园',
+    welcome_sub: '用 Babylon.js 建造你的梦想游乐园',
+    welcome_li1: '点击下方按钮选择要建造的游乐设施',
+    welcome_li2: '点击地面放置游乐设施（自动扣款）',
+    welcome_li3: '游客会自己走进来玩并付款',
+    welcome_li4: '⭐ 更高的公园评分 → 更多游客 → 更多收入！',
+    welcome_li5: '右键拖动或使用方向键/WASD 移动相机',
+    start_btn: '开始建造！🎉',
+    no_money: '钱不够',
+    settings: '设置', transport: '传送', move: '移动设施',
+    profile: '个人资料', challenges: '每日任务', screenshot: '截图',
+    day: '天', money: '金钱', visitors: '游客', rating: '评分',
+  },
+};
+let currentLang = localStorage.getItem('sj88wonderpark_lang') || 'th';
+function t(key) {
+  return (I18N[currentLang] && I18N[currentLang][key]) || I18N.th[key] || key;
+}
+function setLang(lang) {
+  if (!I18N[lang]) return;
+  currentLang = lang;
+  localStorage.setItem('sj88wonderpark_lang', lang);
+  applyLang();
+  const btn = document.getElementById('lang-toggle');
+  if (btn) btn.textContent = I18N[lang].code;
+  showHint(`${I18N[lang].flag} ${I18N[lang].name}`);
+  playClick();
+}
+function applyLang() {
+  // welcome screen
+  const h1 = document.querySelector('#welcome h1');
+  if (h1) h1.textContent = t('welcome_title');
+  const sub = document.querySelector('#welcome .subtitle');
+  if (sub) sub.textContent = t('welcome_sub');
+  const lis = document.querySelectorAll('#welcome ul li');
+  if (lis.length >= 5) {
+    lis[0].innerHTML = t('welcome_li1');
+    lis[1].innerHTML = t('welcome_li2');
+    lis[2].innerHTML = t('welcome_li3');
+    lis[3].innerHTML = `⭐ <b>${t('welcome_li4').replace('⭐ ', '').replace('!', '!</b>')}`;
+    lis[4].innerHTML = t('welcome_li5');
+  }
+  const startBtn = document.getElementById('start-btn');
+  if (startBtn) startBtn.textContent = t('start_btn');
+  // topbar titles
+  const tts = {
+    'settings-toggle': 'settings', 'transport-toggle': 'transport', 'move-toggle': 'move',
+    'profile-toggle': 'profile', 'challenges-toggle': 'challenges', 'screenshot-btn': 'screenshot',
+  };
+  for (const [id, key] of Object.entries(tts)) {
+    const el = document.getElementById(id);
+    if (el) el.title = t(key);
+  }
+  // day card label
+  const dayLabel = document.querySelector('#day-card .label');
+  if (dayLabel) {
+    const park = document.getElementById('park-name-hud')?.textContent || game.parkName;
+    dayLabel.innerHTML = `<span id="park-name-hud">${park}</span> · ${t('day')} <span id="time-of-day">${document.getElementById('time-of-day')?.textContent || '☀️ Day'}</span>`;
+  }
+}
+document.getElementById('lang-toggle').addEventListener('click', () => {
+  const order = ['th', 'en', 'zh'];
+  const idx = order.indexOf(currentLang);
+  setLang(order[(idx + 1) % order.length]);
+});
+// Apply initial language
+setTimeout(() => { applyLang(); const btn = document.getElementById('lang-toggle'); if (btn) btn.textContent = I18N[currentLang].code; }, 100);
+
 function renderLeaderboard() {
   const grid = document.getElementById('leader-grid');
   if (!grid) return;
@@ -5709,7 +6139,9 @@ function calculateRating() {
   const activeV = visitors.filter(v => v.state !== 'gone' && v.state !== 'leaving').length;
   const crowd = Math.min(1, Math.log10(activeV + 1) / Math.log10(26));
 
-  const rating = Math.min(5, diversity + happyScore + incomeRate + crowd);
+  let rating = Math.min(5, diversity + happyScore + incomeRate + crowd);
+  // v2.6.3: performer staff adds bonus
+  if (game.staffRatingBonus) rating = Math.min(5, rating + game.staffRatingBonus);
   return rating;
 }
 
@@ -6118,14 +6550,23 @@ function fireStaff(idx) {
 function recalcStaffBonuses() {
   let happinessBonus = 0;
   let spawnBonus = 0;
+  let safetyBonus = 0;
+  let ratingBonus = 0;
+  let incomeBonus = 0;
   game.dailyStaffCost = 0;
   game.staff.forEach(s => {
     game.dailyStaffCost += s.config.cost;
     if (s.config.effect === 'happiness') happinessBonus += s.config.rate;
     if (s.config.effect === 'spawn') spawnBonus += s.config.rate;
+    if (s.config.effect === 'safety') safetyBonus += s.config.rate;
+    if (s.config.effect === 'rating') ratingBonus += s.config.rate;
+    if (s.config.effect === 'income') incomeBonus += s.config.rate;
   });
   game.staffHappinessBonus = happinessBonus;
   game.staffSpawnBonus = spawnBonus;
+  game.staffSafetyBonus = safetyBonus;
+  game.staffRatingBonus = ratingBonus;
+  game.staffIncomeBonus = incomeBonus;
 }
 
 function updateStaff(dt) {
@@ -6644,6 +7085,8 @@ scene.onPointerObservable.add((pointerInfo) => {
             rides.push(ride);
             tagRideMeshes(ride);
             rideTypeCount[game.selectedRideType] = (rideTypeCount[game.selectedRideType] || 0) + 1;
+            updateChallengeProgress('place_rides', 1);  // v2.6.1
+            if (game.selectedRideType === 'custom') updateChallengeProgress('place_custom', 1);
             game.money -= cost;
             updateUI();
             showHint(`✅ วาง ${ride.info.name} แล้ว! (-$${cost})`);
@@ -7500,7 +7943,11 @@ scene.registerBeforeRender(() => {
     // v1.4: generate new daily quest
     game.dailyQuest = generateDailyQuest();
     updateQuestUI();
-    showHint(`📜 ภารกิจวันนี้: ${game.dailyQuest.icon} ${game.dailyQuest.label} (+$${game.dailyQuest.reward})`, 3500);
+    // v2.6.1: generate 3 daily challenges
+    game.dailyChallenges = generateDailyChallenges();
+    updateChallengesUI();
+    const chs = game.dailyChallenges;
+    showHint(`📅 Challenges วันนี้: ${chs[0].icon} ${chs[0].label} + อีก 2 อัน (รวม $${chs.reduce((s,c)=>s+c.reward,0)})`, 4000);
     // Deduct daily staff cost
     if (game.dailyStaffCost > 0) {
       game.money -= game.dailyStaffCost;
