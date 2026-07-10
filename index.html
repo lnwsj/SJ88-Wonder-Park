@@ -365,11 +365,13 @@
   #leader-toggle { left: calc(50% + 116px); }
   #campaign-toggle { left: calc(50% + 156px); }
   #map-toggle { left: calc(50% + 116px); }
+  #transport-toggle { left: calc(50% + 316px); }
   #time-pause { left: calc(50% + 76px); }
   #time-speed { left: calc(50% + 36px); }
   #firework-btn { left: calc(50% - 4px); }
   #deco-toggle { left: calc(50% + 196px); }
   #farm-toggle { left: calc(50% + 236px); }
+  #settings-toggle { left: calc(50% + 276px); }
   .campaign-indicator {
     position: absolute; top: 16px; left: calc(50% + 196px);
     height: 36px; padding: 0 10px; border-radius: 18px;
@@ -708,6 +710,10 @@
   .quest-panel.quest-claimed {
     border-color: #84cc16; opacity: 0.65;
   }
+  @keyframes float {
+    0% { transform: translateY(0) scale(1); }
+    100% { transform: translateY(-30px) scale(1.08); }
+  }
   @keyframes quest-pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.02); }
@@ -867,7 +873,7 @@
     <div class="stat-card clickable" id="day-card">
       <span class="icon">📅</span>
       <div>
-        <div class="label">Day · <span id="time-of-day">☀️ Day</span></div>
+        <div class="label"><span id="park-name-hud">Wonder Park</span> · Day <span id="time-of-day">☀️ Day</span></div>
         <div class="val" id="day">1</div>
       </div>
     </div>
@@ -963,12 +969,14 @@
 <button id="expand-toggle" class="topbar-btn" title="ซื้อที่ดินเพิ่ม">🗺️</button>
 <button id="leader-toggle" class="topbar-btn" title="ดู Leaderboard">🏆</button>
 <button id="map-toggle" class="topbar-btn" title="เปลี่ยนแผนที่">🗺️</button>
+<button id="transport-toggle" class="topbar-btn" title="ข้ามแผนที่ด้วยยานพาหนะ">🚌</button>
 <button id="time-pause" class="topbar-btn" title="หยุด/เล่น">⏸️</button>
 <button id="time-speed" class="topbar-btn" title="ความเร็ว">1x</button>
 <button id="firework-btn" class="topbar-btn" title="ยิ่งพลุ">🎆</button>
 <button id="campaign-toggle" class="topbar-btn" title="Marketing Campaigns">📺</button>
 <button id="deco-toggle" class="topbar-btn" title="Decoration Shop">🌳</button>
 <button id="farm-toggle" class="topbar-btn" title="วางอุปกรณ์ฟาร์ม">🚜</button>
+<button id="settings-toggle" class="topbar-btn" title="ต้งค่า/เปลี่ยนชื่อสวนสนุก">⚙️</button>
 <div id="campaign-indicator" class="campaign-indicator"></div>
 
 <!-- Hint banner -->
@@ -1025,6 +1033,50 @@
     <div class="sub">ใช้เงินกระตุ้นคนเข้าสวนสนุก</div>
     <div class="campaign-grid" id="campaign-grid"></div>
     <button class="close-btn" id="campaign-close">ปิด</button>
+  </div>
+</div>
+
+<!-- v2.4.1: Settings modal (park name + more) -->
+<div id="settings-modal" class="manage-modal">
+  <div class="manage-box" style="max-width: 480px;">
+    <h2>⚙️ Settings</h2>
+    <div class="sub">ปรับแต่งสวนสนุกของคุณ</div>
+    <div style="margin: 20px 0;">
+      <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #FFD66B;">🎨 ชื่อสวนสนุก</label>
+      <input id="park-name-input" type="text" maxlength="24" placeholder="ตั้งชื่อสวนสนุก..." style="
+        width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);
+        background: rgba(0,0,0,0.3); color: #fff; font-size: 16px; font-family: inherit;
+        box-sizing: border-box;
+      " />
+      <div style="font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-top: 6px;">
+        สูงสุด 24 ตัวอักษร · ชื่อจะแสดงบนป้ายทางเข้า + browser tab
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; margin-top: 16px;">
+      <button id="park-name-save" style="
+        flex: 1; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer;
+        background: linear-gradient(135deg, #FFD66B, #ff9d3d); color: #2a1810; font-weight: 700;
+      ">💾 บันทึกชื่อ</button>
+      <button id="park-name-reset" style="
+        padding: 10px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer;
+        background: rgba(255,255,255,0.05); color: #fff;
+      ">↩️ Reset</button>
+    </div>
+    <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; color: rgba(255,255,255,0.6);">
+      💡 <b>Tip:</b> ลองตั้งชื่อตามธีม เช่น "โลกของ Mario", "Galaxy Park", "Disney Magic"
+    </div>
+    <button class="close-btn" id="settings-close" style="margin-top: 20px;">ปิด</button>
+  </div>
+</div>
+
+<!-- v2.4.4: Cross-map Transport modal -->
+<div id="transport-modal" class="manage-modal">
+  <div class="manage-box" style="max-width: 480px;">
+    <h2>🚌 Cross-Map Transport</h2>
+    <div class="sub">เลือกยานพาหนะเพื่อข้ามไปยังแผนที่อื่น</div>
+    <div class="campaign-grid" id="transport-grid"></div>
+    <div id="transport-vehicle-info" style="margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.25); border-radius: 8px; font-size: 0.9rem; color: rgba(255,255,255,0.85);"></div>
+    <button class="close-btn" id="transport-close" style="margin-top: 20px;">ปิด</button>
   </div>
 </div>
 
@@ -1749,8 +1801,10 @@ function makeEntrance() {
     star._ratingMat = sMat;
   }
   root._billboardStars = root.getChildMeshes().filter(m => m.name.startsWith('bbstar'));
+  return root;
 }
-makeEntrance();
+const entranceRoot = makeEntrance();
+// v2.4.1: applyParkName() is called after `game` is defined (see below)
 
 function createStarTexture(state) {
   const size = 128;
@@ -1963,6 +2017,8 @@ const RIDE_INFO = {
   // === ✨ Specialty ===
   haunted:  { name: 'Haunted House',  cost: 1500, capacity: 8,  income: 55, fun: 7,  cat: 'special' },
   magic:    { name: 'Magic Show',     cost: 600,  capacity: 20, income: 25, fun: 5,  cat: 'special' },
+  // === v2.4.5: Custom ride (player-designed) ===
+  custom:   { name: 'Custom Ride',    cost: 800,  capacity: 6,  income: 30, fun: 5,  cat: 'special' },
 };
 
 // v1.7: Category metadata
@@ -2759,6 +2815,76 @@ function createMagicShow(pos) {
   return { root, type: 'magic', info: RIDE_INFO.magic, passengers: [], update(dt) { star.rotation.y += dt * 1.5; } };
 }
 
+// v2.4.5: Custom ride — random color + stats
+const CUSTOM_COLORS = [
+  [0.95, 0.30, 0.30], [0.30, 0.80, 0.40], [0.30, 0.50, 0.95], [0.95, 0.80, 0.20],
+  [0.80, 0.30, 0.95], [0.20, 0.80, 0.80], [0.95, 0.50, 0.10], [0.60, 0.40, 0.95],
+];
+const CUSTOM_NAMES = [
+  'Spin Master', 'Twirl Tower', 'Galaxy Wheel', 'Orbit X', 'Cloud Coaster',
+  'Rainbow Drop', 'Pixel Pendulum', 'Cosmic Carousel', 'Lucky Loop', 'Bumper Bot',
+];
+function createCustomRide(pos) {
+  const root = new BABYLON.TransformNode('custRoot', scene);
+  root.position.copyFrom(pos);
+  const colorIdx = Math.floor(Math.random() * CUSTOM_COLORS.length);
+  const color = CUSTOM_COLORS[colorIdx];
+  const colorName = ['แดง','เขียว','น้ำเงิน','เหลือง','ม่วง','ฟ้า','ส้ม','คราม'][colorIdx];
+  // Base (cylinder)
+  const base = BABYLON.MeshBuilder.CreateCylinder('custBase', { diameter: 5, height: 0.6, tessellation: 16 }, scene);
+  base.parent = root;
+  base.position.y = 0.3;
+  base.material = makeMat('custBaseMat', new BABYLON.Color3(color[0] * 0.5, color[1] * 0.5, color[2] * 0.5));
+  // Central sphere (top)
+  const top = BABYLON.MeshBuilder.CreateSphere('custTop', { diameter: 2.4, segments: 12 }, scene);
+  top.parent = root;
+  top.position.y = 3;
+  top.material = makeMat('custTopMat', new BABYLON.Color3(...color), { emissive: new BABYLON.Color3(color[0] * 0.15, color[1] * 0.15, color[2] * 0.15) });
+  // 4 orbiting balls
+  const balls = [];
+  for (let i = 0; i < 4; i++) {
+    const b = BABYLON.MeshBuilder.CreateSphere('custBall' + i, { diameter: 0.7, segments: 8 }, scene);
+    b.parent = root;
+    b.material = makeMat('custBallMat' + i, new BABYLON.Color3(color[0] * 0.85 + 0.15, color[1] * 0.85 + 0.15, color[2] * 0.85 + 0.15));
+    balls.push(b);
+  }
+  // Connect arms (cylinders)
+  const arms = [];
+  for (let i = 0; i < 4; i++) {
+    const a = BABYLON.MeshBuilder.CreateCylinder('custArm' + i, { diameter: 0.15, height: 1.5, tessellation: 6 }, scene);
+    a.parent = root;
+    a.material = makeMat('custArmMat' + i, new BABYLON.Color3(0.4, 0.4, 0.5));
+    arms.push(a);
+  }
+  // Custom info: randomize income 20-50, capacity 4-8
+  const customInfo = {
+    name: CUSTOM_NAMES[Math.floor(Math.random() * CUSTOM_NAMES.length)],
+    cost: 800,
+    capacity: 4 + Math.floor(Math.random() * 5),
+    income: 20 + Math.floor(Math.random() * 30),
+    fun: 4 + Math.floor(Math.random() * 4),
+    cat: 'special',
+    colorName,
+  };
+  return {
+    root, type: 'custom', info: customInfo, passengers: [],
+    customName: customInfo.name, customColor: colorName,
+    update(dt) {
+      const t = performance.now() * 0.001;
+      balls.forEach((b, i) => {
+        const a = (i / 4) * Math.PI * 2 + t * 0.8;
+        b.position.set(Math.cos(a) * 2.2, 3, Math.sin(a) * 2.2);
+      });
+      arms.forEach((a, i) => {
+        const ang = (i / 4) * Math.PI * 2 + t * 0.8;
+        a.position.set(Math.cos(ang) * 1.1, 3, Math.sin(ang) * 1.1);
+        a.rotation.z = -ang;
+      });
+      top.rotation.y += dt * 0.6;
+    }
+  };
+}
+
 const rideFactories = {
   // Original (v1.0)
   ferris: createFerrisWheel, carousel: createCarousel, tower: createDropTower,
@@ -2769,6 +2895,7 @@ const rideFactories = {
   pirate: createPirateShip, bungee: createBungeeDrop, playground: createPlayground,
   boats: createBumperBoats, icecream: createIceCream, popcorn: createPopcorn,
   haunted: createHauntedHouse, magic: createMagicShow,
+  custom: createCustomRide,
 };
 
 // =========================================================================
@@ -3107,7 +3234,7 @@ class Visitor {
           // v1.5: preferred ride bonus (10% extra tip if matches preference)
           const isPreferred = this.personality.prefers.includes(this.targetRide.type);
           const preferenceBonus = isPreferred ? 1.1 : 1.0;
-          const earned = Math.round(baseIncome * incomeMult * tipMult * personalityTipMult * preferenceBonus);
+          const earned = Math.round(baseIncome * incomeMult * tipMult * personalityTipMult * preferenceBonus * getEventMult('income'));
           earnMoney(earned, 'ride');
           game.totalRiders++;
           recordDailyStat('riders', 1);  // v1.3: track daily rides taken
@@ -3378,6 +3505,78 @@ const QUEST_POOL = [
   { id: 'rating_4',    type: 'rating',      target: 4, reward: 600, icon: '🌟', label: 'ทำ rating ให้ถึง {n} ดาว' },
   { id: 'no_storm',    type: 'survive',     target: 1, reward: 200, icon: '⛈️', label: 'ผ่านพายุให้ได้ {n} วัน' },
 ];
+
+// v2.4.3: Random events
+const EVENT_POOL = [
+  { id: 'power_outage',   icon: '⚡', label: 'ไฟฟ้าดับ!',     duration: 30, effect: { spawnMult: 0.3, incomeMult: 0.0, message: 'ผู้เข้าชมหนีออก รายได้หาย' } },
+  { id: 'celebrity',      icon: '🌟', label: 'ดารามาเที่ยว!',  duration: 45, effect: { spawnMult: 2.0, incomeMult: 1.5, message: 'คนแห่ตามดู รายได้×1.5' } },
+  { id: 'accident',       icon: '🚑', label: 'อุบัติเหตุ!',     duration: 25, effect: { spawnMult: 0.5, incomeMult: 0.7, message: 'เครื่องเล่นพัง คนกลัว' } },
+  { id: 'rainbow',        icon: '🌈', label: 'สายรุ้ง!',         duration: 40, effect: { spawnMult: 1.4, incomeMult: 1.2, message: 'บรรยากาศดี คนแห่ถ่ายรูป' } },
+  { id: 'lottery',        icon: '🎰', label: 'ถูกล็อตเตอรี่!',   duration: 0,  effect: { cashBonus: 2000, message: 'ได้โบนัส $2,000!' }, oneShot: true },
+  { id: 'media',          icon: '📺', label: 'สื่อมาถ่ายทำข่าว', duration: 50, effect: { spawnMult: 1.8, incomeMult: 1.0, message: 'โฆษณาฟรี! คนแห่มาดู' } },
+  { id: 'festival',       icon: '🎪', label: 'เทศกาลสวนสนุก!',  duration: 60, effect: { spawnMult: 1.6, incomeMult: 1.3, message: 'คนมากขึ้น + รายได้ดี' } },
+];
+let eventCheckTimer = 0;
+function maybeTriggerEvent(dt) {
+  if (game.activeEvent && !game.activeEvent.expired) return;
+  if (game.timePaused) return;
+  eventCheckTimer += dt;
+  if (eventCheckTimer < 60) return;  // check every minute
+  eventCheckTimer = 0;
+  if (game.activeEvent && Date.now() / 1000 < game.activeEvent.expiresAt) return;
+  // 20% chance to trigger
+  if (Math.random() > 0.20) return;
+  const tpl = EVENT_POOL[Math.floor(Math.random() * EVENT_POOL.length)];
+  const now = Date.now() / 1000;
+  const evt = {
+    type: tpl.id,
+    icon: tpl.icon,
+    label: tpl.label,
+    effect: tpl.effect,
+    oneShot: !!tpl.oneShot,
+    startedAt: now,
+    expiresAt: tpl.duration > 0 ? now + tpl.duration : now + 999,  // oneShot = effectively no expiry (we clear after apply)
+    day: game.day,
+  };
+  game.activeEvent = evt;
+  // one-shot: apply immediately and clear
+  if (tpl.oneShot) {
+    if (tpl.effect.cashBonus) {
+      game.money += tpl.effect.cashBonus;
+      spawnCoinParticle(tpl.effect.cashBonus);
+      playStarUp();
+    }
+    game.eventLog = (game.eventLog || []).concat([{ day: game.day, type: tpl.id, icon: tpl.icon, label: tpl.label, ts: now }]);
+    setTimeout(() => { game.activeEvent = null; }, 2000);
+  } else {
+    game.eventLog = (game.eventLog || []).concat([{ day: game.day, type: tpl.id, icon: tpl.icon, label: tpl.label, ts: now }]);
+  }
+  // notification
+  showEventBanner(evt);
+}
+function expireEvent() {
+  if (!game.activeEvent) return;
+  const now = Date.now() / 1000;
+  if (game.activeEvent.expiresAt && now >= game.activeEvent.expiresAt) {
+    showHint(`${game.activeEvent.icon} จบเหตุการณ์: ${game.activeEvent.label}`);
+    game.activeEvent = null;
+  }
+}
+function getEventMult(type) {
+  if (!game.activeEvent) return 1.0;
+  const e = game.activeEvent.effect;
+  if (type === 'spawn' && e.spawnMult) return e.spawnMult;
+  if (type === 'income' && e.incomeMult) return e.incomeMult;
+  return 1.0;
+}
+function showEventBanner(evt) {
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed; top:80px; left:50%; transform:translateX(-50%); z-index:200; background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#2a1810; padding:14px 24px; border-radius:14px; font-weight:700; font-size:1.05rem; box-shadow:0 8px 32px rgba(0,0,0,0.5); border:2px solid rgba(255,255,255,0.4); animation: slideInDown 0.4s ease-out; max-width:90vw; text-align:center;';
+  banner.innerHTML = `${evt.icon} <b>${evt.label}</b><div style="font-size:0.85rem; font-weight:500; margin-top:4px; opacity:0.85;">${evt.effect.message}</div>`;
+  document.body.appendChild(banner);
+  setTimeout(() => { banner.style.transition = 'opacity 0.5s'; banner.style.opacity = '0'; }, 4000);
+  setTimeout(() => banner.remove(), 5000);
+}
 
 function generateDailyQuest() {
   const tpl = QUEST_POOL[Math.floor(Math.random() * QUEST_POOL.length)];
@@ -3695,7 +3894,16 @@ const game = {
     pond: { casting: false, castAt: 0, catchMs: 0, catchValue: 0 },
     cows: [],                    // [{boughtAt, lastMilkAt, name}]
   },
+  // v2.4.1 — Park name + random events + cross-map transport
+  parkName: 'Wonder Park',      // customizable name shown on banner + title
+  activeEvent: null,            // {type, expiresAt, label, icon, effects, startedAt}
+  eventLog: [],                 // [{day, type, label, icon, ts}] for review
+  customRides: [],              // [{id, type, x, z, color, capacity, income, level}]
+  transportActive: null,        // {from, to, startedAt, duration} for cross-map travel
 };
+
+// v2.4.1: apply park name after game + entranceRoot are defined
+applyParkName();
 
 // v1.6: Visitor review templates per personality
 const REVIEW_TEMPLATES = {
@@ -4872,6 +5080,156 @@ document.getElementById('leader-close').addEventListener('click', () => {
   playClick();
 });
 
+// v2.4.1: Settings modal — park name
+function applyParkName() {
+  const name = (game.parkName || 'Wonder Park').trim() || 'Wonder Park';
+  document.title = `🎢 ${name} — Build Your Dream Amusement Park`;
+  const hud = document.getElementById('park-name-hud');
+  if (hud) hud.textContent = name;
+  updateParkBanner();
+}
+function updateParkBanner() {
+  // v2.4.1: update entrance banner with park name
+  if (!entranceRoot) return;
+  const banner = entranceRoot.getChildMeshes().find(m => m.name === 'banner');
+  if (!banner) return;
+  if (!banner._dynamicTex) {
+    const tex = new BABYLON.DynamicTexture('bannerNameTex', { width: 1024, height: 256 }, scene, false);
+    tex.hasAlpha = false;
+    const bMat = banner.material;
+    bMat.diffuseTexture = tex;
+    bMat.emissiveTexture = tex;
+    banner._dynamicTex = tex;
+  }
+  const tex = banner._dynamicTex;
+  const ctx = tex.getContext();
+  ctx.fillStyle = '#f32236';
+  ctx.fillRect(0, 0, 1024, 256);
+  // gold border
+  ctx.strokeStyle = '#FFD66B';
+  ctx.lineWidth = 12;
+  ctx.strokeRect(6, 6, 1012, 244);
+  // park name
+  ctx.fillStyle = '#FFD66B';
+  ctx.font = 'bold 130px "Kanit", "FreeSerif", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const name = (game.parkName || 'Wonder Park').trim() || 'Wonder Park';
+  ctx.fillText('🎢 ' + name, 512, 128);
+  tex.update();
+}
+function openSettings() {
+  const input = document.getElementById('park-name-input');
+  if (input) input.value = game.parkName || 'Wonder Park';
+  document.getElementById('settings-modal').classList.add('show');
+  playClick();
+}
+function closeSettings() {
+  document.getElementById('settings-modal').classList.remove('show');
+  playClick();
+}
+function saveParkName() {
+  const input = document.getElementById('park-name-input');
+  if (!input) return;
+  const newName = input.value.trim().slice(0, 24);
+  if (!newName) { showHint('❌ ชื่อต้องไม่ว่าง'); return; }
+  game.parkName = newName;
+  applyParkName();
+  showHint('🎨 ตั้งชื่อสวนสนุก: ' + newName);
+  playStarUp();
+  saveGame(0, true);
+}
+document.getElementById('settings-toggle').addEventListener('click', openSettings);
+document.getElementById('settings-close').addEventListener('click', closeSettings);
+document.getElementById('park-name-save').addEventListener('click', saveParkName);
+document.getElementById('park-name-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); saveParkName(); closeSettings(); }
+});
+document.getElementById('park-name-reset').addEventListener('click', () => {
+  const input = document.getElementById('park-name-input');
+  if (input) input.value = 'Wonder Park';
+});
+
+// v2.4.4: Cross-map transport
+const TRANSPORT_VEHICLES = {
+  park:   { icon: '🚌', name: 'รถบัส',  desc: 'ไปแผนที่อื่น · 2 วินาที · ฟรี' },
+  farm:   { icon: '⛴️', name: 'เรือ',    desc: 'ไปแผนที่อื่น · 2 วินาที · ฟรี' },
+  forest: { icon: '🚂', name: 'รถไฟ',   desc: 'ไปแผนที่อื่น · 2 วินาที · ฟรี' },
+  beach:  { icon: '✈️', name: 'เครื่องบิน', desc: 'ไปแผนที่อื่น · 2 วินาที · ฟรี' },
+};
+let selectedVehicle = 'park';
+function openTransport() {
+  if (game.transportActive) {
+    showHint('🚌 กำลังเดินทาง รอสักครู่...');
+    return;
+  }
+  selectedVehicle = game.currentMap;
+  renderTransportGrid();
+  document.getElementById('transport-modal').classList.add('show');
+  playClick();
+}
+function closeTransport() {
+  document.getElementById('transport-modal').classList.remove('show');
+  playClick();
+}
+function renderTransportGrid() {
+  const grid = document.getElementById('transport-grid');
+  if (!grid) return;
+  const maps = ['park','farm','forest','beach'];
+  const labels = { park: '🎡 Park', farm: '🌾 Farm', forest: '🌲 Forest', beach: '🏖️ Beach' };
+  grid.innerHTML = maps.map(m => {
+    const v = TRANSPORT_VEHICLES[m];
+    const isCurrent = m === game.currentMap;
+    const isVisited = (game.visitedMaps || {})[m];
+    return `<div class="campaign-card" data-map="${m}" style="cursor:${isCurrent ? 'default' : 'pointer'}; ${isCurrent ? 'opacity:0.5; border-color:#FFD66B;' : ''}">
+      <div class="campaign-icon">${v.icon}</div>
+      <div class="campaign-name">${labels[m]}</div>
+      <div class="campaign-desc">${isCurrent ? '✓ อยู่ที่นี่แล้ว' : (isVisited ? 'เคยไปแล้ว' : 'ยังไม่เคยไป')}</div>
+    </div>`;
+  }).join('');
+  grid.querySelectorAll('.campaign-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const m = card.getAttribute('data-map');
+      if (m === game.currentMap) return;
+      startTransport(m);
+    });
+  });
+  const info = document.getElementById('transport-vehicle-info');
+  if (info) info.innerHTML = `🚗 ตอนนี้: <b>${TRANSPORT_VEHICLES[game.currentMap].icon} ${TRANSPORT_VEHICLES[game.currentMap].name}</b> · คลิกแผนที่อื่นเพื่อเดินทาง`;
+}
+function startTransport(targetMap) {
+  if (game.transportActive || targetMap === game.currentMap) return;
+  const fromMap = game.currentMap;
+  const vehicle = TRANSPORT_VEHICLES[fromMap];
+  game.transportActive = {
+    from: fromMap,
+    to: targetMap,
+    startedAt: Date.now(),
+    duration: 2.0,  // 2 seconds
+    vehicle: vehicle.icon,
+  };
+  // Close modal
+  document.getElementById('transport-modal').classList.remove('show');
+  // Show travel overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'travel-overlay';
+  overlay.style.cssText = 'position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; flex-direction:column; color:#fff; transition: opacity 0.5s;';
+  overlay.innerHTML = `<div style="font-size:6rem; animation: float 1s ease-in-out infinite alternate;">${vehicle.icon}</div><div style="font-size:1.4rem; font-weight:700; margin-top:14px;">${vehicle.name} กำลังเดินทาง...</div><div style="font-size:0.95rem; opacity:0.7; margin-top:6px;">ไป <b>${targetMap.toUpperCase()}</b></div>`;
+  document.body.appendChild(overlay);
+  showHint(`${vehicle.icon} เดินทางจาก ${fromMap} → ${targetMap} (2 วินาที)`);
+  // After 2s: arrive
+  setTimeout(() => {
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.remove(), 500);
+    game.transportActive = null;
+    switchMap(targetMap);
+    showHint(`🎉 ถึง ${targetMap.toUpperCase()} แล้ว!`);
+    playStarUp();
+  }, 2000);
+}
+document.getElementById('transport-toggle').addEventListener('click', openTransport);
+document.getElementById('transport-close').addEventListener('click', closeTransport);
+
 function renderLeaderboard() {
   const grid = document.getElementById('leader-grid');
   if (!grid) return;
@@ -5480,6 +5838,11 @@ function serializeGame() {
     bestStreak: game.bestStreak || 0,
     currentStreak: game.currentStreak || 0,
     lastDayMoney: game.lastDayMoney || 0,
+    // v2.4.1: park name + decorations (with mapId) + custom rides + events + cross-map
+    parkName: game.parkName || 'Wonder Park',
+    decorations: (game.decorations || []).map(d => ({ id: d.id, type: d.type, x: d.x, z: d.z, mapId: d.mapId || 'park', state: d.state || null })),
+    customRides: (game.customRides || []).map(r => ({ id: r.id, type: r.type, x: r.x, z: r.z, color: r.color, capacity: r.capacity, income: r.income, level: r.level || 1 })),
+    eventLog: (game.eventLog || []).slice(-20),
     savedAt: Date.now(),
   };
 }
@@ -5489,6 +5852,7 @@ function saveGame(slot = 0, silent = false) {
   data.rides = rides.map(r => ({
     type: r.type,
     pos: { x: r.root.position.x, z: r.root.position.z },
+    mapId: r.mapId || 'park',  // v2.4.1: persist mapId
   }));
   try {
     game.saveSlots[slot] = JSON.stringify(data);
@@ -5547,6 +5911,23 @@ function loadGame(slot = 0) {
     game.bestStreak = data.bestStreak || 0;
     game.currentStreak = data.currentStreak || 0;
     game.lastDayMoney = data.lastDayMoney || 0;
+    // v2.4.1: park name + custom rides + event log
+    game.parkName = data.parkName || 'Wonder Park';
+    game.customRides = (data.customRides || []).map(r => ({ ...r }));
+    game.eventLog = data.eventLog || [];
+    applyParkName();
+    // v2.4.1: restore decorations (with mapId) on current map
+    if (data.decorations) {
+      // clear existing
+      for (const d of game.decorations) { try { d.result?.root?.dispose?.(); } catch(e){} }
+      game.decorations.length = 0;
+      data.decorations.forEach(dd => {
+        if ((dd.mapId || 'park') !== game.currentMap) return;  // only restore for current map
+        const result = createDecorationMesh(dd.type, dd.x, dd.z);
+        const deco = { id: dd.id, type: dd.type, x: dd.x, z: dd.z, result, mapId: dd.mapId || 'park', state: dd.state || null };
+        game.decorations.push(deco);
+      });
+    }
     if (data.rides) {
       data.rides.forEach(rd => {
         const ride = rideFactories[rd.type](new BABYLON.Vector3(rd.pos.x, 0, rd.pos.z));
@@ -6327,11 +6708,23 @@ function renderCatTabs() {
     renderCatTabs();
     renderRideGrid();
   }));
+  // v2.4.5: add Custom tab
+  const customTab = document.createElement('button');
+  customTab.className = 'cat-tab ' + (currentCategory === 'custom' ? 'active' : '');
+  customTab.dataset.cat = 'custom';
+  customTab.style.cssText = '--cat-color: #ec4899';
+  customTab.innerHTML = '🎪 Custom<span class="cat-count">1</span>';
+  customTab.addEventListener('click', () => {
+    currentCategory = 'custom';
+    renderCatTabs();
+    renderRideGrid();
+  });
+  tabs.appendChild(customTab);
 }
 function renderRideGrid() {
   const grid = document.getElementById('ride-grid');
   if (!grid) return;
-  const items = Object.entries(RIDE_INFO).filter(([k, r]) => r.cat === currentCategory);
+  const items = currentCategory === 'custom' ? [['custom', RIDE_INFO.custom]] : Object.entries(RIDE_INFO).filter(([k, r]) => r.cat === currentCategory);
   grid.innerHTML = items.map(([key, r]) => {
     const owned = rideTypeCount[key] || 0;
     return `<button class="ride-btn" data-ride="${key}"><span class="emoji">${getRideEmoji(key)}</span>${r.name}<span class="cost">$${r.cost}</span>${owned > 0 ? `<span class="owned-badge">${owned}</span>` : ''}</button>`;
@@ -6361,7 +6754,7 @@ function renderRideGrid() {
   });
 }
 function getRideEmoji(key) {
-  const map = { ferris:'🎡', carousel:'🎠', swing:'🎠', teacup:'🍵', train:'🚂', balloon:'🎈', coaster:'🎢', tower:'🗼', pendulum:'🔄', loop:'🌀', pirate:'🏴\u200d☠️', bungee:'🎯', bumper:'🚗', playground:'🛝', boats:'🚤', food:'🍔', icecream:'🍦', popcorn:'🍿', haunted:'👻', magic:'🎭' };
+  const map = { ferris:'🎡', carousel:'🎠', swing:'🎠', teacup:'🍵', train:'🚂', balloon:'🎈', coaster:'🎢', tower:'🗼', pendulum:'🔄', loop:'🌀', pirate:'🏴\u200d☠️', bungee:'🎯', bumper:'🚗', playground:'🛝', boats:'🚤', food:'🍔', icecream:'🍦', popcorn:'🍿', haunted:'👻', magic:'🎭', custom:'🎪' };
   return map[key] || '✨';
 }
 renderCatTabs();
@@ -6546,7 +6939,7 @@ scene.registerBeforeRender(() => {
   const baseInterval = Math.max(1.5, 5 - rides.length * 0.4);
   // v2.2: visitors spawn slower at night
   const todSpawnMult = 1 - (game.nightFactor * 0.7);  // night: 30% spawn rate
-  const spawnInterval = baseInterval / (getSpawnMultiplier() * WEATHERS[game.weather].spawnMult * (1 + game.staffSpawnBonus) * getCampaignBoost().spawnMult * todSpawnMult);
+  const spawnInterval = baseInterval / (getSpawnMultiplier() * WEATHERS[game.weather].spawnMult * (1 + game.staffSpawnBonus) * getCampaignBoost().spawnMult * todSpawnMult * getEventMult('spawn'));
   if (game.spawnTimer > spawnInterval && rides.length > 0) {
     spawnVisitor();
     game.totalVisitors++;
@@ -6662,6 +7055,12 @@ scene.registerBeforeRender(() => {
   // Time of day
   updateTimeOfDay();
   updateDayNightCycle();
+
+  // v2.4.3: Random events
+  if (typeof maybeTriggerEvent === 'function') {
+    maybeTriggerEvent(dt * (game.timeScale || 1));
+  }
+  if (typeof expireEvent === 'function') expireEvent();
 
   // Auto-save every 30s (silent — v1.3 bug fix)
   game.autoSaveTimer += dt;
