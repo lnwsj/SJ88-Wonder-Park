@@ -2073,32 +2073,45 @@ pondEdge.receiveShadows = true;
 
 const RIDE_INFO = {
   // === 🎠 Classic Family ===
-  ferris:   { name: 'Ferris Wheel',   cost: 500,  capacity: 8,  income: 30, fun: 5,  cat: 'family' },
-  carousel: { name: 'Carousel',       cost: 300,  capacity: 6,  income: 15, fun: 3,  cat: 'family' },
-  swing:    { name: 'Swing Ride',     cost: 600,  capacity: 10, income: 28, fun: 5,  cat: 'family' },
-  teacup:   { name: 'Tea Cups',       cost: 450,  capacity: 8,  income: 22, fun: 4,  cat: 'family' },
-  train:    { name: 'Mini Train',     cost: 700,  capacity: 12, income: 25, fun: 4,  cat: 'family' },
-  balloon:  { name: 'Balloon Ride',   cost: 900,  capacity: 6,  income: 35, fun: 6,  cat: 'family' },
+  ferris:   { name: 'Ferris Wheel',   cost: 500,  capacity: 8,  income: 30, fun: 5,  cat: 'family', mapId: 'park' },
+  carousel: { name: 'Carousel',       cost: 300,  capacity: 6,  income: 15, fun: 3,  cat: 'family', mapId: 'park' },
+  swing:    { name: 'Swing Ride',     cost: 600,  capacity: 10, income: 28, fun: 5,  cat: 'family', mapId: 'park' },
+  teacup:   { name: 'Tea Cups',       cost: 450,  capacity: 8,  income: 22, fun: 4,  cat: 'family', mapId: 'park' },
+  train:    { name: 'Mini Train',     cost: 700,  capacity: 12, income: 25, fun: 4,  cat: 'family', mapId: 'park' },
+  balloon:  { name: 'Balloon Ride',   cost: 900,  capacity: 6,  income: 35, fun: 6,  cat: 'family', mapId: 'park' },
   // === 🎢 Thrill ===
-  coaster:  { name: 'Roller Coaster', cost: 1500, capacity: 12, income: 60, fun: 10, cat: 'thrill' },
-  tower:    { name: 'Drop Tower',     cost: 800,  capacity: 4,  income: 40, fun: 8,  cat: 'thrill' },
-  pendulum: { name: 'Pendulum',       cost: 1200, capacity: 8,  income: 50, fun: 9,  cat: 'thrill' },
-  loop:     { name: 'Loop Coaster',   cost: 1800, capacity: 10, income: 70, fun: 10, cat: 'thrill' },
-  pirate:   { name: 'Pirate Ship',    cost: 1100, capacity: 10, income: 45, fun: 8,  cat: 'thrill' },
-  bungee:   { name: 'Bungee Drop',    cost: 1300, capacity: 6,  income: 55, fun: 10, cat: 'thrill' },
+  coaster:  { name: 'Roller Coaster', cost: 1500, capacity: 12, income: 60, fun: 10, cat: 'thrill', mapId: 'park' },
+  tower:    { name: 'Drop Tower',     cost: 800,  capacity: 4,  income: 40, fun: 8,  cat: 'thrill', mapId: 'park' },
+  pendulum: { name: 'Pendulum',       cost: 1200, capacity: 8,  income: 50, fun: 9,  cat: 'thrill', mapId: 'park' },
+  loop:     { name: 'Loop Coaster',   cost: 1800, capacity: 10, income: 70, fun: 10, cat: 'thrill', mapId: 'park' },
+  pirate:   { name: 'Pirate Ship',    cost: 1100, capacity: 10, income: 45, fun: 8,  cat: 'thrill', mapId: 'park' },
+  bungee:   { name: 'Bungee Drop',    cost: 1300, capacity: 6,  income: 55, fun: 10, cat: 'thrill', mapId: 'park' },
   // === 👶 Kids ===
-  bumper:   { name: 'Bumper Cars',    cost: 400,  capacity: 4,  income: 20, fun: 4,  cat: 'kids' },
-  playground:{name: 'Playground',     cost: 350,  capacity: 8,  income: 12, fun: 3,  cat: 'kids' },
-  boats:    { name: 'Bumper Boats',   cost: 850,  capacity: 8,  income: 30, fun: 5,  cat: 'kids' },
+  bumper:   { name: 'Bumper Cars',    cost: 400,  capacity: 4,  income: 20, fun: 4,  cat: 'kids', mapId: 'park' },
+  playground:{name: 'Playground',     cost: 350,  capacity: 8,  income: 12, fun: 3,  cat: 'kids', mapId: 'park' },
+  boats:    { name: 'Bumper Boats',   cost: 850,  capacity: 8,  income: 30, fun: 5,  cat: 'kids', mapId: 'park' },
   // === 🍔 Food ===
-  food:     { name: 'Food Stall',     cost: 200,  capacity: 0,  income: 10, fun: 2,  cat: 'food' },
-  icecream: { name: 'Ice Cream',      cost: 100,  capacity: 0,  income: 6,  fun: 1,  cat: 'food' },
-  popcorn:  { name: 'Popcorn',        cost: 80,   capacity: 0,  income: 5,  fun: 1,  cat: 'food' },
+  food:     { name: 'Food Stall',     cost: 200,  capacity: 0,  income: 10, fun: 2,  cat: 'food', mapId: 'park' },
+  icecream: { name: 'Ice Cream',      cost: 100,  capacity: 0,  income: 6,  fun: 1,  cat: 'food', mapId: 'park' },
+  popcorn:  { name: 'Popcorn',        cost: 80,   capacity: 0,  income: 5,  fun: 1,  cat: 'food', mapId: 'park' },
   // === ✨ Specialty ===
-  haunted:  { name: 'Haunted House',  cost: 1500, capacity: 8,  income: 55, fun: 7,  cat: 'special' },
-  magic:    { name: 'Magic Show',     cost: 600,  capacity: 20, income: 25, fun: 5,  cat: 'special' },
+  haunted:  { name: 'Haunted House',  cost: 1500, capacity: 8,  income: 55, fun: 7,  cat: 'special', mapId: 'park' },
+  magic:    { name: 'Magic Show',     cost: 600,  capacity: 20, income: 25, fun: 5,  cat: 'special', mapId: 'park' },
   // === v2.4.5: Custom ride (player-designed) ===
-  custom:   { name: 'Custom Ride',    cost: 800,  capacity: 6,  income: 30, fun: 5,  cat: 'special' },
+  custom:   { name: 'Custom Ride',    cost: 800,  capacity: 6,  income: 30, fun: 5,  cat: 'special', mapId: 'park' },
+  // === v2.6.7: Farm-specific rides ===
+  tractor:  { name: 'Tractor Tour',     cost: 350, capacity: 6,  income: 18, fun: 4, cat: 'family', mapId: 'farm', emoji: '🚜' },
+  haybale:  { name: 'Hay Bale Jump',    cost: 200, capacity: 8,  income: 10, fun: 3, cat: 'kids', mapId: 'farm', emoji: '🌾' },
+  pumpkin:  { name: 'Pumpkin Carousel', cost: 500, capacity: 10, income: 22, fun: 5, cat: 'family', mapId: 'farm', emoji: '🎃' },
+  // === v2.6.7: Forest-specific rides ===
+  zipline:  { name: 'Zip Line',         cost: 600, capacity: 4,  income: 30, fun: 7, cat: 'thrill', mapId: 'forest', emoji: '🪢' },
+  treehouse:{ name: 'Tree House',       cost: 450, capacity: 8,  income: 18, fun: 5, cat: 'family', mapId: 'forest', emoji: '🌳' },
+  mushroom: { name: 'Mushroom Bounce',  cost: 300, capacity: 6,  income: 12, fun: 3, cat: 'kids', mapId: 'forest', emoji: '🍄' },
+  // === v2.6.7: Beach-specific rides ===
+  banana:   { name: 'Banana Boat',      cost: 550, capacity: 8,  income: 25, fun: 5, cat: 'thrill', mapId: 'beach', emoji: '🍌' },
+  waterslide:{name: 'Water Slide',      cost: 700, capacity: 6,  income: 32, fun: 7, cat: 'thrill', mapId: 'beach', emoji: '💦' },
+  wavepool: { name: 'Wave Pool',        cost: 400, capacity: 12, income: 15, fun: 4, cat: 'kids', mapId: 'beach', emoji: '🌊' },
+
 };
 
 // v1.7: Category metadata
@@ -2976,7 +2989,316 @@ const rideFactories = {
   boats: createBumperBoats, icecream: createIceCream, popcorn: createPopcorn,
   haunted: createHauntedHouse, magic: createMagicShow,
   custom: createCustomRide,
+  // v2.6.7: map-specific rides
+  tractor: createTractor, haybale: createHayBale, pumpkin: createPumpkinCarousel,
+  zipline: createZipLine, treehouse: createTreeHouse, mushroom: createMushroomBounce,
+  banana: createBananaBoat, waterslide: createWaterSlide, wavepool: createWavePool,
 };
+
+// v2.6.7: FARM rides ========================================
+function createTractor(pos) {
+  const root = new BABYLON.TransformNode('tractorRoot', scene);
+  root.position.copyFrom(pos);
+  // Body
+  const body = BABYLON.MeshBuilder.CreateBox('tBody', { width: 3, height: 2, depth: 4 }, scene);
+  body.position.y = 2; body.parent = root;
+  body.material = makeMat('tBodyMat', new BABYLON.Color3(0.85, 0.15, 0.10), { specularPower: 32 });
+  shadowGen.addShadowCaster(body);
+  // Cabin
+  const cab = BABYLON.MeshBuilder.CreateBox('tCab', { width: 2.4, height: 1.6, depth: 2 }, scene);
+  cab.position.set(0, 3.2, 0.5); cab.parent = root;
+  cab.material = makeMat('tCabMat', new BABYLON.Color3(0.90, 0.20, 0.15), { specularPower: 32 });
+  // Wheels
+  for (let i = 0; i < 4; i++) {
+    const wheel = BABYLON.MeshBuilder.CreateCylinder('tWheel' + i, { diameter: 1.6, height: 0.6, tessellation: 16 }, scene);
+    wheel.rotation.z = Math.PI / 2;
+    wheel.position.set(i < 2 ? -1.7 : 1.7, 0.8, i % 2 === 0 ? -1.4 : 1.4);
+    wheel.parent = root;
+    wheel.material = makeMat('tWheelMat', new BABYLON.Color3(0.10, 0.10, 0.10));
+    shadowGen.addShadowCaster(wheel);
+  }
+  // Smokestack
+  const stack = BABYLON.MeshBuilder.CreateCylinder('tStack', { diameter: 0.5, height: 2.5, tessellation: 12 }, scene);
+  stack.position.set(-0.8, 4, 1.2); stack.parent = root;
+  stack.material = makeMat('tStackMat', new BABYLON.Color3(0.20, 0.20, 0.20));
+  // Slow rotation animation
+  scene.onBeforeRenderObservable.add(() => {
+    root.rotation.y += 0.002;
+  });
+  root.metadata = { type: 'tractor' };
+  return { root, type: 'tractor', info: RIDE_INFO.tractor, passengers: [], update(dt) { root.rotation.y += dt * 0.05; } };
+}
+
+function createHayBale(pos) {
+  const root = new BABYLON.TransformNode('hayRoot', scene);
+  root.position.copyFrom(pos);
+  // 3-tier pyramid of hay bales
+  const sizes = [
+    { y: 0.6, w: 2.4, d: 2.4, x: 0, z: 0 },
+    { y: 1.8, w: 1.8, d: 1.8, x: -0.6, z: 0 },
+    { y: 1.8, w: 1.8, d: 1.8, x: 0.6, z: 0 },
+    { y: 2.8, w: 1.2, d: 1.2, x: 0, z: 0 },
+  ];
+  for (const s of sizes) {
+    const bale = BABYLON.MeshBuilder.CreateBox('hay' + s.y, { width: s.w, height: 1.0, depth: s.d }, scene);
+    bale.position.set(s.x, s.y, s.z); bale.parent = root;
+    bale.material = makeMat('hayMat' + s.y, new BABYLON.Color3(0.95, 0.80, 0.30), { specularPower: 16 });
+    // Add hay texture pattern
+    const lines = BABYLON.MeshBuilder.CreateBox('hayLines' + s.y, { width: s.w * 0.95, height: 1.05, depth: s.d * 0.95 }, scene);
+    lines.position.set(s.x, s.y, s.z); lines.parent = root;
+    lines.material = makeMat('hayLinesMat' + s.y, new BABYLON.Color3(0.85, 0.65, 0.20), { specularPower: 16 });
+    lines.isPickable = false;
+    shadowGen.addShadowCaster(bale);
+  }
+  root.metadata = { type: 'haybale' };
+  return { root, type: 'haybale', info: RIDE_INFO.haybale, passengers: [], update(dt) { root.rotation.y += dt * 0.03; } };
+}
+
+function createPumpkinCarousel(pos) {
+  const root = new BABYLON.TransformNode('pumpkinRoot', scene);
+  root.position.copyFrom(pos);
+  // Center pole
+  const pole = BABYLON.MeshBuilder.CreateCylinder('pPole', { diameter: 0.6, height: 5, tessellation: 12 }, scene);
+  pole.position.y = 2.5; pole.parent = root;
+  pole.material = makeMat('pPoleMat', new BABYLON.Color3(0.50, 0.30, 0.15));
+  shadowGen.addShadowCaster(pole);
+  // 6 pumpkins around
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2;
+    const r = 2.5;
+    const pkin = BABYLON.MeshBuilder.CreateSphere('pkin' + i, { diameter: 1.6, segments: 8 }, scene);
+    pkin.position.set(Math.cos(a) * r, 1.5, Math.sin(a) * r);
+    pkin.scaling.y = 0.85;
+    pkin.parent = root;
+    pkin.material = makeMat('pkinMat' + i, new BABYLON.Color3(0.95, 0.45, 0.10), { specularPower: 32 });
+    shadowGen.addShadowCaster(pkin);
+    // Stem
+    const stem = BABYLON.MeshBuilder.CreateCylinder('pStem' + i, { diameterTop: 0.15, diameterBottom: 0.25, height: 0.5, tessellation: 8 }, scene);
+    stem.position.set(Math.cos(a) * r, 2.5, Math.sin(a) * r);
+    stem.parent = root;
+    stem.material = makeMat('pStemMat' + i, new BABYLON.Color3(0.35, 0.20, 0.10));
+  }
+  // Top decoration
+  const top = BABYLON.MeshBuilder.CreateCylinder('pTop', { diameterTop: 0, diameterBottom: 2, height: 1, tessellation: 12 }, scene);
+  top.position.y = 5.2; top.parent = root;
+  top.material = makeMat('pTopMat', new BABYLON.Color3(0.95, 0.55, 0.15), { specularPower: 32 });
+  // Rotation
+  scene.onBeforeRenderObservable.add(() => {
+    root.rotation.y += 0.008;
+  });
+  root.metadata = { type: 'pumpkin' };
+  return { root, type: 'pumpkin', info: RIDE_INFO.pumpkin, passengers: [], update(dt) { root.rotation.y += dt * 0.08; } };
+}
+
+// v2.6.7: FOREST rides ======================================
+function createZipLine(pos) {
+  const root = new BABYLON.TransformNode('zipRoot', scene);
+  root.position.copyFrom(pos);
+  // Two tall towers
+  for (let side = -1; side <= 1; side += 2) {
+    const tower = BABYLON.MeshBuilder.CreateBox('zipT' + side, { width: 1.5, height: 12, depth: 1.5 }, scene);
+    tower.position.set(side * 5, 6, 0); tower.parent = root;
+    tower.material = makeMat('zipTMat' + side, new BABYLON.Color3(0.40, 0.25, 0.15));
+    shadowGen.addShadowCaster(tower);
+  }
+  // Cable (thin box)
+  const cable = BABYLON.MeshBuilder.CreateBox('zipCable', { width: 11, height: 0.15, depth: 0.15 }, scene);
+  cable.position.y = 11; cable.parent = root;
+  cable.material = makeMat('zipCableMat', new BABYLON.Color3(0.10, 0.10, 0.10));
+  // Rider (small box on cable)
+  const rider = BABYLON.MeshBuilder.CreateBox('zipRider', { width: 1, height: 0.6, depth: 0.6 }, scene);
+  rider.position.y = 10.5; rider.parent = root;
+  rider.material = makeMat('zipRiderMat', new BABYLON.Color3(0.95, 0.30, 0.30), { specularPower: 32 });
+  // Slide animation
+  let t = 0;
+  scene.onBeforeRenderObservable.add(() => {
+    t += 0.012;
+    rider.position.x = Math.cos(t) * 5;
+  });
+  root.metadata = { type: 'zipline' };
+  return { root, type: 'zipline', info: RIDE_INFO.zipline, passengers: [], update(dt) {} };
+}
+
+function createTreeHouse(pos) {
+  const root = new BABYLON.TransformNode('thRoot', scene);
+  root.position.copyFrom(pos);
+  // 4 stilts
+  for (let i = 0; i < 4; i++) {
+    const stilt = BABYLON.MeshBuilder.CreateCylinder('thStilt' + i, { diameter: 0.5, height: 5, tessellation: 8 }, scene);
+    const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
+    stilt.position.set(Math.cos(a) * 2.5, 2.5, Math.sin(a) * 2.5);
+    stilt.parent = root;
+    stilt.material = makeMat('thStiltMat' + i, new BABYLON.Color3(0.45, 0.28, 0.15));
+  }
+  // Main cabin
+  const cabin = BABYLON.MeshBuilder.CreateBox('thCabin', { width: 5, height: 3, depth: 5 }, scene);
+  cabin.position.y = 6; cabin.parent = root;
+  cabin.material = makeMat('thCabinMat', new BABYLON.Color3(0.55, 0.35, 0.20), { specularPower: 16 });
+  shadowGen.addShadowCaster(cabin);
+  // Roof (cone)
+  const roof = BABYLON.MeshBuilder.CreateCylinder('thRoof', { diameterTop: 0, diameterBottom: 6, height: 2.5, tessellation: 8 }, scene);
+  roof.position.y = 8.5; roof.parent = root;
+  roof.material = makeMat('thRoofMat', new BABYLON.Color3(0.30, 0.55, 0.20));
+  // Top platform
+  const top = BABYLON.MeshBuilder.CreateBox('thTop', { width: 2.5, height: 0.3, depth: 2.5 }, scene);
+  top.position.y = 10.5; top.parent = root;
+  top.material = makeMat('thTopMat', new BABYLON.Color3(0.45, 0.28, 0.15));
+  // Rope ladder
+  for (let i = 0; i < 6; i++) {
+    const r = BABYLON.MeshBuilder.CreateCylinder('thRope' + i, { diameter: 0.1, height: 5, tessellation: 6 }, scene);
+    r.position.set(-3, 2.5, -0.6 + i * 0.25); r.parent = root;
+    r.material = makeMat('thRopeMat' + i, new BABYLON.Color3(0.20, 0.10, 0.05));
+  }
+  root.metadata = { type: 'treehouse' };
+  return { root, type: 'treehouse', info: RIDE_INFO.treehouse, passengers: [], update(dt) { root.rotation.y += dt * 0.02; } };
+}
+
+function createMushroomBounce(pos) {
+  const root = new BABYLON.TransformNode('mushRoot', scene);
+  root.position.copyFrom(pos);
+  // Cluster of bouncy mushrooms
+  const sizes = [
+    { x: 0, z: 0, d: 3, h: 4, color: [0.95, 0.25, 0.30] },
+    { x: -3, z: -1, d: 2, h: 3, color: [0.95, 0.45, 0.30] },
+    { x: 3, z: 1, d: 2.4, h: 3.4, color: [0.85, 0.20, 0.40] },
+    { x: 1.5, z: -3, d: 1.8, h: 2.8, color: [0.95, 0.30, 0.35] },
+  ];
+  for (let i = 0; i < sizes.length; i++) {
+    const s = sizes[i];
+    // Stem
+    const stem = BABYLON.MeshBuilder.CreateCylinder('mStem' + i, { diameterTop: s.d * 0.4, diameterBottom: s.d * 0.6, height: s.h * 0.6, tessellation: 12 }, scene);
+    stem.position.set(s.x, s.h * 0.3, s.z); stem.parent = root;
+    stem.material = makeMat('mStemMat' + i, new BABYLON.Color3(0.95, 0.92, 0.78), { specularPower: 16 });
+    shadowGen.addShadowCaster(stem);
+    // Cap (half sphere)
+    const cap = BABYLON.MeshBuilder.CreateSphere('mCap' + i, { diameter: s.d, segments: 12 }, scene);
+    cap.position.set(s.x, s.h * 0.6 + s.d * 0.3, s.z);
+    cap.scaling.y = 0.7;
+    cap.parent = root;
+    cap.material = makeMat('mCapMat' + i, new BABYLON.Color3(s.color[0], s.color[1], s.color[2]), { specularPower: 32 });
+    shadowGen.addShadowCaster(cap);
+    // Spots on cap
+    for (let j = 0; j < 5; j++) {
+      const spot = BABYLON.MeshBuilder.CreateSphere('mSpot' + i + j, { diameter: 0.4, segments: 6 }, scene);
+      const a = (j / 5) * Math.PI * 2;
+      spot.position.set(s.x + Math.cos(a) * s.d * 0.35, s.h * 0.6 + s.d * 0.5, s.z + Math.sin(a) * s.d * 0.35);
+      spot.parent = root;
+      spot.material = makeMat('mSpotMat' + i, new BABYLON.Color3(0.98, 0.95, 0.85), { specularPower: 32 });
+    }
+  }
+  // Bounce animation
+  let t = 0;
+  scene.onBeforeRenderObservable.add(() => {
+    t += 0.02;
+    root.scaling.y = 1 + Math.sin(t) * 0.08;
+  });
+  root.metadata = { type: 'mushroom' };
+  return { root, type: 'mushroom', info: RIDE_INFO.mushroom, passengers: [], update(dt) {} };
+}
+
+// v2.6.7: BEACH rides =======================================
+function createBananaBoat(pos) {
+  const root = new BABYLON.TransformNode('bananaRoot', scene);
+  root.position.copyFrom(pos);
+  // Banana body (curved shape using scaled sphere)
+  const banana = BABYLON.MeshBuilder.CreateSphere('bananaBody', { diameter: 6, segments: 12 }, scene);
+  banana.position.y = 1; banana.parent = root;
+  banana.scaling.set(2.5, 0.8, 0.8);
+  banana.material = makeMat('bananaMat', new BABYLON.Color3(0.98, 0.85, 0.10), { specularPower: 64 });
+  shadowGen.addShadowCaster(banana);
+  // Tip (cone)
+  const tip = BABYLON.MeshBuilder.CreateCylinder('bananaTip', { diameterTop: 0, diameterBottom: 1.2, height: 1.5, tessellation: 8 }, scene);
+  tip.position.set(5, 1, 0); tip.rotation.z = -Math.PI / 2; tip.parent = root;
+  tip.material = makeMat('bananaTipMat', new BABYLON.Color3(0.40, 0.30, 0.10));
+  // Water base
+  const water = BABYLON.MeshBuilder.CreateBox('bananaWater', { width: 14, height: 0.3, depth: 8 }, scene);
+  water.position.y = -0.5; water.parent = root;
+  water.material = makeMat('bananaWaterMat', new BABYLON.Color3(0.30, 0.65, 0.95), { specularPower: 96 });
+  // Riders (3 small boxes)
+  for (let i = 0; i < 3; i++) {
+    const rider = BABYLON.MeshBuilder.CreateBox('bananaRider' + i, { width: 0.7, height: 1.2, depth: 0.7 }, scene);
+    rider.position.set(-3 + i * 3, 2, 0); rider.parent = root;
+    const c = i === 0 ? [0.95, 0.30, 0.30] : i === 1 ? [0.30, 0.60, 0.95] : [0.95, 0.85, 0.20];
+    rider.material = makeMat('bananaRiderMat' + i, new BABYLON.Color3(c[0], c[1], c[2]), { specularPower: 32 });
+  }
+  // Bobbing animation
+  let t = 0;
+  scene.onBeforeRenderObservable.add(() => {
+    t += 0.03;
+    banana.position.y = 1 + Math.sin(t) * 0.15;
+  });
+  root.metadata = { type: 'banana' };
+  return { root, type: 'banana', info: RIDE_INFO.banana, passengers: [], update(dt) {} };
+}
+
+function createWaterSlide(pos) {
+  const root = new BABYLON.TransformNode('slideRoot', scene);
+  root.position.copyFrom(pos);
+  // Tower
+  const tower = BABYLON.MeshBuilder.CreateBox('wTower', { width: 3, height: 10, depth: 3 }, scene);
+  tower.position.y = 5; tower.parent = root;
+  tower.material = makeMat('wTowerMat', new BABYLON.Color3(0.95, 0.95, 0.95), { specularPower: 32 });
+  shadowGen.addShadowCaster(tower);
+  // Slide (curved using box segments)
+  for (let i = 0; i < 8; i++) {
+    const ang = (i / 8) * Math.PI * 1.2;
+    const seg = BABYLON.MeshBuilder.CreateBox('wSlide' + i, { width: 2.2, height: 0.4, depth: 2.2 }, scene);
+    seg.position.set(Math.cos(ang) * 4, 9 - i * 0.9, Math.sin(ang) * 4);
+    seg.rotation.y = -ang;
+    seg.parent = root;
+    const isWater = i > 4;
+    seg.material = makeMat('wSlideMat' + i, new BABYLON.Color3(isWater ? 0.30 : 0.85, isWater ? 0.65 : 0.40, isWater ? 0.95 : 0.95), { specularPower: isWater ? 96 : 32 });
+  }
+  // Pool at bottom
+  const pool = BABYLON.MeshBuilder.CreateBox('wPool', { width: 8, height: 0.5, depth: 8 }, scene);
+  pool.position.set(4, 0, 0); pool.parent = root;
+  pool.material = makeMat('wPoolMat', new BABYLON.Color3(0.30, 0.65, 0.95), { specularPower: 96 });
+  // Flag at top
+  const flag = BABYLON.MeshBuilder.CreateBox('wFlag', { width: 0.1, height: 0.8, depth: 1.5 }, scene);
+  flag.position.set(1, 11, 0); flag.parent = root;
+  flag.material = makeMat('wFlagMat', new BABYLON.Color3(0.95, 0.30, 0.30), { specularPower: 32 });
+  root.metadata = { type: 'waterslide' };
+  return { root, type: 'waterslide', info: RIDE_INFO.waterslide, passengers: [], update(dt) {} };
+}
+
+function createWavePool(pos) {
+  const root = new BABYLON.TransformNode('waveRoot', scene);
+  root.position.copyFrom(pos);
+  // Pool (large blue flat box)
+  const pool = BABYLON.MeshBuilder.CreateBox('wpPool', { width: 12, height: 0.4, depth: 12 }, scene);
+  pool.position.y = 0.2; pool.parent = root;
+  pool.material = makeMat('wpPoolMat', new BABYLON.Color3(0.30, 0.65, 0.95), { specularPower: 96 });
+  shadowGen.addShadowCaster(pool);
+  // Pool edge
+  const edge = BABYLON.MeshBuilder.CreateBox('wpEdge', { width: 13, height: 0.6, depth: 13 }, scene);
+  edge.position.y = -0.1; edge.parent = root;
+  edge.material = makeMat('wpEdgeMat', new BABYLON.Color3(0.95, 0.85, 0.50), { specularPower: 16 });
+  // Wavy water cylinders
+  for (let i = 0; i < 5; i++) {
+    const wave = BABYLON.MeshBuilder.CreateCylinder('wpWave' + i, { diameter: 2, height: 0.3, tessellation: 12 }, scene);
+    const a = (i / 5) * Math.PI * 2;
+    wave.position.set(Math.cos(a) * 3, 0.5, Math.sin(a) * 3);
+    wave.parent = root;
+    wave.material = makeMat('wpWaveMat' + i, new BABYLON.Color3(0.55, 0.85, 0.98), { specularPower: 96 });
+  }
+  // Lifeguard tower
+  const tower = BABYLON.MeshBuilder.CreateBox('wpTower', { width: 1.2, height: 3, depth: 1.2 }, scene);
+  tower.position.set(5, 1.5, 5); tower.parent = root;
+  tower.material = makeMat('wpTowerMat', new BABYLON.Color3(0.95, 0.30, 0.30), { specularPower: 32 });
+  // Umbrella
+  const umbrella = BABYLON.MeshBuilder.CreateCylinder('wpUmbrella', { diameterTop: 0, diameterBottom: 3, height: 0.3, tessellation: 12 }, scene);
+  umbrella.position.set(5, 3.4, 5); umbrella.parent = root;
+  umbrella.material = makeMat('wpUmbrellaMat', new BABYLON.Color3(0.95, 0.85, 0.20), { specularPower: 32 });
+  // Wave animation
+  let t = 0;
+  scene.onBeforeRenderObservable.add(() => {
+    t += 0.04;
+    root.rotation.y += 0.003;
+  });
+  root.metadata = { type: 'wavepool' };
+  return { root, type: 'wavepool', info: RIDE_INFO.wavepool, passengers: [], update(dt) { root.rotation.y += dt * 0.015; } };
+}
+
 
 // =========================================================================
 //                          VISITOR SYSTEM (with v1.1 enhancements)
@@ -7650,15 +7972,46 @@ function renderCatTabs() {
   });
   tabs.appendChild(customTab);
 }
+// v2.6.7: Show "no rides in this category" + map indicator
+function updateMapRideHint(curMap, cat) {
+  const grid = document.getElementById('ride-grid');
+  if (!grid) return;
+  // Add header showing current map
+  let header = document.getElementById('ride-map-header');
+  if (!header) {
+    header = document.createElement('div');
+    header.id = 'ride-map-header';
+    header.style.cssText = 'grid-column: 1/-1; text-align: center; padding: 4px 8px; font-size: 12px; color: rgba(255,255,255,0.7); font-weight: 700;';
+    grid.parentNode.insertBefore(header, grid);
+  }
+  const mapEmoji = { park: '🎢', farm: '🚜', forest: '🌲', beach: '🏖️' };
+  const mapName = { park: 'สวนสนุก', farm: 'ฟาร์ม', forest: 'ป่า', beach: 'ชายหาด' };
+  header.innerHTML = `📍 ${mapEmoji[curMap] || '🎢'} ${mapName[curMap] || curMap} — เลือก ride ที่จะสร้าง`;
+}
+
 function renderRideGrid() {
   const grid = document.getElementById('ride-grid');
   if (!grid) return;
-  const items = currentCategory === 'custom' ? [['custom', RIDE_INFO.custom]] : Object.entries(RIDE_INFO).filter(([k, r]) => r.cat === currentCategory);
+  const curMap = (game && game.currentMap) || 'park';
+  const items = currentCategory === 'custom'
+    ? [['custom', RIDE_INFO.custom]]
+    : Object.entries(RIDE_INFO).filter(([k, r]) => r.cat === currentCategory && (r.mapId || 'park') === curMap);
+  // v2.6.7: show map indicator on category tabs
+  updateMapRideHint(curMap, currentCategory);
   grid.innerHTML = items.map(([key, r]) => {
     const owned = rideTypeCount[key] || 0;
     return `<button class="ride-btn" data-ride="${key}"><span class="emoji">${getRideEmoji(key)}</span>${r.name}<span class="cost">$${r.cost}</span>${owned > 0 ? `<span class="owned-badge">${owned}</span>` : ''}</button>`;
   }).join('');
   refreshOwnedBadges();
+  // v2.6.7: empty state if no rides in this category for current map
+  if (items.length === 0 && currentCategory !== 'custom') {
+    const mapEmoji = { park: '🎢', farm: '🚜', forest: '🌲', beach: '🏖️' };
+    grid.innerHTML = `<div style="grid-column: 1/-1; padding: 20px; text-align: center; color: rgba(255,255,255,0.5); font-size: 13px;">
+      ไม่มี ride หมวด "${RIDE_CATEGORIES[currentCategory]?.name || currentCategory}" ในแผนที่ ${mapEmoji[(game && game.currentMap) || 'park']} นี้<br>
+      <span style="font-size: 11px; opacity: 0.7;">ลองเปลี่ยนหมวดอื่น หรือสลับแผนที่</span>
+    </div>`;
+    return;
+  }
   // Re-bind click handlers
   grid.querySelectorAll('.ride-btn[data-ride]').forEach(btn => {
     btn.addEventListener('click', () => {
