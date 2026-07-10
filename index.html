@@ -1198,6 +1198,51 @@ sun.diffuse = new BABYLON.Color3(1.0, 0.95, 0.85);
 sun.specular = new BABYLON.Color3(0.5, 0.5, 0.5);
 sun.position = new BABYLON.Vector3(60, 100, 40);
 
+// v2.2: Sun + Moon + Stars visual in sky
+const sunMesh = BABYLON.MeshBuilder.CreateSphere('sunMesh', { diameter: 12, segments: 16 }, scene);
+const sunMat = new BABYLON.StandardMaterial('sunMat', scene);
+sunMat.emissiveColor = new BABYLON.Color3(1, 0.9, 0.5);
+sunMat.diffuseColor = new BABYLON.Color3(1, 0.9, 0.5);
+sunMat.specularColor = new BABYLON.Color3(0, 0, 0);
+sunMat.disableLighting = true;
+sunMesh.material = sunMat;
+sunMesh.position.set(60, 100, 40);
+sunMesh.isPickable = false;
+
+const moonMesh = BABYLON.MeshBuilder.CreateSphere('moonMesh', { diameter: 8, segments: 16 }, scene);
+const moonMat = new BABYLON.StandardMaterial('moonMat', scene);
+moonMat.emissiveColor = new BABYLON.Color3(0.85, 0.88, 0.95);
+moonMat.diffuseColor = new BABYLON.Color3(0.85, 0.88, 0.95);
+moonMat.specularColor = new BABYLON.Color3(0, 0, 0);
+moonMat.disableLighting = true;
+moonMesh.material = moonMat;
+moonMesh.position.set(-60, 100, -40);
+moonMesh.isPickable = false;
+moonMesh.setEnabled(false);  // only at night
+
+// Stars (small spheres scattered in sky)
+const starsMesh = [];
+for (let i = 0; i < 60; i++) {
+  const star = BABYLON.MeshBuilder.CreateSphere('star_' + i, { diameter: 0.4, segments: 4 }, scene);
+  const sMat = new BABYLON.StandardMaterial('starMat_' + i, scene);
+  sMat.emissiveColor = new BABYLON.Color3(0.95, 0.95, 1.0);
+  sMat.diffuseColor = new BABYLON.Color3(0, 0, 0);
+  sMat.specularColor = new BABYLON.Color3(0, 0, 0);
+  sMat.disableLighting = true;
+  star.material = sMat;
+  // Random position on a sphere of radius 150
+  const theta = Math.random() * Math.PI * 2;
+  const phi = Math.random() * Math.PI * 0.5;  // only upper half
+  star.position.set(
+    150 * Math.cos(theta) * Math.sin(phi),
+    150 * Math.cos(phi),
+    150 * Math.sin(theta) * Math.sin(phi)
+  );
+  star.isPickable = false;
+  star.setEnabled(false);
+  starsMesh.push({ mesh: star, mat: sMat, twinkleSpeed: 1 + Math.random() * 2, twinklePhase: Math.random() * Math.PI * 2 });
+}
+
 const fill = new BABYLON.DirectionalLight('fill', new BABYLON.Vector3(0.6, -0.4, 0.5), scene);
 fill.intensity = 0.25;
 fill.diffuse = new BABYLON.Color3(0.6, 0.7, 1.0);
@@ -2751,6 +2796,11 @@ function switchMap(targetMapId) {
   if (!game.visitedMaps) game.visitedMaps = {};
   game.visitedMaps[targetMapId] = true;
   showHint(`🗺️ ไปยัง${map.name}`, 2500);
+  // v2.2: switch music to map-specific mood
+  const mapMusic = MAP_MUSIC[targetMapId];
+  if (mapMusic && typeof updateMusicForWeather === 'function' && musicNodes) {
+    updateMusicForWeather(mapMusic);
+  }
   playClick();
   cameraAnimating = true;
   // Animate camera position
@@ -4975,6 +5025,42 @@ function updateDayNightCycle() {
   scene.fogColor.r = scene.clearColor.r;
   scene.fogColor.g = scene.clearColor.g;
   scene.fogColor.b = scene.clearColor.b;
+  // v2.2: Move sun + moon in arc based on day cycle
+  const phase = (game.dayTimer / game.dayLength);  // 0-1
+  const sunAngle = phase * Math.PI;  // 0=dawn, 0.5=noon, 1=dusk
+  const sunX = Math.cos(sunAngle) * 80;
+  const sunY = Math.sin(sunAngle) * 80 + 10;
+  // Adjust sun based on nf (when fully night, sun goes below horizon)
+  const isDay = nf < 0.3;
+  const isDuskDawn = nf >= 0.3 && nf < 0.85;
+  if (isDay) {
+    sunMesh.position.set(sunX, sunY, 0);
+    sunMesh.setEnabled(true);
+    moonMesh.setEnabled(false);
+  } else if (isDuskDawn) {
+    sunMesh.position.set(sunX, sunY, 0);
+    sunMat.emissiveColor.set(1, 0.55 + nf*0.4, 0.2);
+    sunMat.diffuseColor.set(1, 0.55 + nf*0.4, 0.2);
+    sunMesh.setEnabled(true);
+    moonMesh.setEnabled(false);
+  } else {
+    // Night
+    sunMesh.setEnabled(false);
+    moonMesh.setEnabled(true);
+    // Moon arc opposite to sun
+    const moonAngle = sunAngle + Math.PI;
+    const moonX = Math.cos(moonAngle) * 80;
+    const moonY = Math.sin(moonAngle) * 80 + 10;
+    moonMesh.position.set(moonX, moonY, 0);
+  }
+  // Stars visible at night with twinkle
+  const starVisible = nf > 0.6 ? (nf - 0.6) / 0.4 : 0;
+  const t = performance.now() / 1000;
+  for (const s of starsMesh) {
+    s.mesh.setEnabled(starVisible > 0);
+    s.mat.emissiveColor.set(0.95, 0.95, 1.0);
+    s.mat.alpha = 0.5 + 0.5 * Math.sin(t * s.twinkleSpeed + s.twinklePhase);
+  }
   // Lanterns turn on at night
   const lanternMult = nf > 0.3 ? Math.min(1, (nf - 0.3) / 0.3) : 0;
   const flickerT = performance.now() / 1000;
@@ -4991,10 +5077,10 @@ function updateDayNightCycle() {
     }
   });
   // Sun arc (subtle)
-  const phase = (game.dayTimer / game.dayLength);
+  const sunPhase = (game.dayTimer / game.dayLength);
   sun.direction = new BABYLON.Vector3(
-    -0.4 + Math.sin(phase * Math.PI * 2) * 0.3,
-    -1 + Math.cos(phase * Math.PI) * 0.3,
+    -0.4 + Math.sin(sunPhase * Math.PI * 2) * 0.3,
+    -1 + Math.cos(sunPhase * Math.PI) * 0.3,
     -0.35
   );
 }
@@ -5940,6 +6026,19 @@ const MUSIC_MOODS = {
   rain:   { freqs: [87, 130, 174, 261],  filter: 500,  rate: 0.5, type: 'triangle' },
   storm:  { freqs: [65, 98, 130, 196],   filter: 350,  rate: 0.7, type: 'sawtooth' },
   snow:   { freqs: [130, 196, 262, 392], filter: 1200, rate: 0.25, type: 'sine' },
+  // v2.2: Map-specific moods
+  park_music:   { freqs: [131, 196, 262, 392], filter: 900,  rate: 0.35, type: 'sine' },        // cheerful
+  farm_music:   { freqs: [110, 165, 220, 293], filter: 700,  rate: 0.30, type: 'sine' },        // calm
+  forest_music: { freqs: [73, 110, 147, 220],  filter: 450,  rate: 0.20, type: 'triangle' },   // mysterious
+  beach_music:  { freqs: [147, 220, 294, 440], filter: 1100, rate: 0.40, type: 'sine' },        // tropical
+};
+
+// v2.2: Map → music mood mapping
+const MAP_MUSIC = {
+  park: 'park_music',
+  farm: 'farm_music',
+  forest: 'forest_music',
+  beach: 'beach_music',
 };
 
 let musicNodes = null;  // {oscs, gains, lfo, filter, masterGain}
@@ -6301,10 +6400,12 @@ scene.registerBeforeRender(() => {
   // Weather system (v1.2)
   updateWeather(dt);
 
-  // Spawn visitors — rate scales with rating × weather × staff
+  // Spawn visitors — rate scales with rating × weather × staff × time-of-day
   game.spawnTimer += dt;
   const baseInterval = Math.max(1.5, 5 - rides.length * 0.4);
-  const spawnInterval = baseInterval / (getSpawnMultiplier() * WEATHERS[game.weather].spawnMult * (1 + game.staffSpawnBonus) * getCampaignBoost().spawnMult);
+  // v2.2: visitors spawn slower at night
+  const todSpawnMult = 1 - (game.nightFactor * 0.7);  // night: 30% spawn rate
+  const spawnInterval = baseInterval / (getSpawnMultiplier() * WEATHERS[game.weather].spawnMult * (1 + game.staffSpawnBonus) * getCampaignBoost().spawnMult * todSpawnMult);
   if (game.spawnTimer > spawnInterval && rides.length > 0) {
     spawnVisitor();
     game.totalVisitors++;
@@ -6386,6 +6487,19 @@ scene.registerBeforeRender(() => {
 
   // v1.3: check achievements every frame (idempotent — unlocks once)
   checkAchievements();
+
+  // v2.2: slow plant growth at night (shift plantedAt forward)
+  if (game.decorations && game.nightFactor > 0.4) {
+    for (const d of game.decorations) {
+      if (d.type === 'farm_plot' && d.state && d.state.cells) {
+        for (const cell of d.state.cells) {
+          if (cell && !cell.ready) {
+            cell.plantedAt += dt * 0.5 * game.nightFactor;  // slow growth proportional to night
+          }
+        }
+      }
+    }
+  }
   updateLeaderboard();  // v1.5
   // v1.4: check rating-based quest progress
   if (game.dailyQuest && game.dailyQuest.type === 'rating' && !game.dailyQuest.claimed) {
