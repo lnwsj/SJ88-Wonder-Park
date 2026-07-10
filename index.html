@@ -2111,6 +2111,19 @@ const RIDE_INFO = {
   banana:   { name: 'Banana Boat',      cost: 550, capacity: 8,  income: 25, fun: 5, cat: 'thrill', mapId: 'beach', emoji: '🍌' },
   waterslide:{name: 'Water Slide',      cost: 700, capacity: 6,  income: 32, fun: 7, cat: 'thrill', mapId: 'beach', emoji: '💦' },
   wavepool: { name: 'Wave Pool',        cost: 400, capacity: 12, income: 15, fun: 4, cat: 'kids', mapId: 'beach', emoji: '🌊' },
+  // v2.6.8: Farm round 2
+  windmill:  { name: 'Windmill Ride',   cost: 600, capacity: 8,  income: 25, fun: 4, cat: 'family',  mapId: 'farm',   emoji: '🌬️' },
+  cornmaze:  { name: 'Corn Maze',       cost: 350, capacity: 10, income: 14, fun: 3, cat: 'kids',    mapId: 'farm',   emoji: '🌽' },
+  harvest:   { name: 'Harvest Festival',cost: 500, capacity: 20, income: 28, fun: 6, cat: 'special', mapId: 'farm',   emoji: '🍂' },
+  // v2.6.8: Forest round 2
+  logbridge: { name: 'Log Bridge',      cost: 400, capacity: 6,  income: 16, fun: 4, cat: 'family',  mapId: 'forest', emoji: '🪵' },
+  ropeswing: { name: 'Rope Swing',      cost: 700, capacity: 4,  income: 30, fun: 8, cat: 'thrill',  mapId: 'forest', emoji: '🪢' },
+  firefly:   { name: 'Firefly Lantern', cost: 450, capacity: 12, income: 20, fun: 6, cat: 'special', mapId: 'forest', emoji: '✨' },
+  // v2.6.8: Beach round 2
+  lighthouse:{ name: 'Lighthouse',      cost: 800, capacity: 4,  income: 28, fun: 5, cat: 'family',  mapId: 'beach',  emoji: '🗼' },
+  sandcastle:{ name: 'Sand Castle',     cost: 300, capacity: 12, income: 12, fun: 3, cat: 'kids',    mapId: 'beach',  emoji: '🏰' },
+  bonfire:   { name: 'Beach Bonfire',   cost: 400, capacity: 16, income: 22, fun: 5, cat: 'special', mapId: 'beach',  emoji: '🔥' },
+
 
 };
 
@@ -2993,6 +3006,10 @@ const rideFactories = {
   tractor: createTractor, haybale: createHayBale, pumpkin: createPumpkinCarousel,
   zipline: createZipLine, treehouse: createTreeHouse, mushroom: createMushroomBounce,
   banana: createBananaBoat, waterslide: createWaterSlide, wavepool: createWavePool,
+  // v2.6.8: round 2
+  windmill: createWindmill, cornmaze: createCornMaze, harvest: createHarvestFestival,
+  logbridge: createLogBridge, ropeswing: createRopeSwing, firefly: createFireflyLantern,
+  lighthouse: createLighthouse, sandcastle: createSandCastle, bonfire: createBeachBonfire,
 };
 
 // v2.6.7: FARM rides ========================================
@@ -3298,6 +3315,381 @@ function createWavePool(pos) {
   root.metadata = { type: 'wavepool' };
   return { root, type: 'wavepool', info: RIDE_INFO.wavepool, passengers: [], update(dt) { root.rotation.y += dt * 0.015; } };
 }
+
+// v2.6.8: FARM rides round 2 =================================
+function createWindmill(pos) {
+  const root = new BABYLON.TransformNode('wmRoot', scene);
+  root.position.copyFrom(pos);
+  // Tower (tall cylinder)
+  const tower = BABYLON.MeshBuilder.CreateCylinder('wmTower', { diameterTop: 2.5, diameterBottom: 4, height: 10, tessellation: 12 }, scene);
+  tower.position.y = 5; tower.parent = root;
+  tower.material = makeMat('wmTowerMat', new BABYLON.Color3(0.85, 0.75, 0.55), { specularPower: 16 });
+  shadowGen.addShadowCaster(tower);
+  // Cap (cone roof)
+  const cap = BABYLON.MeshBuilder.CreateCylinder('wmCap', { diameterTop: 0, diameterBottom: 3, height: 1.5, tessellation: 12 }, scene);
+  cap.position.y = 10.5; cap.parent = root;
+  cap.material = makeMat('wmCapMat', new BABYLON.Color3(0.50, 0.20, 0.15));
+  // Blades (cross)
+  const bladePivot = new BABYLON.TransformNode('wmPivot', scene);
+  bladePivot.position.set(0, 7.5, 1.5); bladePivot.parent = root;
+  for (let i = 0; i < 4; i++) {
+    const blade = BABYLON.MeshBuilder.CreateBox('wmBlade' + i, { width: 5, height: 0.1, depth: 0.6 }, scene);
+    blade.position.z = 2.5; blade.parent = bladePivot;
+    blade.material = makeMat('wmBladeMat' + i, new BABYLON.Color3(0.95, 0.92, 0.85), { specularPower: 16 });
+    const rotor = new BABYLON.TransformNode('wmRotor' + i, scene);
+    rotor.parent = bladePivot;
+    blade.parent = rotor;
+    rotor.rotation.z = (i / 4) * Math.PI * 2;
+  }
+  // Animate blades
+  scene.onBeforeRenderObservable.add(() => { bladePivot.rotation.y += 0.02; });
+  root.metadata = { type: 'windmill' };
+  return { root, type: 'windmill', info: RIDE_INFO.windmill, passengers: [], update(dt) {} };
+}
+
+function createCornMaze(pos) {
+  const root = new BABYLON.TransformNode('cmRoot', scene);
+  root.position.copyFrom(pos);
+  // Maze walls (5 horizontal + 5 vertical blocks)
+  const wallMat = makeMat('cmWallMat', new BABYLON.Color3(0.30, 0.75, 0.20), { specularPower: 16 });
+  // Vertical walls
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) {
+      if ((i + j) % 3 === 0) continue; // gaps for maze
+      const w = BABYLON.MeshBuilder.CreateBox('cmWV' + i + j, { width: 0.6, height: 1.6, depth: 0.6 }, scene);
+      w.position.set(-3 + i * 2, 0.8, -3 + j * 2);
+      w.parent = root;
+      w.material = wallMat;
+      shadowGen.addShadowCaster(w);
+    }
+  }
+  // Corn stalks inside (yellow dots)
+  for (let i = 0; i < 8; i++) {
+    const corn = BABYLON.MeshBuilder.CreateCylinder('cmCorn' + i, { diameter: 0.4, height: 1.2, tessellation: 6 }, scene);
+    const a = (i / 8) * Math.PI * 2;
+    corn.position.set(Math.cos(a) * 2, 0.6, Math.sin(a) * 2); corn.parent = root;
+    corn.material = makeMat('cmCornMat' + i, new BABYLON.Color3(0.98, 0.85, 0.20), { specularPower: 16 });
+  }
+  // Sign at entrance
+  const sign = BABYLON.MeshBuilder.CreateBox('cmSign', { width: 2.5, height: 0.8, depth: 0.2 }, scene);
+  sign.position.set(0, 1.5, -3.5); sign.parent = root;
+  sign.material = makeMat('cmSignMat', new BABYLON.Color3(0.50, 0.30, 0.10));
+  root.metadata = { type: 'cornmaze' };
+  return { root, type: 'cornmaze', info: RIDE_INFO.cornmaze, passengers: [], update(dt) {} };
+}
+
+function createHarvestFestival(pos) {
+  const root = new BABYLON.TransformNode('hfRoot', scene);
+  root.position.copyFrom(pos);
+  // Central haystack
+  const hay = BABYLON.MeshBuilder.CreateCylinder('hfHay', { diameter: 4, height: 2, tessellation: 12 }, scene);
+  hay.position.y = 1; hay.parent = root;
+  hay.material = makeMat('hfHayMat', new BABYLON.Color3(0.95, 0.78, 0.30), { specularPower: 16 });
+  shadowGen.addShadowCaster(hay);
+  // Pumpkins around
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    const pkin = BABYLON.MeshBuilder.CreateSphere('hfPkin' + i, { diameter: 1.4, segments: 8 }, scene);
+    pkin.position.set(Math.cos(a) * 3.5, 0.7, Math.sin(a) * 3.5);
+    pkin.scaling.y = 0.85; pkin.parent = root;
+    const c = i % 2 === 0 ? [0.95, 0.45, 0.10] : [0.85, 0.30, 0.05];
+    pkin.material = makeMat('hfPkinMat' + i, new BABYLON.Color3(c[0], c[1], c[2]), { specularPower: 32 });
+    shadowGen.addShadowCaster(pkin);
+  }
+  // Banner posts
+  for (let i = 0; i < 2; i++) {
+    const post = BABYLON.MeshBuilder.CreateCylinder('hfPost' + i, { diameter: 0.3, height: 4, tessellation: 8 }, scene);
+    post.position.set(i === 0 ? -4.5 : 4.5, 2, 0); post.parent = root;
+    post.material = makeMat('hfPostMat' + i, new BABYLON.Color3(0.45, 0.30, 0.15));
+    // Banner
+    const banner = BABYLON.MeshBuilder.CreateBox('hfBanner' + i, { width: 1.2, height: 1.5, depth: 0.1 }, scene);
+    banner.position.set(i === 0 ? -4.5 : 4.5, 3.5, 0); banner.parent = root;
+    banner.material = makeMat('hfBannerMat' + i, new BABYLON.Color3(0.95, 0.55, 0.15), { specularPower: 32 });
+  }
+  // Fall leaves falling
+  let t = 0;
+  const leaves = [];
+  for (let i = 0; i < 6; i++) {
+    const leaf = BABYLON.MeshBuilder.CreateBox('hfLeaf' + i, { width: 0.4, height: 0.05, depth: 0.4 }, scene);
+    leaf.position.set((Math.random() - 0.5) * 8, 4 + Math.random() * 2, (Math.random() - 0.5) * 8);
+    leaf.parent = root;
+    const c = i % 3 === 0 ? [0.95, 0.55, 0.10] : i % 3 === 1 ? [0.95, 0.30, 0.10] : [0.85, 0.65, 0.20];
+    leaf.material = makeMat('hfLeafMat' + i, new BABYLON.Color3(c[0], c[1], c[2]), { specularPower: 16 });
+    leaves.push({ mesh: leaf, phase: Math.random() * Math.PI * 2 });
+  }
+  scene.onBeforeRenderObservable.add(() => {
+    t += 0.02;
+    for (const l of leaves) {
+      l.mesh.position.y -= 0.01;
+      l.mesh.rotation.y += 0.05;
+      if (l.mesh.position.y < 0) l.mesh.position.y = 5 + Math.random() * 2;
+    }
+  });
+  root.metadata = { type: 'harvest' };
+  return { root, type: 'harvest', info: RIDE_INFO.harvest, passengers: [], update(dt) {} };
+}
+
+// v2.6.8: FOREST rides round 2 ===============================
+function createLogBridge(pos) {
+  const root = new BABYLON.TransformNode('lbRoot', scene);
+  root.position.copyFrom(pos);
+  // River (blue flat box)
+  const river = BABYLON.MeshBuilder.CreateBox('lbRiver', { width: 4, height: 0.3, depth: 12 }, scene);
+  river.position.y = -0.5; river.parent = root;
+  river.material = makeMat('lbRiverMat', new BABYLON.Color3(0.30, 0.65, 0.95), { specularPower: 96 });
+  // Log planks across
+  for (let i = 0; i < 8; i++) {
+    const log = BABYLON.MeshBuilder.CreateCylinder('lbLog' + i, { diameter: 1, height: 0.8, tessellation: 8 }, scene);
+    log.rotation.z = Math.PI / 2;
+    log.position.set(0, 0.2, -5 + i * 1.4);
+    log.parent = root;
+    log.material = makeMat('lbLogMat' + i, new BABYLON.Color3(0.50, 0.32, 0.18), { specularPower: 16 });
+    shadowGen.addShadowCaster(log);
+  }
+  // Side rails
+  for (let side = -1; side <= 1; side += 2) {
+    const rail = BABYLON.MeshBuilder.CreateCylinder('lbRail' + side, { diameter: 0.2, height: 12, tessellation: 6 }, scene);
+    rail.position.set(side * 0.8, 1.2, 0);
+    rail.parent = root;
+    rail.material = makeMat('lbRailMat' + side, new BABYLON.Color3(0.30, 0.20, 0.10));
+  }
+  // Trees on both sides
+  for (let i = 0; i < 3; i++) {
+    for (let side = -1; side <= 1; side += 2) {
+      const trunk = BABYLON.MeshBuilder.CreateCylinder('lbTrunk' + i + side, { diameter: 0.8, height: 4, tessellation: 6 }, scene);
+      trunk.position.set(side * 3.5, 2, -4 + i * 4);
+      trunk.parent = root;
+      trunk.material = makeMat('lbTrunkMat' + i, new BABYLON.Color3(0.40, 0.25, 0.15));
+      const crown = BABYLON.MeshBuilder.CreateSphere('lbCrown' + i + side, { diameter: 3.5, segments: 6 }, scene);
+      crown.position.set(side * 3.5, 5, -4 + i * 4);
+      crown.parent = root;
+      crown.material = makeMat('lbCrownMat' + i, new BABYLON.Color3(0.20, 0.50, 0.15), { specularPower: 16 });
+    }
+  }
+  // Bobbing water
+  let t = 0;
+  scene.onBeforeRenderObservable.add(() => {
+    t += 0.04;
+    river.position.y = -0.5 + Math.sin(t) * 0.05;
+  });
+  root.metadata = { type: 'logbridge' };
+  return { root, type: 'logbridge', info: RIDE_INFO.logbridge, passengers: [], update(dt) {} };
+}
+
+function createRopeSwing(pos) {
+  const root = new BABYLON.TransformNode('rsRoot', scene);
+  root.position.copyFrom(pos);
+  // Tall tree
+  const trunk = BABYLON.MeshBuilder.CreateCylinder('rsTrunk', { diameter: 1.5, height: 12, tessellation: 8 }, scene);
+  trunk.position.set(-3, 6, 0); trunk.parent = root;
+  trunk.material = makeMat('rsTrunkMat', new BABYLON.Color3(0.40, 0.25, 0.15));
+  shadowGen.addShadowCaster(trunk);
+  // Branch
+  const branch = BABYLON.MeshBuilder.CreateCylinder('rsBranch', { diameter: 0.6, height: 5, tessellation: 6 }, scene);
+  branch.rotation.z = -Math.PI / 3;
+  branch.position.set(-1, 11, 0); branch.parent = root;
+  branch.material = makeMat('rsBranchMat', new BABYLON.Color3(0.40, 0.25, 0.15));
+  // Rope
+  const rope = BABYLON.MeshBuilder.CreateCylinder('rsRope', { diameter: 0.15, height: 5, tessellation: 6 }, scene);
+  rope.position.set(2, 7, 0); rope.parent = root;
+  rope.material = makeMat('rsRopeMat', new BABYLON.Color3(0.30, 0.20, 0.10));
+  // Swing seat
+  const seat = BABYLON.MeshBuilder.CreateBox('rsSeat', { width: 1.2, height: 0.2, depth: 0.8 }, scene);
+  seat.position.set(2, 4.5, 0); seat.parent = root;
+  seat.material = makeMat('rsSeatMat', new BABYLON.Color3(0.55, 0.35, 0.20), { specularPower: 16 });
+  // Person on swing
+  const person = BABYLON.MeshBuilder.CreateBox('rsPerson', { width: 0.6, height: 1.2, depth: 0.6 }, scene);
+  person.position.set(2, 5.2, 0); person.parent = root;
+  person.material = makeMat('rsPersonMat', new BABYLON.Color3(0.95, 0.30, 0.30), { specularPower: 32 });
+  // Swing motion
+  let t = 0;
+  scene.onBeforeRenderObservable.add(() => {
+    t += 0.03;
+    const swingX = Math.sin(t) * 4;
+    seat.position.x = swingX;
+    person.position.x = swingX;
+    rope.rotation.z = Math.sin(t) * 0.3;
+  });
+  root.metadata = { type: 'ropeswing' };
+  return { root, type: 'ropeswing', info: RIDE_INFO.ropeswing, passengers: [], update(dt) {} };
+}
+
+function createFireflyLantern(pos) {
+  const root = new BABYLON.TransformNode('ffRoot', scene);
+  root.position.copyFrom(pos);
+  // Central tall pole
+  const pole = BABYLON.MeshBuilder.CreateCylinder('ffPole', { diameter: 0.4, height: 6, tessellation: 8 }, scene);
+  pole.position.y = 3; pole.parent = root;
+  pole.material = makeMat('ffPoleMat', new BABYLON.Color3(0.40, 0.25, 0.15));
+  // Lantern at top
+  const lantern = BABYLON.MeshBuilder.CreateSphere('ffLantern', { diameter: 1.4, segments: 8 }, scene);
+  lantern.position.y = 6.5; lantern.parent = root;
+  const lanternMat = new BABYLON.StandardMaterial('ffLanternMat', scene);
+  lanternMat.diffuseColor = new BABYLON.Color3(0.95, 0.85, 0.20);
+  lanternMat.emissiveColor = new BABYLON.Color3(0.85, 0.65, 0.10);
+  lanternMat.specularPower = 64;
+  lantern.material = lanternMat;
+  // Surrounding tree stumps with small fireflies
+  const fireflies = [];
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    // Stump
+    const stump = BABYLON.MeshBuilder.CreateCylinder('ffStump' + i, { diameter: 1, height: 1, tessellation: 6 }, scene);
+    stump.position.set(Math.cos(a) * 3, 0.5, Math.sin(a) * 3);
+    stump.parent = root;
+    stump.material = makeMat('ffStumpMat' + i, new BABYLON.Color3(0.40, 0.25, 0.15));
+    // Firefly (small glowing sphere)
+    const ff = BABYLON.MeshBuilder.CreateSphere('ffFly' + i, { diameter: 0.3, segments: 6 }, scene);
+    ff.position.set(Math.cos(a) * 3, 1.5 + Math.random() * 2, Math.sin(a) * 3);
+    ff.parent = root;
+    const ffMat = new BABYLON.StandardMaterial('ffFlyMat' + i, scene);
+    ffMat.diffuseColor = new BABYLON.Color3(0.95, 0.95, 0.30);
+    ffMat.emissiveColor = new BABYLON.Color3(0.85, 0.85, 0.20);
+    ff.material = ffMat;
+    fireflies.push({ mesh: ff, base: ff.position.y, phase: Math.random() * Math.PI * 2 });
+  }
+  // Twinkle animation
+  scene.onBeforeRenderObservable.add(() => {
+    for (const f of fireflies) {
+      f.mesh.position.y = f.base + Math.sin(performance.now() * 0.002 + f.phase) * 0.5;
+    }
+  });
+  root.metadata = { type: 'firefly' };
+  return { root, type: 'firefly', info: RIDE_INFO.firefly, passengers: [], update(dt) {} };
+}
+
+// v2.6.8: BEACH rides round 2 ================================
+function createLighthouse(pos) {
+  const root = new BABYLON.TransformNode('lhRoot', scene);
+  root.position.copyFrom(pos);
+  // Tower (tall cylinder with stripes)
+  for (let i = 0; i < 6; i++) {
+    const seg = BABYLON.MeshBuilder.CreateCylinder('lhSeg' + i, { diameterTop: 1.8 - i * 0.1, diameterBottom: 2 - i * 0.1, height: 1.5, tessellation: 12 }, scene);
+    seg.position.y = i * 1.5 + 0.75; seg.parent = root;
+    const isRed = i % 2 === 0;
+    seg.material = makeMat('lhSegMat' + i, new BABYLON.Color3(isRed ? 0.85 : 0.98, isRed ? 0.20 : 0.98, isRed ? 0.20 : 0.98), { specularPower: 16 });
+    shadowGen.addShadowCaster(seg);
+  }
+  // Light room at top
+  const lightRoom = BABYLON.MeshBuilder.CreateBox('lhLight', { width: 2.2, height: 1.5, depth: 2.2 }, scene);
+  lightRoom.position.y = 9.5; lightRoom.parent = root;
+  lightRoom.material = makeMat('lhLightMat', new BABYLON.Color3(0.95, 0.95, 0.30), { specularPower: 32 });
+  // Roof (cone)
+  const roof = BABYLON.MeshBuilder.CreateCylinder('lhRoof', { diameterTop: 0, diameterBottom: 2.5, height: 1.5, tessellation: 12 }, scene);
+  roof.position.y = 11; roof.parent = root;
+  roof.material = makeMat('lhRoofMat', new BABYLON.Color3(0.30, 0.30, 0.40));
+  // Light beam (rotating emissive plane)
+  const beam = BABYLON.MeshBuilder.CreatePlane('lhBeam', { width: 0.3, height: 0.3 }, scene);
+  beam.position.set(0, 10, 0); beam.parent = root;
+  const beamMat = new BABYLON.StandardMaterial('lhBeamMat', scene);
+  beamMat.diffuseColor = new BABYLON.Color3(1, 1, 0.5);
+  beamMat.emissiveColor = new BABYLON.Color3(0.95, 0.95, 0.40);
+  beamMat.alpha = 0.7;
+  beam.material = beamMat;
+  scene.onBeforeRenderObservable.add(() => {
+    beam.rotation.y += 0.02;
+  });
+  // Base rocks
+  for (let i = 0; i < 4; i++) {
+    const rock = BABYLON.MeshBuilder.CreateSphere('lhRock' + i, { diameter: 1.2 + Math.random() * 0.5, segments: 4 }, scene);
+    const a = (i / 4) * Math.PI * 2;
+    rock.position.set(Math.cos(a) * 2, 0.3, Math.sin(a) * 2);
+    rock.scaling.y = 0.6; rock.parent = root;
+    rock.material = makeMat('lhRockMat' + i, new BABYLON.Color3(0.45, 0.45, 0.50), { specularPower: 8 });
+  }
+  root.metadata = { type: 'lighthouse' };
+  return { root, type: 'lighthouse', info: RIDE_INFO.lighthouse, passengers: [], update(dt) {} };
+}
+
+function createSandCastle(pos) {
+  const root = new BABYLON.TransformNode('scRoot', scene);
+  root.position.copyFrom(pos);
+  // Sand base
+  const base = BABYLON.MeshBuilder.CreateCylinder('scBase', { diameter: 8, height: 0.4, tessellation: 12 }, scene);
+  base.position.y = 0.2; base.parent = root;
+  base.material = makeMat('scBaseMat', new BABYLON.Color3(0.95, 0.85, 0.55), { specularPower: 16 });
+  shadowGen.addShadowCaster(base);
+  // 4 corner towers
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
+    const tower = BABYLON.MeshBuilder.CreateCylinder('scTower' + i, { diameter: 1.2, height: 2, tessellation: 8 }, scene);
+    tower.position.set(Math.cos(a) * 2.5, 1, Math.sin(a) * 2.5);
+    tower.parent = root;
+    tower.material = makeMat('scTowerMat' + i, new BABYLON.Color3(0.92, 0.78, 0.45), { specularPower: 16 });
+    // Tower roof
+    const cap = BABYLON.MeshBuilder.CreateCylinder('scCap' + i, { diameterTop: 0, diameterBottom: 1.4, height: 1, tessellation: 8 }, scene);
+    cap.position.set(Math.cos(a) * 2.5, 2.5, Math.sin(a) * 2.5);
+    cap.parent = root;
+    cap.material = makeMat('scCapMat' + i, new BABYLON.Color3(0.85, 0.30, 0.30), { specularPower: 32 });
+    // Flag
+    const flag = BABYLON.MeshBuilder.CreateBox('scFlag' + i, { width: 0.05, height: 0.6, depth: 0.4 }, scene);
+    flag.position.set(Math.cos(a) * 2.5, 3.3, Math.sin(a) * 2.5);
+    flag.parent = root;
+    flag.material = makeMat('scFlagMat' + i, new BABYLON.Color3(0.95, 0.85, 0.20));
+  }
+  // Central keep (taller)
+  const keep = BABYLON.MeshBuilder.CreateBox('scKeep', { width: 2.5, height: 3, depth: 2.5 }, scene);
+  keep.position.y = 1.7; keep.parent = root;
+  keep.material = makeMat('scKeepMat', new BABYLON.Color3(0.92, 0.78, 0.45), { specularPower: 16 });
+  // Keep roof
+  const keepRoof = BABYLON.MeshBuilder.CreateCylinder('scKeepRoof', { diameterTop: 0, diameterBottom: 3, height: 1.5, tessellation: 8 }, scene);
+  keepRoof.position.y = 4; keepRoof.parent = root;
+  keepRoof.material = makeMat('scKeepRoofMat', new BABYLON.Color3(0.85, 0.30, 0.30), { specularPower: 32 });
+  root.metadata = { type: 'sandcastle' };
+  return { root, type: 'sandcastle', info: RIDE_INFO.sandcastle, passengers: [], update(dt) {} };
+}
+
+function createBeachBonfire(pos) {
+  const root = new BABYLON.TransformNode('bfRoot', scene);
+  root.position.copyFrom(pos);
+  // Stone ring
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2;
+    const stone = BABYLON.MeshBuilder.CreateSphere('bfStone' + i, { diameter: 1.0, segments: 4 }, scene);
+    stone.position.set(Math.cos(a) * 2, 0.3, Math.sin(a) * 2);
+    stone.scaling.y = 0.5; stone.parent = root;
+    stone.material = makeMat('bfStoneMat' + i, new BABYLON.Color3(0.40, 0.40, 0.45), { specularPower: 8 });
+  }
+  // Wood logs (cross)
+  for (let i = 0; i < 3; i++) {
+    const log = BABYLON.MeshBuilder.CreateCylinder('bfLog' + i, { diameter: 0.4, height: 2.5, tessellation: 6 }, scene);
+    log.position.y = 0.5 + i * 0.4;
+    log.rotation.y = (i % 2) * Math.PI / 2;
+    log.parent = root;
+    log.material = makeMat('bfLogMat' + i, new BABYLON.Color3(0.30, 0.20, 0.10));
+  }
+  // Fire (orange emissive sphere)
+  const fire = BABYLON.MeshBuilder.CreateSphere('bfFire', { diameter: 1.5, segments: 8 }, scene);
+  fire.position.y = 1.5; fire.parent = root;
+  const fireMat = new BABYLON.StandardMaterial('bfFireMat', scene);
+  fireMat.diffuseColor = new BABYLON.Color3(0.98, 0.55, 0.10);
+  fireMat.emissiveColor = new BABYLON.Color3(0.95, 0.45, 0.05);
+  fire.material = fireMat;
+  // Light source
+  const light = new BABYLON.PointLight('bfLight', new BABYLON.Vector3(0, 2, 0), scene);
+  light.diffuse = new BABYLON.Color3(0.98, 0.55, 0.10);
+  light.intensity = 0.6; light.range = 12;
+  light.parent = root;
+  // Seating logs around
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2 + 0.3;
+    const seat = BABYLON.MeshBuilder.CreateCylinder('bfSeat' + i, { diameter: 0.8, height: 2, tessellation: 6 }, scene);
+    seat.position.set(Math.cos(a) * 4, 0.4, Math.sin(a) * 4);
+    seat.rotation.y = a + Math.PI / 2;
+    seat.parent = root;
+    seat.material = makeMat('bfSeatMat' + i, new BABYLON.Color3(0.45, 0.30, 0.20));
+  }
+  // Flicker
+  let t = 0;
+  scene.onBeforeRenderObservable.add(() => {
+    t += 0.1;
+    fire.scaling.y = 1 + Math.sin(t) * 0.2;
+    light.intensity = 0.5 + Math.sin(t * 1.3) * 0.1;
+  });
+  root.metadata = { type: 'bonfire' };
+  return { root, type: 'bonfire', info: RIDE_INFO.bonfire, passengers: [], update(dt) {} };
+}
+
 
 
 // =========================================================================
