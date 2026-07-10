@@ -4738,7 +4738,7 @@ function placeDecoration(x, z) {
   const deco = { id: Date.now() + Math.random(), type: selectedDecoration, x, z, result };
   // v1.9: farm decorations need initial state
   if (selectedDecoration === 'farm_plot') {
-    deco.state = { cells: Array(9).fill(null) };
+    deco.state = { cells: Array(9).fill(null), mapId: game.currentMap, lastAutoAt: 0 };
   } else if (selectedDecoration === 'farm_pond') {
     deco.state = { casting: false, castAt: 0, catchMs: 0, catchValue: 0 };
   } else if (selectedDecoration === 'farm_cow') {
@@ -4771,6 +4771,24 @@ const CROPS = {
 };
 
 const COW_NAMES = ['น้องมอม','น้องดำ','น้องแดง','น้องโซดา','น้องมาเฟ','น้องเซียง','น้องตังเม','น้องลุง','น้องใหญ่','น้องนิ่ม'];
+
+// v2.6.6: Map-specific crops (same farm_plot, different produce by map)
+const MAP_CROPS = {
+  park:   { flower: { name: 'ดอกไม้',   emoji: '🌸', seedCost: 0,  growMs: 15000, harvestValue: 12,  color: '#f9a8d4', auto: true } },
+  farm:   null,  // uses CROPS
+  forest: { mushroom: { name: 'เห็ดวิเศษ', emoji: '🍄', seedCost: 5,  growMs: 10000, harvestValue: 15,  color: '#a78bfa' } },
+  beach:  { coconut:  { name: 'มะพร้าว',  emoji: '🥥', seedCost: 40, growMs: 90000, harvestValue: 100, color: '#92400e' } },
+};
+function getCropsForDeco(deco) {
+  const mid = (deco && deco.state && deco.state.mapId) || deco.mapId || 'farm';
+  return MAP_CROPS[mid] || CROPS;
+}
+function getMapCropLabel(mapId) {
+  if (mapId === 'park') return '🌸 ดอกไม้';
+  if (mapId === 'forest') return '🍄 เห็ดวิเศษ';
+  if (mapId === 'beach') return '🥥 มะพร้าว';
+  return '🥕 ผัก';
+}
 
 function plantCrop(cellIndex, cropKey) {
   const crop = CROPS[cropKey];
@@ -4927,20 +4945,42 @@ function tickFarm() {
 // v1.9: 3D Farm handler functions
 function handlePlotClick(deco, cellIndex) {
   const cell = deco.state.cells[cellIndex];
+  const mapCrops = getCropsForDeco(deco);
+  const mapId = (deco.state && deco.state.mapId) || deco.mapId || 'farm';
   if (cell && cell.ready) {
     // Harvest
-    const crop = CROPS[cell.crop];
+    const crop = mapCrops[cell.crop] || CROPS[cell.crop];
     game.money += crop.harvestValue;
-    deco.state.cells[cellIndex] = null;
-    showHint(`🎉 เก็บ ${crop.name} ได้ $${crop.harvestValue}!`, 2500);
+    // v2.6.6: Park flowers auto-replant instantly
+    if (mapId === 'park' && crop.auto) {
+      deco.state.cells[cellIndex] = {
+        crop: 'flower', plantedAt: performance.now(), growMs: crop.growMs, ready: false,
+      };
+      showHint(`🌸 เก็บ ${crop.name} ได้ $${crop.harvestValue}! (ปลูกใหม่อัตโนมัติ)`, 2000);
+    } else {
+      deco.state.cells[cellIndex] = null;
+      showHint(`🎉 เก็บ ${crop.name} ได้ $${crop.harvestValue}!`, 2500);
+    }
     spawnConfetti(20);
     playStarUp();
     updatePlotMesh(deco);
     updateUI();
   } else if (!cell) {
-    // Open crop picker modal
-    openCropPickerModal(cellIndex, (cropKey) => {
-      const crop = CROPS[cropKey];
+    // v2.6.6: Park auto-plant first flower
+    if (mapId === 'park') {
+      const flower = mapCrops.flower;
+      deco.state.cells[cellIndex] = {
+        crop: 'flower', plantedAt: performance.now(), growMs: flower.growMs, ready: false,
+      };
+      showHint('🌸 ปลูกดอกไม้อัตโนมัติ (เก็บได้ใน 15 วิ)', 2000);
+      playClick();
+      updatePlotMesh(deco);
+      updateUI();
+      return;
+    }
+    // Open crop picker modal (map-filtered)
+    openCropPickerModal(deco, cellIndex, (cropKey) => {
+      const crop = mapCrops[cropKey] || CROPS[cropKey];
       if (game.money < crop.seedCost) {
         showHint(`❌ เงินไม่พอ (ต้องการ $${crop.seedCost})`);
         return;
@@ -4959,7 +4999,7 @@ function handlePlotClick(deco, cellIndex) {
     });
   } else {
     // Growing
-    const crop = CROPS[cell.crop];
+    const crop = mapCrops[cell.crop] || CROPS[cell.crop];
     const elapsed = performance.now() - cell.plantedAt;
     const secsLeft = Math.max(0, Math.ceil((cell.growMs - elapsed) / 1000));
     showHint(`🌱 ${crop.name} เหลืออีก ${secsLeft} วิ`, 1800);
@@ -5025,13 +5065,19 @@ function updatePlotMesh(deco) {
       const elapsed = performance.now() - cell.plantedAt;
       const progress = Math.min(1, elapsed / cell.growMs);
       const crop = CROPS[cell.crop];
+      // v2.6.6: per-map ready color (mushroom purple, coconut brown, flower pink, carrot gold)
+      const readyColor = (cell.crop === 'mushroom') ? [0.65, 0.55, 0.95]
+                       : (cell.crop === 'coconut')  ? [0.55, 0.30, 0.10]
+                       : (cell.crop === 'flower')   ? [0.95, 0.65, 0.85]
+                       :                              [0.95, 0.85, 0.30];
       if (progress >= 1) {
-        // Ready — bright color + bigger scale
-        mesh.material.diffuseColor = new BABYLON.Color3(0.95, 0.85, 0.30);
+        mesh.material.diffuseColor = new BABYLON.Color3(readyColor[0], readyColor[1], readyColor[2]);
         mesh.scaling.y = 2;
       } else {
-        // Growing — green tone + scale by progress
-        mesh.material.diffuseColor = new BABYLON.Color3(0.30 + progress * 0.4, 0.55 + progress * 0.2, 0.25);
+        const growR = 0.30 + progress * (readyColor[0] - 0.30);
+        const growG = 0.55 + progress * (readyColor[1] - 0.55);
+        const growB = 0.25 + progress * (readyColor[2] - 0.25);
+        mesh.material.diffuseColor = new BABYLON.Color3(growR, growG, growB);
         mesh.scaling.y = 1 + progress * 0.5;
       }
     }
@@ -5086,18 +5132,37 @@ function updateCowMesh(deco) {
 
 // v1.9: Small crop picker popup (not the full farm modal)
 let _pickerCallback = null;
-function openCropPickerModal(cellIndex, onPick) {
-  _pickerCallback = onPick;
+function openCropPickerModal(decoOrIndex, cellIndex, onPick) {
+  // v2.6.6: support old (cellIndex, onPick) and new (deco, cellIndex, onPick) signatures
+  let deco, cb;
+  if (typeof decoOrIndex === 'object' && decoOrIndex !== null) {
+    deco = decoOrIndex;
+    cb = cellIndex;
+  } else {
+    cb = cellIndex;
+    cellIndex = decoOrIndex;
+  }
+  _pickerCallback = cb;
   const popup = document.getElementById('crop-picker-popup');
   if (!popup) return;
   const list = popup.querySelector('.picker-list');
-  list.innerHTML = Object.entries(CROPS).map(([k, cr]) =>
-    `<button class="picker-crop-btn" onclick="pickCropInline('${k}')">
-      <div class="picker-emoji">${cr.emoji}</div>
-      <div class="picker-name">${cr.name}</div>
-      <div class="picker-info">🌱 $${cr.seedCost} · ⏱️ ${Math.round(cr.growMs/1000)}วิ · 💰$${cr.harvestValue}</div>
-    </button>`
-  ).join('');
+  const crops = deco ? getCropsForDeco(deco) : CROPS;
+  const mapId = deco ? ((deco.state && deco.state.mapId) || deco.mapId || 'farm') : 'farm';
+  const mapLabel = getMapCropLabel(mapId);
+  const titleEl = popup.querySelector('.picker-title');
+  if (titleEl) titleEl.innerHTML = mapLabel + ' — เลือกพืชที่จะปลูก';
+  if (Object.keys(crops).length === 0) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:rgba(255,255,255,0.6);">ไม่มีพืชสำหรับ map นี้</div>';
+  } else {
+    list.innerHTML = Object.entries(crops).map(([k, cr]) => {
+      const costLabel = cr.seedCost === 0 ? 'ฟรี!' : `🌱 $${cr.seedCost}`;
+      return `<button class="picker-crop-btn" onclick="pickCropInline('${k}')">
+        <div class="picker-emoji">${cr.emoji}</div>
+        <div class="picker-name">${cr.name}</div>
+        <div class="picker-info">${costLabel} · ⏱️ ${Math.round(cr.growMs/1000)}วิ · 💰$${cr.harvestValue}</div>
+      </button>`;
+    }).join('');
+  }
   popup.classList.add('show');
 }
 function pickCropInline(key) {
@@ -5114,9 +5179,25 @@ function closeCropPickerModal() {
 // v1.8: Farm modal handlers
 // v1.9: Farm toggle button now OPENS DECO SHOP filtered to farm types
 document.getElementById('farm-toggle').addEventListener('click', () => {
+  // v2.6.6: open deco shop + scroll to/scroll hint for farm category
   document.getElementById('deco-toggle').click();
-  // Filter deco shop to only show farm types — for simplicity, just open it
-  showHint('🚜 เลือก แปลงผัก/บ่อปลา/วัว แล้วคลิกบนพื้น', 4000);
+  setTimeout(() => {
+    const farm = MAPS[game.currentMap] ? game.currentMap : 'farm';
+    const hint = `🚜 แผนที่: ${MAPS[game.currentMap] ? MAPS[game.currentMap].name : 'ปัจจุบัน'} — เลือก "🌱 แปลงผัก 3×3" ($300) แล้ววางบนพื้น · ${getMapCropLabel(game.currentMap)}`;
+    showHint(hint, 5000);
+    // Try to scroll deco-grid to farm section
+    const grid = document.getElementById('deco-grid');
+    if (grid) {
+      const section = grid.querySelector('.deco-section-title');
+      const allSections = grid.querySelectorAll('.deco-section-title');
+      for (const s of allSections) {
+        if (s.textContent.includes('Farm') || s.textContent.includes('🚜')) {
+          s.scrollIntoView({behavior: 'smooth', block: 'start'});
+          break;
+        }
+      }
+    }
+  }, 200);
   playClick();
 });
 document.getElementById('farm-close').addEventListener('click', () => {
