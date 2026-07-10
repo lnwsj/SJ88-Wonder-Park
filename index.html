@@ -2136,6 +2136,8 @@ const RIDE_CATEGORIES = {
   special:  { name: '✨ Specialty', color: '#a855f7' },
 };
 
+
+
 const rides = [];
 const rideTypeCount = {};  // For diversity calculation
 
@@ -3011,7 +3013,6 @@ const rideFactories = {
   logbridge: createLogBridge, ropeswing: createRopeSwing, firefly: createFireflyLantern,
   lighthouse: createLighthouse, sandcastle: createSandCastle, bonfire: createBeachBonfire,
 };
-
 // v2.6.7: FARM rides ========================================
 function createTractor(pos) {
   const root = new BABYLON.TransformNode('tractorRoot', scene);
@@ -3689,6 +3690,388 @@ function createBeachBonfire(pos) {
   root.metadata = { type: 'bonfire' };
   return { root, type: 'bonfire', info: RIDE_INFO.bonfire, passengers: [], update(dt) {} };
 }
+
+// v2.6.9: 50 procedural ride configs per non-park map (shape + colors)
+const RIDE_CONFIGS = {
+  // ============ 🚜 FARM (50) ============
+  tractor_tour:    { id: 'tractor_tour',    name: 'Tractor Tour',     shape: 'racer',   colors: { body: [0.85, 0.15, 0.10], accent: [0.95, 0.85, 0.20], platform: [0.40, 0.25, 0.10], seat: [0.95, 0.30, 0.30] }, fun: 4, capacity: 6, cost: 250, income: 18, speed: 0.05 },
+  hay_maze:        { id: 'hay_maze',        name: 'Hay Maze',         shape: 'garden',  colors: { body: [0.95, 0.78, 0.30], accent: [0.85, 0.65, 0.20], platform: [0.85, 0.70, 0.20], seat: [0.95, 0.85, 0.30] }, fun: 3, capacity: 8, cost: 200, income: 10, cells: 6 },
+  pumpkin_spin:    { id: 'pumpkin_spin',    name: 'Pumpkin Spin',     shape: 'spinner', colors: { body: [0.95, 0.45, 0.10], accent: [0.30, 0.15, 0.05], platform: [0.55, 0.30, 0.15], seat: [0.95, 0.55, 0.15] }, fun: 4, capacity: 12, cost: 350, income: 16, arms: 6, speed: 0.025 },
+  cow_train:       { id: 'cow_train',       name: 'Cow Train',        shape: 'track',   colors: { body: [0.95, 0.95, 0.92], accent: [0.30, 0.20, 0.10], platform: [0.55, 0.30, 0.20], seat: [0.95, 0.95, 0.92] }, fun: 4, capacity: 8, cost: 280, income: 15, segments: 6, radius: 4 },
+  sheep_pen:       { id: 'sheep_pen',       name: 'Sheep Pen',        shape: 'garden',  colors: { body: [0.95, 0.95, 0.95], accent: [0.30, 0.25, 0.20], platform: [0.85, 0.78, 0.40], seat: [0.95, 0.92, 0.85] }, fun: 3, capacity: 10, cost: 220, income: 12, cells: 4 },
+  chicken_coop:    { id: 'chicken_coop',    name: 'Chicken Coop',     shape: 'tower',   colors: { body: [0.85, 0.40, 0.30], accent: [0.95, 0.85, 0.30], platform: [0.55, 0.30, 0.20], cabin: [0.95, 0.85, 0.65], seat: [0.95, 0.30, 0.30] }, fun: 3, capacity: 6, cost: 250, income: 12, height: 5, cabin: true, roof: true },
+  pig_splat:       { id: 'pig_splat',       name: 'Pig Splash',       shape: 'water',   colors: { body: [0.95, 0.75, 0.85], accent: [0.95, 0.65, 0.80], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.92] }, fun: 4, capacity: 8, cost: 320, income: 16, size: 5, float: true, spray: true },
+  corn_track:      { id: 'corn_track',      name: 'Corn Cob Coaster', shape: 'track',   colors: { body: [0.98, 0.85, 0.20], accent: [0.30, 0.75, 0.20], platform: [0.95, 0.78, 0.30], seat: [0.98, 0.90, 0.30] }, fun: 6, capacity: 8, cost: 450, income: 22, segments: 8, radius: 5 },
+  scarecrow_swing: { id: 'scarecrow_swing', name: 'Scarecrow Swing',  shape: 'swing',   colors: { body: [0.55, 0.35, 0.20], accent: [0.95, 0.85, 0.30], platform: [0.85, 0.65, 0.20], seat: [0.95, 0.85, 0.40] }, fun: 5, capacity: 4, cost: 300, income: 16, height: 6 },
+  barn_dance:      { id: 'barn_dance',      name: 'Barn Dance',       shape: 'spinner', colors: { body: [0.85, 0.30, 0.20], accent: [0.95, 0.85, 0.30], platform: [0.55, 0.30, 0.20], seat: [0.95, 0.55, 0.20] }, fun: 5, capacity: 12, cost: 380, income: 18, arms: 8, speed: 0.04 },
+  // 10-19: more farm
+  apple_press:     { id: 'apple_press',     name: 'Apple Press',      shape: 'tower',   colors: { body: [0.85, 0.30, 0.30], accent: [0.30, 0.55, 0.20], platform: [0.95, 0.40, 0.30], cabin: [0.85, 0.20, 0.20], seat: [0.95, 0.50, 0.40] }, fun: 3, capacity: 4, cost: 180, income: 10, height: 4, cabin: true },
+  wheat_spinner:   { id: 'wheat_spinner',   name: 'Wheat Spinner',    shape: 'spinner', colors: { body: [0.95, 0.78, 0.30], accent: [0.85, 0.65, 0.20], platform: [0.85, 0.70, 0.30], seat: [0.95, 0.85, 0.40] }, fun: 4, capacity: 10, cost: 280, income: 14, arms: 8, speed: 0.03 },
+  tractor_race:    { id: 'tractor_race',    name: 'Tractor Race',     shape: 'track',   colors: { body: [0.85, 0.15, 0.10], accent: [0.30, 0.30, 0.30], platform: [0.50, 0.30, 0.20], seat: [0.95, 0.30, 0.30] }, fun: 6, capacity: 8, cost: 400, income: 20, segments: 6, radius: 4 },
+  chicken_roost:   { id: 'chicken_roost',   name: 'Chicken Roost',    shape: 'tower',   colors: { body: [0.95, 0.95, 0.92], accent: [0.85, 0.30, 0.20], platform: [0.55, 0.30, 0.20], cabin: [0.85, 0.30, 0.20], seat: [0.95, 0.92, 0.85] }, fun: 2, capacity: 4, cost: 150, income: 8, height: 5, cabin: true },
+  pig_pen:         { id: 'pig_pen',         name: 'Pig Pen Tour',     shape: 'garden',  colors: { body: [0.95, 0.75, 0.85], accent: [0.30, 0.20, 0.20], platform: [0.85, 0.65, 0.75], seat: [0.95, 0.85, 0.92] }, fun: 3, capacity: 6, cost: 180, income: 10, cells: 4 },
+  carrot_coaster:  { id: 'carrot_coaster',  name: 'Carrot Coaster',   shape: 'track',   colors: { body: [0.95, 0.55, 0.20], accent: [0.30, 0.75, 0.20], platform: [0.95, 0.65, 0.30], seat: [0.95, 0.75, 0.30] }, fun: 6, capacity: 8, cost: 450, income: 22, segments: 8, radius: 5 },
+  bee_hive:        { id: 'bee_hive',        name: 'Bee Hive Spinner', shape: 'spinner', colors: { body: [0.95, 0.78, 0.20], accent: [0.30, 0.20, 0.10], platform: [0.85, 0.70, 0.20], seat: [0.95, 0.85, 0.30] }, fun: 4, capacity: 8, cost: 320, income: 15, arms: 6, speed: 0.04 },
+  goat_mountain:   { id: 'goat_mountain',   name: 'Goat Mountain',    shape: 'swing',   colors: { body: [0.85, 0.85, 0.78], accent: [0.30, 0.20, 0.10], platform: [0.65, 0.40, 0.30], seat: [0.95, 0.92, 0.85] }, fun: 5, capacity: 4, cost: 280, income: 14, height: 5 },
+  duck_pond:       { id: 'duck_pond',       name: 'Duck Pond',        shape: 'water',   colors: { body: [0.95, 0.85, 0.30], accent: [0.30, 0.55, 0.20], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.30] }, fun: 3, capacity: 8, cost: 200, income: 10, size: 5, float: true, spray: true },
+  corn_maze_walk:  { id: 'corn_maze_walk',  name: 'Corn Maze Walk',   shape: 'garden',  colors: { body: [0.30, 0.75, 0.20], accent: [0.95, 0.78, 0.20], platform: [0.30, 0.55, 0.20], seat: [0.95, 0.85, 0.30] }, fun: 2, capacity: 12, cost: 150, income: 8, cells: 9 },
+  // 20-29
+  mill_wheel:      { id: 'mill_wheel',      name: 'Mill Wheel',       shape: 'racer',   colors: { body: [0.55, 0.30, 0.20], accent: [0.95, 0.85, 0.30], platform: [0.65, 0.40, 0.30], seat: [0.85, 0.65, 0.40] }, fun: 3, capacity: 4, cost: 200, income: 10, speed: 0.03 },
+  rooster_call:    { id: 'rooster_call',    name: 'Rooster Tower',    shape: 'tower',   colors: { body: [0.85, 0.20, 0.20], accent: [0.95, 0.85, 0.30], platform: [0.95, 0.78, 0.30], cabin: [0.95, 0.30, 0.20], seat: [0.95, 0.85, 0.30] }, fun: 2, capacity: 4, cost: 150, income: 8, height: 4, cabin: true },
+  turkey_trot:     { id: 'turkey_trot',     name: 'Turkey Trot',      shape: 'track',   colors: { body: [0.55, 0.25, 0.20], accent: [0.95, 0.40, 0.30], platform: [0.85, 0.65, 0.40], seat: [0.95, 0.50, 0.30] }, fun: 4, capacity: 6, cost: 250, income: 12, segments: 6, radius: 4 },
+  hay_bale_jump:   { id: 'hay_bale_jump',   name: 'Hay Bale Jump',    shape: 'swing',   colors: { body: [0.95, 0.78, 0.30], accent: [0.85, 0.65, 0.20], platform: [0.85, 0.70, 0.30], seat: [0.95, 0.85, 0.40] }, fun: 6, capacity: 4, cost: 320, income: 16, height: 7 },
+  flower_field:    { id: 'flower_field',    name: 'Flower Field',     shape: 'garden',  colors: { body: [0.95, 0.55, 0.85], accent: [0.95, 0.85, 0.30], platform: [0.30, 0.75, 0.30], seat: [0.95, 0.65, 0.95] }, fun: 2, capacity: 8, cost: 180, income: 9, cells: 6 },
+  silo_climb:      { id: 'silo_climb',      name: 'Silo Climb',       shape: 'tower',   colors: { body: [0.85, 0.85, 0.78], accent: [0.55, 0.30, 0.20], platform: [0.65, 0.40, 0.30], cabin: [0.85, 0.30, 0.20], seat: [0.95, 0.85, 0.40] }, fun: 4, capacity: 4, cost: 200, income: 10, height: 7, cabin: true },
+  berry_picker:    { id: 'berry_picker',    name: 'Berry Picker',     shape: 'spinner', colors: { body: [0.55, 0.20, 0.55], accent: [0.30, 0.75, 0.20], platform: [0.85, 0.40, 0.65], seat: [0.95, 0.50, 0.85] }, fun: 3, capacity: 8, cost: 220, income: 11, arms: 6, speed: 0.03 },
+  cider_press:     { id: 'cider_press',     name: 'Cider Press',      shape: 'racer',   colors: { body: [0.85, 0.55, 0.20], accent: [0.30, 0.55, 0.20], platform: [0.55, 0.40, 0.30], seat: [0.95, 0.65, 0.30] }, fun: 4, capacity: 4, cost: 280, income: 14, speed: 0.04 },
+  barn_lookout:    { id: 'barn_lookout',    name: 'Barn Lookout',     shape: 'tower',   colors: { body: [0.85, 0.30, 0.20], accent: [0.95, 0.85, 0.30], platform: [0.55, 0.30, 0.20], cabin: [0.85, 0.30, 0.20], seat: [0.95, 0.85, 0.40] }, fun: 3, capacity: 4, cost: 180, income: 9, height: 6, cabin: true },
+  veggie_race:     { id: 'veggie_race',     name: 'Veggie Race',      shape: 'track',   colors: { body: [0.30, 0.75, 0.20], accent: [0.95, 0.55, 0.20], platform: [0.95, 0.78, 0.30], seat: [0.95, 0.85, 0.40] }, fun: 5, capacity: 6, cost: 300, income: 15, segments: 6, radius: 4 },
+  // 30-39
+  horse_trail:     { id: 'horse_trail',     name: 'Horse Trail',      shape: 'track',   colors: { body: [0.55, 0.35, 0.20], accent: [0.30, 0.20, 0.10], platform: [0.85, 0.65, 0.40], seat: [0.95, 0.85, 0.65] }, fun: 5, capacity: 6, cost: 320, income: 16, segments: 6, radius: 4 },
+  cow_jump:        { id: 'cow_jump',        name: 'Cow Jump',         shape: 'swing',   colors: { body: [0.95, 0.95, 0.92], accent: [0.30, 0.20, 0.10], platform: [0.55, 0.30, 0.20], seat: [0.95, 0.95, 0.92] }, fun: 5, capacity: 4, cost: 300, income: 15, height: 6 },
+  pumpkin_tower:   { id: 'pumpkin_tower',   name: 'Pumpkin Tower',    shape: 'tower',   colors: { body: [0.95, 0.45, 0.10], accent: [0.30, 0.15, 0.05], platform: [0.95, 0.55, 0.20], cabin: [0.95, 0.65, 0.30], seat: [0.95, 0.85, 0.30] }, fun: 4, capacity: 4, cost: 250, income: 12, height: 6, cabin: true },
+  milk_bottle:     { id: 'milk_bottle',     name: 'Milk Bottle',      shape: 'tower',   colors: { body: [0.95, 0.95, 0.92], accent: [0.30, 0.30, 0.30], platform: [0.95, 0.92, 0.85], cabin: [0.95, 0.95, 0.92], seat: [0.30, 0.30, 0.30] }, fun: 3, capacity: 4, cost: 180, income: 9, height: 5, cabin: true },
+  pig_puddle:      { id: 'pig_puddle',      name: 'Pig Puddle',       shape: 'water',   colors: { body: [0.95, 0.75, 0.85], accent: [0.65, 0.45, 0.30], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.92] }, fun: 4, capacity: 6, cost: 250, income: 12, size: 5, float: true, spray: true },
+  sheep_shear:     { id: 'sheep_shear',     name: 'Sheep Shear Spin', shape: 'spinner', colors: { body: [0.95, 0.95, 0.95], accent: [0.30, 0.30, 0.30], platform: [0.85, 0.78, 0.40], seat: [0.95, 0.92, 0.85] }, fun: 3, capacity: 10, cost: 220, income: 11, arms: 8, speed: 0.03 },
+  wheat_field:     { id: 'wheat_field',     name: 'Wheat Field',      shape: 'garden',  colors: { body: [0.95, 0.78, 0.30], accent: [0.85, 0.65, 0.20], platform: [0.85, 0.70, 0.30], seat: [0.95, 0.85, 0.40] }, fun: 2, capacity: 8, cost: 150, income: 8, cells: 6 },
+  goat_spin:       { id: 'goat_spin',       name: 'Goat Spin',        shape: 'spinner', colors: { body: [0.85, 0.85, 0.78], accent: [0.30, 0.20, 0.10], platform: [0.65, 0.40, 0.30], seat: [0.95, 0.92, 0.85] }, fun: 4, capacity: 8, cost: 240, income: 12, arms: 6, speed: 0.04 },
+  farm_truck:      { id: 'farm_truck',      name: 'Farm Truck',       shape: 'racer',   colors: { body: [0.30, 0.55, 0.30], accent: [0.55, 0.30, 0.20], platform: [0.30, 0.30, 0.30], seat: [0.55, 0.85, 0.30] }, fun: 3, capacity: 4, cost: 200, income: 10, speed: 0.04 },
+  coop_tour:       { id: 'coop_tour',       name: 'Coop Tour',        shape: 'track',   colors: { body: [0.85, 0.40, 0.30], accent: [0.95, 0.85, 0.30], platform: [0.55, 0.30, 0.20], seat: [0.95, 0.30, 0.30] }, fun: 4, capacity: 6, cost: 280, income: 14, segments: 6, radius: 4 },
+  // 40-49
+  scarecrow_dance: { id: 'scarecrow_dance', name: 'Scarecrow Dance',  shape: 'spinner', colors: { body: [0.55, 0.35, 0.20], accent: [0.95, 0.85, 0.30], platform: [0.85, 0.65, 0.20], seat: [0.95, 0.85, 0.40] }, fun: 5, capacity: 10, cost: 320, income: 16, arms: 8, speed: 0.05 },
+  silo_spin:       { id: 'silo_spin',       name: 'Silo Spin',        shape: 'racer',   colors: { body: [0.85, 0.85, 0.78], accent: [0.55, 0.30, 0.20], platform: [0.65, 0.40, 0.30], seat: [0.95, 0.85, 0.40] }, fun: 4, capacity: 6, cost: 280, income: 14, speed: 0.05 },
+  barn_jump:       { id: 'barn_jump',       name: 'Barn Jump',        shape: 'swing',   colors: { body: [0.85, 0.30, 0.20], accent: [0.95, 0.85, 0.30], platform: [0.55, 0.30, 0.20], seat: [0.95, 0.55, 0.20] }, fun: 6, capacity: 4, cost: 350, income: 18, height: 7 },
+  veggie_wheel:    { id: 'veggie_wheel',    name: 'Veggie Wheel',     shape: 'racer',   colors: { body: [0.30, 0.75, 0.20], accent: [0.95, 0.55, 0.20], platform: [0.95, 0.78, 0.30], seat: [0.95, 0.85, 0.40] }, fun: 3, capacity: 4, cost: 200, income: 10, speed: 0.03 },
+  apple_ride:      { id: 'apple_ride',      name: 'Apple Ride',       shape: 'swing',   colors: { body: [0.85, 0.30, 0.30], accent: [0.30, 0.55, 0.20], platform: [0.95, 0.40, 0.30], seat: [0.95, 0.50, 0.40] }, fun: 4, capacity: 4, cost: 250, income: 12, height: 5 },
+  pumpkin_patch:   { id: 'pumpkin_patch',   name: 'Pumpkin Patch',    shape: 'garden',  colors: { body: [0.95, 0.45, 0.10], accent: [0.30, 0.55, 0.20], platform: [0.95, 0.55, 0.20], seat: [0.95, 0.65, 0.30] }, fun: 3, capacity: 8, cost: 200, income: 10, cells: 6 },
+  rooster_race:    { id: 'rooster_race',    name: 'Rooster Race',     shape: 'track',   colors: { body: [0.85, 0.20, 0.20], accent: [0.95, 0.85, 0.30], platform: [0.95, 0.78, 0.30], seat: [0.95, 0.30, 0.20] }, fun: 5, capacity: 6, cost: 300, income: 15, segments: 6, radius: 4 },
+  hay_ride:        { id: 'hay_ride',        name: 'Hay Wagon Ride',   shape: 'racer',   colors: { body: [0.95, 0.78, 0.30], accent: [0.85, 0.65, 0.20], platform: [0.55, 0.30, 0.20], seat: [0.95, 0.85, 0.40] }, fun: 4, capacity: 8, cost: 280, income: 14, speed: 0.04 },
+  chicken_hunt:    { id: 'chicken_hunt',    name: 'Chicken Hunt',     shape: 'garden',  colors: { body: [0.95, 0.95, 0.92], accent: [0.85, 0.30, 0.20], platform: [0.55, 0.30, 0.20], seat: [0.95, 0.92, 0.85] }, fun: 3, capacity: 6, cost: 200, income: 10, cells: 4 },
+  farm_dance:      { id: 'farm_dance',      name: 'Farm Dance Floor', shape: 'spinner', colors: { body: [0.85, 0.30, 0.20], accent: [0.30, 0.55, 0.20], platform: [0.85, 0.65, 0.40], seat: [0.95, 0.55, 0.20] }, fun: 5, capacity: 12, cost: 350, income: 18, arms: 10, speed: 0.04 },
+  // 50
+  farm_balloon:    { id: 'farm_balloon',    name: 'Farm Balloon',     shape: 'balloon', colors: { body: [0.95, 0.45, 0.10], accent: [0.30, 0.55, 0.20], platform: [0.55, 0.30, 0.20], seat: [0.95, 0.55, 0.20] }, fun: 5, capacity: 4, cost: 500, income: 22 },
+
+  // ============ 🌲 FOREST (50) ============
+  owl_glide:       { id: 'owl_glide',       name: 'Owl Glide',        shape: 'balloon', colors: { body: [0.40, 0.30, 0.20], accent: [0.95, 0.85, 0.30], platform: [0.20, 0.50, 0.15], seat: [0.55, 0.40, 0.30] }, fun: 5, capacity: 4, cost: 500, income: 22 },
+  deer_run:        { id: 'deer_run',        name: 'Deer Run',         shape: 'track',   colors: { body: [0.85, 0.65, 0.40], accent: [0.30, 0.20, 0.10], platform: [0.20, 0.50, 0.20], seat: [0.95, 0.85, 0.65] }, fun: 5, capacity: 6, cost: 320, income: 16, segments: 6, radius: 4 },
+  fox_dance:       { id: 'fox_dance',       name: 'Fox Dance',        shape: 'spinner', colors: { body: [0.95, 0.45, 0.20], accent: [0.30, 0.20, 0.10], platform: [0.85, 0.65, 0.40], seat: [0.95, 0.65, 0.30] }, fun: 4, capacity: 10, cost: 280, income: 14, arms: 8, speed: 0.04 },
+  rabbit_hop:      { id: 'rabbit_hop',      name: 'Rabbit Hop',       shape: 'swing',   colors: { body: [0.95, 0.95, 0.92], accent: [0.30, 0.20, 0.10], platform: [0.85, 0.78, 0.40], seat: [0.95, 0.95, 0.92] }, fun: 5, capacity: 4, cost: 300, income: 15, height: 6 },
+  bear_lookout:    { id: 'bear_lookout',    name: 'Bear Lookout',     shape: 'tower',   colors: { body: [0.55, 0.30, 0.20], accent: [0.30, 0.20, 0.10], platform: [0.20, 0.50, 0.15], cabin: [0.55, 0.40, 0.30], seat: [0.85, 0.65, 0.40] }, fun: 4, capacity: 4, cost: 280, income: 14, height: 7, cabin: true },
+  spider_web:      { id: 'spider_web',      name: 'Spider Web Swing', shape: 'swing',   colors: { body: [0.20, 0.20, 0.20], accent: [0.85, 0.85, 0.85], platform: [0.20, 0.30, 0.20], seat: [0.30, 0.30, 0.30] }, fun: 6, capacity: 4, cost: 350, income: 18, height: 7 },
+  wolf_howl:       { id: 'wolf_howl',       name: 'Wolf Howl Tower',  shape: 'tower',   colors: { body: [0.30, 0.30, 0.40], accent: [0.85, 0.85, 0.95], platform: [0.20, 0.30, 0.30], cabin: [0.30, 0.40, 0.50], seat: [0.85, 0.85, 0.95] }, fun: 4, capacity: 4, cost: 250, income: 12, height: 6, cabin: true },
+  vine_swing:      { id: 'vine_swing',      name: 'Vine Swing',       shape: 'swing',   colors: { body: [0.20, 0.50, 0.20], accent: [0.30, 0.75, 0.30], platform: [0.20, 0.50, 0.20], seat: [0.30, 0.75, 0.30] }, fun: 6, capacity: 4, cost: 380, income: 19, height: 8 },
+  fern_garden:     { id: 'fern_garden',     name: 'Fern Garden',      shape: 'garden',  colors: { body: [0.20, 0.55, 0.20], accent: [0.30, 0.75, 0.30], platform: [0.20, 0.45, 0.20], seat: [0.30, 0.65, 0.30] }, fun: 2, capacity: 8, cost: 150, income: 8, cells: 6 },
+  mushroom_glow:   { id: 'mushroom_glow',   name: 'Glowing Mushroom', shape: 'tower',   colors: { body: [0.65, 0.55, 0.95], accent: [0.95, 0.85, 0.30], platform: [0.30, 0.55, 0.30], cabin: [0.85, 0.30, 0.30], seat: [0.65, 0.65, 0.95] }, fun: 4, capacity: 4, cost: 250, income: 12, height: 5, cabin: true },
+  // 10-19
+  owl_spin:        { id: 'owl_spin',        name: 'Owl Spinner',      shape: 'spinner', colors: { body: [0.40, 0.30, 0.20], accent: [0.95, 0.85, 0.30], platform: [0.20, 0.50, 0.15], seat: [0.55, 0.40, 0.30] }, fun: 4, capacity: 8, cost: 280, income: 14, arms: 6, speed: 0.03 },
+  raccoon_race:    { id: 'raccoon_race',    name: 'Raccoon Race',     shape: 'track',   colors: { body: [0.30, 0.30, 0.30], accent: [0.85, 0.85, 0.85], platform: [0.40, 0.40, 0.50], seat: [0.55, 0.55, 0.65] }, fun: 5, capacity: 6, cost: 300, income: 15, segments: 6, radius: 4 },
+  badger_dig:      { id: 'badger_dig',      name: 'Badger Dig',       shape: 'garden',  colors: { body: [0.30, 0.30, 0.30], accent: [0.85, 0.85, 0.85], platform: [0.55, 0.30, 0.20], seat: [0.65, 0.65, 0.75] }, fun: 3, capacity: 6, cost: 200, income: 10, cells: 4 },
+  deer_jump:       { id: 'deer_jump',       name: 'Deer Jump',        shape: 'swing',   colors: { body: [0.85, 0.65, 0.40], accent: [0.30, 0.20, 0.10], platform: [0.20, 0.50, 0.20], seat: [0.95, 0.85, 0.65] }, fun: 6, capacity: 4, cost: 350, income: 18, height: 6 },
+  hawk_dive:       { id: 'hawk_dive',       name: 'Hawk Dive',        shape: 'balloon', colors: { body: [0.30, 0.20, 0.20], accent: [0.85, 0.65, 0.20], platform: [0.40, 0.30, 0.20], seat: [0.55, 0.30, 0.30] }, fun: 6, capacity: 4, cost: 480, income: 24 },
+  squirrel_spin:   { id: 'squirrel_spin',   name: 'Squirrel Spin',    shape: 'spinner', colors: { body: [0.95, 0.50, 0.30], accent: [0.30, 0.20, 0.10], platform: [0.85, 0.65, 0.40], seat: [0.95, 0.70, 0.40] }, fun: 4, capacity: 10, cost: 240, income: 12, arms: 8, speed: 0.05 },
+  tree_house_run:  { id: 'tree_house_run',  name: 'Tree House Run',   shape: 'track',   colors: { body: [0.55, 0.35, 0.20], accent: [0.30, 0.75, 0.20], platform: [0.20, 0.50, 0.20], seat: [0.85, 0.65, 0.40] }, fun: 5, capacity: 6, cost: 320, income: 16, segments: 6, radius: 4 },
+  acorn_drop:      { id: 'acorn_drop',      name: 'Acorn Drop',       shape: 'tower',   colors: { body: [0.85, 0.55, 0.30], accent: [0.30, 0.20, 0.10], platform: [0.85, 0.70, 0.40], cabin: [0.95, 0.75, 0.50], seat: [0.95, 0.85, 0.65] }, fun: 5, capacity: 4, cost: 350, income: 18, height: 7, cabin: true },
+  firefly_dance:   { id: 'firefly_dance',   name: 'Firefly Dance',    shape: 'spinner', colors: { body: [0.95, 0.95, 0.30], accent: [0.85, 0.85, 0.20], platform: [0.20, 0.30, 0.20], seat: [0.95, 0.85, 0.30] }, fun: 5, capacity: 10, cost: 280, income: 14, arms: 8, speed: 0.06 },
+  beaver_dam:      { id: 'beaver_dam',      name: 'Beaver Dam',       shape: 'water',   colors: { body: [0.55, 0.35, 0.20], accent: [0.30, 0.20, 0.10], platform: [0.30, 0.65, 0.95], seat: [0.85, 0.65, 0.40] }, fun: 3, capacity: 6, cost: 200, income: 10, size: 5, float: true, spray: true },
+  // 20-29
+  bear_dance:      { id: 'bear_dance',      name: 'Bear Dance',       shape: 'spinner', colors: { body: [0.55, 0.30, 0.20], accent: [0.30, 0.20, 0.10], platform: [0.20, 0.50, 0.15], seat: [0.55, 0.40, 0.30] }, fun: 4, capacity: 8, cost: 280, income: 14, arms: 6, speed: 0.03 },
+  moose_swing:     { id: 'moose_swing',     name: 'Moose Swing',      shape: 'swing',   colors: { body: [0.55, 0.30, 0.20], accent: [0.95, 0.85, 0.30], platform: [0.40, 0.30, 0.20], seat: [0.65, 0.50, 0.40] }, fun: 5, capacity: 4, cost: 300, income: 15, height: 6 },
+  eagle_eye:       { id: 'eagle_eye',       name: 'Eagle Eye Tower',  shape: 'tower',   colors: { body: [0.40, 0.25, 0.15], accent: [0.85, 0.65, 0.20], platform: [0.20, 0.40, 0.15], cabin: [0.55, 0.40, 0.20], seat: [0.95, 0.85, 0.30] }, fun: 5, capacity: 4, cost: 350, income: 18, height: 8, cabin: true },
+  vine_climb:      { id: 'vine_climb',      name: 'Vine Climb',       shape: 'swing',   colors: { body: [0.20, 0.50, 0.20], accent: [0.30, 0.75, 0.30], platform: [0.20, 0.50, 0.20], seat: [0.30, 0.75, 0.30] }, fun: 5, capacity: 4, cost: 250, income: 12, height: 5 },
+  rabbit_wheel:    { id: 'rabbit_wheel',    name: 'Rabbit Wheel',     shape: 'racer',   colors: { body: [0.95, 0.95, 0.92], accent: [0.30, 0.20, 0.10], platform: [0.85, 0.78, 0.40], seat: [0.95, 0.95, 0.92] }, fun: 3, capacity: 4, cost: 200, income: 10, speed: 0.05 },
+  spider_jump:     { id: 'spider_jump',     name: 'Spider Jump',      shape: 'swing',   colors: { body: [0.20, 0.20, 0.20], accent: [0.85, 0.85, 0.85], platform: [0.20, 0.30, 0.20], seat: [0.30, 0.30, 0.30] }, fun: 6, capacity: 4, cost: 380, income: 19, height: 7 },
+  bear_climb:      { id: 'bear_climb',      name: 'Bear Climb',       shape: 'tower',   colors: { body: [0.55, 0.30, 0.20], accent: [0.30, 0.20, 0.10], platform: [0.20, 0.50, 0.15], cabin: [0.55, 0.40, 0.30], seat: [0.85, 0.65, 0.40] }, fun: 4, capacity: 4, cost: 250, income: 12, height: 5, cabin: true },
+  bat_cave:        { id: 'bat_cave',        name: 'Bat Cave',         shape: 'tower',   colors: { body: [0.30, 0.20, 0.30], accent: [0.65, 0.30, 0.65], platform: [0.20, 0.30, 0.20], cabin: [0.30, 0.30, 0.40], seat: [0.85, 0.65, 0.95] }, fun: 5, capacity: 4, cost: 320, income: 16, height: 6, cabin: true },
+  bee_hive_forest: { id: 'bee_hive_forest', name: 'Forest Beehive',   shape: 'tower',   colors: { body: [0.95, 0.78, 0.20], accent: [0.30, 0.20, 0.10], platform: [0.85, 0.70, 0.20], cabin: [0.95, 0.85, 0.30], seat: [0.95, 0.85, 0.30] }, fun: 3, capacity: 4, cost: 200, income: 10, height: 5, cabin: true },
+  snake_slither:   { id: 'snake_slither',   name: 'Snake Slither',    shape: 'track',   colors: { body: [0.30, 0.55, 0.20], accent: [0.95, 0.85, 0.30], platform: [0.20, 0.50, 0.20], seat: [0.30, 0.75, 0.30] }, fun: 4, capacity: 6, cost: 280, income: 14, segments: 8, radius: 4 },
+  // 30-39
+  mushroom_jump:   { id: 'mushroom_jump',   name: 'Mushroom Jump',    shape: 'swing',   colors: { body: [0.85, 0.30, 0.30], accent: [0.95, 0.95, 0.92], platform: [0.20, 0.40, 0.20], seat: [0.85, 0.55, 0.55] }, fun: 5, capacity: 4, cost: 280, income: 14, height: 5 },
+  tree_swing:      { id: 'tree_swing',      name: 'Tree Swing',       shape: 'swing',   colors: { body: [0.55, 0.30, 0.20], accent: [0.30, 0.20, 0.10], platform: [0.20, 0.50, 0.20], seat: [0.55, 0.40, 0.30] }, fun: 5, capacity: 4, cost: 300, income: 15, height: 6 },
+  acorn_spin:      { id: 'acorn_spin',      name: 'Acorn Spinner',    shape: 'spinner', colors: { body: [0.85, 0.55, 0.30], accent: [0.30, 0.20, 0.10], platform: [0.85, 0.70, 0.40], seat: [0.95, 0.75, 0.50] }, fun: 4, capacity: 8, cost: 240, income: 12, arms: 6, speed: 0.04 },
+  fern_jump:       { id: 'fern_jump',       name: 'Fern Jump',        shape: 'swing',   colors: { body: [0.20, 0.55, 0.20], accent: [0.30, 0.75, 0.30], platform: [0.20, 0.50, 0.20], seat: [0.30, 0.75, 0.30] }, fun: 4, capacity: 4, cost: 220, income: 11, height: 4 },
+  wolf_run:        { id: 'wolf_run',        name: 'Wolf Run',         shape: 'track',   colors: { body: [0.30, 0.30, 0.40], accent: [0.85, 0.85, 0.95], platform: [0.20, 0.30, 0.30], seat: [0.65, 0.65, 0.85] }, fun: 5, capacity: 6, cost: 300, income: 15, segments: 6, radius: 4 },
+  fox_jump:        { id: 'fox_jump',        name: 'Fox Jump',         shape: 'swing',   colors: { body: [0.95, 0.45, 0.20], accent: [0.30, 0.20, 0.10], platform: [0.85, 0.65, 0.40], seat: [0.95, 0.65, 0.30] }, fun: 5, capacity: 4, cost: 280, income: 14, height: 5 },
+  raccoon_spin:    { id: 'raccoon_spin',    name: 'Raccoon Spin',     shape: 'spinner', colors: { body: [0.30, 0.30, 0.30], accent: [0.85, 0.85, 0.85], platform: [0.40, 0.40, 0.50], seat: [0.55, 0.55, 0.65] }, fun: 3, capacity: 8, cost: 200, income: 10, arms: 6, speed: 0.04 },
+  hedgehog_roll:   { id: 'hedgehog_roll',   name: 'Hedgehog Roll',    shape: 'racer',   colors: { body: [0.55, 0.45, 0.30], accent: [0.30, 0.30, 0.30], platform: [0.85, 0.65, 0.40], seat: [0.95, 0.85, 0.65] }, fun: 4, capacity: 4, cost: 200, income: 10, speed: 0.05 },
+  owl_tower:       { id: 'owl_tower',       name: 'Owl Tower',        shape: 'tower',   colors: { body: [0.40, 0.30, 0.20], accent: [0.95, 0.85, 0.30], platform: [0.20, 0.50, 0.15], cabin: [0.55, 0.40, 0.30], seat: [0.55, 0.40, 0.30] }, fun: 3, capacity: 4, cost: 200, income: 10, height: 5, cabin: true },
+  squirrel_wheel:  { id: 'squirrel_wheel',  name: 'Squirrel Wheel',   shape: 'racer',   colors: { body: [0.95, 0.50, 0.30], accent: [0.30, 0.20, 0.10], platform: [0.85, 0.65, 0.40], seat: [0.95, 0.70, 0.40] }, fun: 3, capacity: 4, cost: 200, income: 10, speed: 0.06 },
+  // 40-49
+  badger_dance:    { id: 'badger_dance',    name: 'Badger Dance',     shape: 'spinner', colors: { body: [0.30, 0.30, 0.30], accent: [0.85, 0.85, 0.85], platform: [0.55, 0.30, 0.20], seat: [0.65, 0.65, 0.75] }, fun: 3, capacity: 8, cost: 220, income: 11, arms: 6, speed: 0.04 },
+  beaver_dam_ride: { id: 'beaver_dam_ride', name: 'Beaver Dam Ride',  shape: 'water',   colors: { body: [0.55, 0.35, 0.20], accent: [0.30, 0.20, 0.10], platform: [0.30, 0.65, 0.95], seat: [0.85, 0.65, 0.40] }, fun: 3, capacity: 6, cost: 250, income: 12, size: 6, float: true, spray: true },
+  hawk_tower:      { id: 'hawk_tower',      name: 'Hawk Tower',       shape: 'tower',   colors: { body: [0.30, 0.20, 0.20], accent: [0.85, 0.65, 0.20], platform: [0.40, 0.30, 0.20], cabin: [0.55, 0.30, 0.30], seat: [0.55, 0.30, 0.30] }, fun: 4, capacity: 4, cost: 280, income: 14, height: 6, cabin: true },
+  rabbit_track:    { id: 'rabbit_track',    name: 'Rabbit Track',     shape: 'track',   colors: { body: [0.95, 0.95, 0.92], accent: [0.30, 0.20, 0.10], platform: [0.85, 0.78, 0.40], seat: [0.95, 0.95, 0.92] }, fun: 4, capacity: 6, cost: 240, income: 12, segments: 6, radius: 4 },
+  spider_dance:    { id: 'spider_dance',    name: 'Spider Dance',     shape: 'spinner', colors: { body: [0.20, 0.20, 0.20], accent: [0.85, 0.85, 0.85], platform: [0.20, 0.30, 0.20], seat: [0.30, 0.30, 0.30] }, fun: 5, capacity: 8, cost: 280, income: 14, arms: 8, speed: 0.05 },
+  bat_spin:        { id: 'bat_spin',        name: 'Bat Spin',         shape: 'spinner', colors: { body: [0.30, 0.20, 0.30], accent: [0.65, 0.30, 0.65], platform: [0.20, 0.30, 0.20], seat: [0.85, 0.65, 0.95] }, fun: 4, capacity: 8, cost: 240, income: 12, arms: 6, speed: 0.04 },
+  fern_garden_walk:{ id: 'fern_garden_walk',name: 'Fern Walk',        shape: 'garden',  colors: { body: [0.20, 0.55, 0.20], accent: [0.30, 0.75, 0.30], platform: [0.20, 0.45, 0.20], seat: [0.30, 0.65, 0.30] }, fun: 2, capacity: 8, cost: 150, income: 8, cells: 6 },
+  beetle_run:      { id: 'beetle_run',      name: 'Beetle Run',       shape: 'racer',   colors: { body: [0.20, 0.20, 0.30], accent: [0.85, 0.65, 0.20], platform: [0.20, 0.30, 0.20], seat: [0.30, 0.30, 0.40] }, fun: 3, capacity: 4, cost: 200, income: 10, speed: 0.05 },
+  mushroom_glow2:  { id: 'mushroom_glow2',  name: 'Glow Mushroom 2',  shape: 'tower',   colors: { body: [0.65, 0.55, 0.95], accent: [0.95, 0.85, 0.30], platform: [0.30, 0.55, 0.30], cabin: [0.85, 0.30, 0.30], seat: [0.65, 0.65, 0.95] }, fun: 4, capacity: 4, cost: 250, income: 12, height: 5, cabin: true },
+  forest_lookout:  { id: 'forest_lookout',  name: 'Forest Lookout',   shape: 'tower',   colors: { body: [0.40, 0.30, 0.20], accent: [0.20, 0.50, 0.20], platform: [0.20, 0.40, 0.15], cabin: [0.55, 0.40, 0.30], seat: [0.85, 0.65, 0.40] }, fun: 3, capacity: 4, cost: 200, income: 10, height: 6, cabin: true },
+  // 50
+  forest_balloon:  { id: 'forest_balloon',  name: 'Forest Balloon',   shape: 'balloon', colors: { body: [0.20, 0.50, 0.20], accent: [0.95, 0.85, 0.30], platform: [0.40, 0.30, 0.20], seat: [0.30, 0.75, 0.30] }, fun: 5, capacity: 4, cost: 500, income: 22 },
+
+  // ============ 🏖️ BEACH (50) ============
+  snorkel_tour:    { id: 'snorkel_tour',    name: 'Snorkel Tour',     shape: 'water',   colors: { body: [0.30, 0.65, 0.95], accent: [0.95, 0.95, 0.92], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.30] }, fun: 4, capacity: 6, cost: 280, income: 14, size: 5, float: true, spray: true },
+  shell_carousel:  { id: 'shell_carousel',  name: 'Shell Carousel',   shape: 'spinner', colors: { body: [0.95, 0.75, 0.85], accent: [0.95, 0.92, 0.85], platform: [0.95, 0.85, 0.65], seat: [0.95, 0.85, 0.92] }, fun: 4, capacity: 12, cost: 320, income: 16, arms: 6, speed: 0.025 },
+  surf_simulator: { id: 'surf_simulator',  name: 'Surf Simulator',   shape: 'water',   colors: { body: [0.30, 0.65, 0.95], accent: [0.95, 0.95, 0.92], platform: [0.30, 0.65, 0.95], seat: [0.30, 0.55, 0.85] }, fun: 6, capacity: 4, cost: 400, income: 20, size: 6, float: true, spray: true },
+  fish_pond:       { id: 'fish_pond',       name: 'Fish Pond',        shape: 'water',   colors: { body: [0.30, 0.65, 0.95], accent: [0.95, 0.85, 0.30], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.55, 0.30] }, fun: 3, capacity: 6, cost: 220, income: 11, size: 5, float: true, spray: false },
+  crab_walk:       { id: 'crab_walk',       name: 'Crab Walk',        shape: 'garden',  colors: { body: [0.95, 0.30, 0.30], accent: [0.95, 0.85, 0.30], platform: [0.95, 0.85, 0.55], seat: [0.95, 0.30, 0.30] }, fun: 3, capacity: 6, cost: 180, income: 9, cells: 4 },
+  seagull_glide:   { id: 'seagull_glide',   name: 'Seagull Glide',    shape: 'balloon', colors: { body: [0.95, 0.95, 0.92], accent: [0.30, 0.55, 0.95], platform: [0.95, 0.92, 0.85], seat: [0.30, 0.55, 0.95] }, fun: 5, capacity: 4, cost: 500, income: 22 },
+  starfish_spin:   { id: 'starfish_spin',   name: 'Starfish Spin',    shape: 'spinner', colors: { body: [0.95, 0.55, 0.30], accent: [0.95, 0.85, 0.30], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.65, 0.30] }, fun: 4, capacity: 8, cost: 280, income: 14, arms: 5, speed: 0.03 },
+  dolphin_dance:   { id: 'dolphin_dance',   name: 'Dolphin Dance',    shape: 'water',   colors: { body: [0.30, 0.65, 0.95], accent: [0.95, 0.95, 0.92], platform: [0.30, 0.55, 0.85], seat: [0.65, 0.85, 0.95] }, fun: 5, capacity: 8, cost: 350, income: 18, size: 6, float: true, spray: true },
+  palm_tower:      { id: 'palm_tower',      name: 'Palm Tower',       shape: 'tower',   colors: { body: [0.55, 0.35, 0.20], accent: [0.30, 0.75, 0.20], platform: [0.95, 0.85, 0.55], cabin: [0.30, 0.55, 0.95], seat: [0.30, 0.55, 0.95] }, fun: 4, capacity: 4, cost: 280, income: 14, height: 5, cabin: true },
+  wave_dive:       { id: 'wave_dive',       name: 'Wave Dive',        shape: 'swing',   colors: { body: [0.30, 0.65, 0.95], accent: [0.95, 0.95, 0.92], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.92] }, fun: 6, capacity: 4, cost: 380, income: 19, height: 7 },
+  // 10-19
+  octopus_dance:   { id: 'octopus_dance',   name: 'Octopus Dance',    shape: 'spinner', colors: { body: [0.95, 0.30, 0.55], accent: [0.30, 0.65, 0.95], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.55, 0.85] }, fun: 5, capacity: 8, cost: 320, income: 16, arms: 8, speed: 0.05 },
+  whale_watch:     { id: 'whale_watch',     name: 'Whale Watch',      shape: 'water',   colors: { body: [0.30, 0.55, 0.95], accent: [0.30, 0.65, 0.95], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.95, 0.92] }, fun: 4, capacity: 8, cost: 300, income: 15, size: 7, float: true, spray: true },
+  shark_tower:     { id: 'shark_tower',     name: 'Shark Tower',      shape: 'tower',   colors: { body: [0.40, 0.50, 0.65], accent: [0.95, 0.30, 0.30], platform: [0.30, 0.55, 0.85], cabin: [0.30, 0.30, 0.40], seat: [0.95, 0.95, 0.92] }, fun: 4, capacity: 4, cost: 280, income: 14, height: 6, cabin: true },
+  pirate_ship:     { id: 'pirate_ship',     name: 'Pirate Ship',      shape: 'swing',   colors: { body: [0.55, 0.30, 0.20], accent: [0.30, 0.30, 0.30], platform: [0.95, 0.55, 0.30], seat: [0.30, 0.30, 0.30] }, fun: 6, capacity: 8, cost: 400, income: 20, height: 5 },
+  conch_horn:      { id: 'conch_horn',      name: 'Conch Horn',       shape: 'racer',   colors: { body: [0.95, 0.75, 0.65], accent: [0.95, 0.55, 0.30], platform: [0.95, 0.85, 0.55], seat: [0.95, 0.65, 0.40] }, fun: 3, capacity: 4, cost: 200, income: 10, speed: 0.04 },
+  jelly_float:     { id: 'jelly_float',     name: 'Jelly Float',      shape: 'water',   colors: { body: [0.95, 0.30, 0.65], accent: [0.95, 0.85, 0.95], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.30, 0.65] }, fun: 3, capacity: 6, cost: 200, income: 10, size: 5, float: true, spray: false },
+  turtle_tour:     { id: 'turtle_tour',     name: 'Turtle Tour',      shape: 'water',   colors: { body: [0.30, 0.65, 0.30], accent: [0.30, 0.55, 0.20], platform: [0.30, 0.65, 0.95], seat: [0.30, 0.55, 0.30] }, fun: 3, capacity: 6, cost: 220, income: 11, size: 5, float: true, spray: false },
+  lighthouse_2:    { id: 'lighthouse_2',    name: 'Mini Lighthouse',  shape: 'tower',   colors: { body: [0.95, 0.95, 0.92], accent: [0.85, 0.20, 0.20], platform: [0.95, 0.92, 0.85], cabin: [0.95, 0.95, 0.30], seat: [0.85, 0.20, 0.20] }, fun: 3, capacity: 4, cost: 220, income: 11, height: 4, cabin: true },
+  tide_pool:       { id: 'tide_pool',       name: 'Tide Pool',        shape: 'water',   colors: { body: [0.30, 0.65, 0.95], accent: [0.95, 0.85, 0.55], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.55] }, fun: 3, capacity: 6, cost: 200, income: 10, size: 4, float: false, spray: true },
+  pelican_dive:    { id: 'pelican_dive',    name: 'Pelican Dive',     shape: 'swing',   colors: { body: [0.95, 0.95, 0.92], accent: [0.30, 0.55, 0.95], platform: [0.95, 0.92, 0.85], seat: [0.95, 0.85, 0.30] }, fun: 5, capacity: 4, cost: 280, income: 14, height: 6 },
+  // 20-29
+  anchor_drop:     { id: 'anchor_drop',     name: 'Anchor Drop',      shape: 'swing',   colors: { body: [0.30, 0.30, 0.40], accent: [0.95, 0.95, 0.92], platform: [0.30, 0.55, 0.85], seat: [0.95, 0.95, 0.92] }, fun: 5, capacity: 4, cost: 280, income: 14, height: 5 },
+  boat_race:       { id: 'boat_race',       name: 'Boat Race',        shape: 'track',   colors: { body: [0.95, 0.95, 0.92], accent: [0.30, 0.55, 0.95], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.30] }, fun: 5, capacity: 6, cost: 300, income: 15, segments: 6, radius: 4 },
+  sand_castle_walk:{ id: 'sand_castle_walk',name: 'Sand Castle Walk', shape: 'garden',  colors: { body: [0.95, 0.85, 0.55], accent: [0.85, 0.30, 0.30], platform: [0.95, 0.85, 0.55], seat: [0.85, 0.30, 0.30] }, fun: 3, capacity: 8, cost: 200, income: 10, cells: 6 },
+  beach_ball:      { id: 'beach_ball',      name: 'Beach Ball',       shape: 'spinner', colors: { body: [0.95, 0.30, 0.30], accent: [0.95, 0.85, 0.30], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.55, 0.30] }, fun: 4, capacity: 8, cost: 280, income: 14, arms: 6, speed: 0.05 },
+  umb_brella:      { id: 'umb_brella',      name: 'Umbrella Spin',    shape: 'spinner', colors: { body: [0.95, 0.30, 0.30], accent: [0.95, 0.85, 0.30], platform: [0.30, 0.55, 0.85], seat: [0.95, 0.55, 0.30] }, fun: 4, capacity: 8, cost: 240, income: 12, arms: 8, speed: 0.04 },
+  fish_catch:      { id: 'fish_catch',      name: 'Fish Catch',       shape: 'water',   colors: { body: [0.30, 0.65, 0.95], accent: [0.95, 0.85, 0.30], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.55, 0.30] }, fun: 4, capacity: 6, cost: 250, income: 12, size: 5, float: true, spray: true },
+  snorkel_dive:    { id: 'snorkel_dive',    name: 'Snorkel Dive',     shape: 'water',   colors: { body: [0.30, 0.65, 0.95], accent: [0.95, 0.95, 0.92], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.30] }, fun: 4, capacity: 6, cost: 280, income: 14, size: 6, float: true, spray: false },
+  coral_tower:     { id: 'coral_tower',     name: 'Coral Tower',      shape: 'tower',   colors: { body: [0.95, 0.55, 0.65], accent: [0.95, 0.85, 0.55], platform: [0.95, 0.85, 0.55], cabin: [0.95, 0.65, 0.75], seat: [0.95, 0.85, 0.65] }, fun: 3, capacity: 4, cost: 220, income: 11, height: 5, cabin: true },
+  fish_school:     { id: 'fish_school',     name: 'Fish School',      shape: 'spinner', colors: { body: [0.30, 0.65, 0.95], accent: [0.95, 0.85, 0.30], platform: [0.30, 0.55, 0.85], seat: [0.95, 0.55, 0.30] }, fun: 3, capacity: 8, cost: 200, income: 10, arms: 6, speed: 0.05 },
+  beach_jump:      { id: 'beach_jump',      name: 'Beach Jump',       shape: 'swing',   colors: { body: [0.30, 0.65, 0.95], accent: [0.95, 0.95, 0.92], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.92] }, fun: 6, capacity: 4, cost: 350, income: 18, height: 7 },
+  // 30-39
+  sand_castle_jump:{ id: 'sand_castle_jump',name: 'Castle Jump',      shape: 'swing',   colors: { body: [0.95, 0.85, 0.55], accent: [0.85, 0.30, 0.30], platform: [0.95, 0.85, 0.55], seat: [0.85, 0.30, 0.30] }, fun: 5, capacity: 4, cost: 280, income: 14, height: 5 },
+  sailboat:        { id: 'sailboat',        name: 'Sailboat Spin',    shape: 'spinner', colors: { body: [0.95, 0.95, 0.92], accent: [0.30, 0.55, 0.95], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.30] }, fun: 4, capacity: 8, cost: 280, income: 14, arms: 6, speed: 0.04 },
+  sand_dune:       { id: 'sand_dune',       name: 'Sand Dune',        shape: 'swing',   colors: { body: [0.95, 0.85, 0.55], accent: [0.85, 0.55, 0.30], platform: [0.95, 0.85, 0.55], seat: [0.95, 0.65, 0.40] }, fun: 4, capacity: 4, cost: 240, income: 12, height: 4 },
+  coral_dance:     { id: 'coral_dance',     name: 'Coral Dance',      shape: 'spinner', colors: { body: [0.95, 0.55, 0.65], accent: [0.95, 0.85, 0.55], platform: [0.95, 0.85, 0.55], seat: [0.95, 0.65, 0.75] }, fun: 4, capacity: 8, cost: 240, income: 12, arms: 6, speed: 0.04 },
+  surfboard:       { id: 'surfboard',       name: 'Surfboard Spin',   shape: 'racer',   colors: { body: [0.30, 0.55, 0.85], accent: [0.95, 0.95, 0.92], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.30] }, fun: 5, capacity: 4, cost: 320, income: 16, speed: 0.05 },
+  seashell_tower:  { id: 'seashell_tower',  name: 'Seashell Tower',   shape: 'tower',   colors: { body: [0.95, 0.75, 0.85], accent: [0.95, 0.92, 0.85], platform: [0.95, 0.85, 0.65], cabin: [0.95, 0.85, 0.92], seat: [0.95, 0.92, 0.85] }, fun: 3, capacity: 4, cost: 220, income: 11, height: 4, cabin: true },
+  sand_castle_2:   { id: 'sand_castle_2',   name: 'Big Sand Castle',  shape: 'tower',   colors: { body: [0.95, 0.85, 0.55], accent: [0.85, 0.30, 0.30], platform: [0.95, 0.85, 0.55], cabin: [0.95, 0.75, 0.40], seat: [0.85, 0.30, 0.30] }, fun: 3, capacity: 4, cost: 200, income: 10, height: 5, cabin: true },
+  palm_spin:       { id: 'palm_spin',       name: 'Palm Spin',        shape: 'spinner', colors: { body: [0.55, 0.35, 0.20], accent: [0.30, 0.75, 0.20], platform: [0.95, 0.85, 0.55], seat: [0.30, 0.55, 0.95] }, fun: 4, capacity: 8, cost: 240, income: 12, arms: 6, speed: 0.04 },
+  beach_tower:     { id: 'beach_tower',     name: 'Beach Tower',      shape: 'tower',   colors: { body: [0.95, 0.85, 0.55], accent: [0.30, 0.55, 0.95], platform: [0.95, 0.92, 0.85], cabin: [0.30, 0.55, 0.95], seat: [0.30, 0.55, 0.95] }, fun: 3, capacity: 4, cost: 200, income: 10, height: 4, cabin: true },
+  boat_jump:       { id: 'boat_jump',       name: 'Boat Jump',        shape: 'swing',   colors: { body: [0.95, 0.95, 0.92], accent: [0.30, 0.55, 0.95], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.30] }, fun: 5, capacity: 4, cost: 300, income: 15, height: 5 },
+  // 40-49
+  fish_jump:       { id: 'fish_jump',       name: 'Fish Jump',        shape: 'swing',   colors: { body: [0.30, 0.65, 0.95], accent: [0.95, 0.85, 0.30], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.55, 0.30] }, fun: 4, capacity: 4, cost: 250, income: 12, height: 4 },
+  sea_tower:       { id: 'sea_tower',       name: 'Sea Tower',        shape: 'tower',   colors: { body: [0.30, 0.55, 0.85], accent: [0.95, 0.95, 0.92], platform: [0.30, 0.65, 0.95], cabin: [0.30, 0.55, 0.85], seat: [0.95, 0.85, 0.30] }, fun: 3, capacity: 4, cost: 200, income: 10, height: 5, cabin: true },
+  seahorse_dance:  { id: 'seahorse_dance',  name: 'Seahorse Dance',   shape: 'spinner', colors: { body: [0.95, 0.55, 0.30], accent: [0.30, 0.55, 0.95], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.55, 0.30] }, fun: 4, capacity: 8, cost: 240, income: 12, arms: 6, speed: 0.04 },
+  shell_swing:     { id: 'shell_swing',     name: 'Shell Swing',      shape: 'swing',   colors: { body: [0.95, 0.75, 0.85], accent: [0.95, 0.92, 0.85], platform: [0.95, 0.85, 0.65], seat: [0.95, 0.85, 0.92] }, fun: 4, capacity: 4, cost: 220, income: 11, height: 4 },
+  wave_run:        { id: 'wave_run',        name: 'Wave Run',         shape: 'track',   colors: { body: [0.30, 0.65, 0.95], accent: [0.95, 0.95, 0.92], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.30] }, fun: 4, capacity: 6, cost: 280, income: 14, segments: 6, radius: 4 },
+  pearl_dive:      { id: 'pearl_dive',      name: 'Pearl Dive',       shape: 'water',   colors: { body: [0.30, 0.65, 0.95], accent: [0.95, 0.95, 0.92], platform: [0.30, 0.55, 0.85], seat: [0.95, 0.85, 0.92] }, fun: 5, capacity: 4, cost: 350, income: 18, size: 5, float: true, spray: true },
+  beach_wheel:     { id: 'beach_wheel',     name: 'Beach Wheel',      shape: 'racer',   colors: { body: [0.30, 0.65, 0.95], accent: [0.95, 0.95, 0.92], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.30] }, fun: 3, capacity: 4, cost: 200, income: 10, speed: 0.04 },
+  pelican_perch:   { id: 'pelican_perch',   name: 'Pelican Perch',    shape: 'tower',   colors: { body: [0.95, 0.95, 0.92], accent: [0.30, 0.55, 0.95], platform: [0.95, 0.92, 0.85], cabin: [0.95, 0.85, 0.30], seat: [0.30, 0.55, 0.95] }, fun: 3, capacity: 4, cost: 200, income: 10, height: 4, cabin: true },
+  tide_pool_walk:  { id: 'tide_pool_walk',  name: 'Tide Pool Walk',   shape: 'garden',  colors: { body: [0.30, 0.65, 0.95], accent: [0.95, 0.85, 0.55], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.55] }, fun: 2, capacity: 8, cost: 150, income: 8, cells: 4 },
+  ocean_dive:      { id: 'ocean_dive',      name: 'Ocean Dive',       shape: 'balloon', colors: { body: [0.30, 0.55, 0.95], accent: [0.95, 0.95, 0.92], platform: [0.30, 0.65, 0.95], seat: [0.95, 0.85, 0.92] }, fun: 5, capacity: 4, cost: 500, income: 22 },
+  // 50
+  beach_balloon:   { id: 'beach_balloon',   name: 'Beach Balloon',    shape: 'balloon', colors: { body: [0.95, 0.30, 0.30], accent: [0.30, 0.55, 0.95], platform: [0.95, 0.85, 0.55], seat: [0.30, 0.55, 0.95] }, fun: 5, capacity: 4, cost: 500, income: 22 },
+};
+// v2.6.9: Build 150 RIDE_INFO entries from RIDE_CONFIGS
+// Determine mapId by looking up which map's config block contains each id
+const _RIDE_MAP = { farm: [], forest: [], beach: [] };
+let _curMap = null;
+let _braceDepth = 0;
+for (const k of Object.keys(RIDE_CONFIGS)) _RIDE_MAP[_curMap] = _RIDE_MAP[_curMap] || [];
+// Parse the RIDE_CONFIGS literal to figure out which map each id belongs to
+// (Simpler: use id-keyed map assigned at definition time)
+// We do this by scanning the source and tracking which map section we're in
+// (done by inspecting comments in the literal — easier to hardcode)
+const _PROC_MAP_ASSIGN = {
+  // farm (1-50)
+  tractor_tour:'farm',hay_maze:'farm',pumpkin_spin:'farm',cow_train:'farm',sheep_pen:'farm',chicken_coop:'farm',pig_splat:'farm',corn_track:'farm',scarecrow_swing:'farm',barn_dance:'farm',
+  apple_press:'farm',wheat_spinner:'farm',tractor_race:'farm',chicken_roost:'farm',pig_pen:'farm',carrot_coaster:'farm',bee_hive:'farm',goat_mountain:'farm',duck_pond:'farm',corn_maze_walk:'farm',
+  mill_wheel:'farm',rooster_call:'farm',turkey_trot:'farm',hay_bale_jump:'farm',flower_field:'farm',silo_climb:'farm',berry_picker:'farm',cider_press:'farm',barn_lookout:'farm',veggie_race:'farm',
+  horse_trail:'farm',cow_jump:'farm',pumpkin_tower:'farm',milk_bottle:'farm',pig_puddle:'farm',sheep_shear:'farm',wheat_field:'farm',goat_spin:'farm',farm_truck:'farm',coop_tour:'farm',
+  scarecrow_dance:'farm',silo_spin:'farm',barn_jump:'farm',veggie_wheel:'farm',apple_ride:'farm',pumpkin_patch:'farm',rooster_race:'farm',hay_ride:'farm',chicken_hunt:'farm',farm_dance:'farm',farm_balloon:'farm',
+  // forest
+  owl_glide:'forest',deer_run:'forest',fox_dance:'forest',rabbit_hop:'forest',bear_lookout:'forest',spider_web:'forest',wolf_howl:'forest',vine_swing:'forest',fern_garden:'forest',mushroom_glow:'forest',
+  owl_spin:'forest',raccoon_race:'forest',badger_dig:'forest',deer_jump:'forest',hawk_dive:'forest',squirrel_spin:'forest',tree_house_run:'forest',acorn_drop:'forest',firefly_dance:'forest',beaver_dam:'forest',
+  bear_dance:'forest',moose_swing:'forest',eagle_eye:'forest',vine_climb:'forest',rabbit_wheel:'forest',spider_jump:'forest',bear_climb:'forest',bat_cave:'forest',bee_hive_forest:'forest',snake_slither:'forest',
+  mushroom_jump:'forest',tree_swing:'forest',acorn_spin:'forest',fern_jump:'forest',wolf_run:'forest',fox_jump:'forest',raccoon_spin:'forest',hedgehog_roll:'forest',owl_tower:'forest',squirrel_wheel:'forest',
+  badger_dance:'forest',beaver_dam_ride:'forest',hawk_tower:'forest',rabbit_track:'forest',spider_dance:'forest',bat_spin:'forest',fern_garden_walk:'forest',beetle_run:'forest',mushroom_glow2:'forest',forest_lookout:'forest',forest_balloon:'forest',
+  // beach
+  snorkel_tour:'beach',shell_carousel:'beach',surf_simulator:'beach',fish_pond:'beach',crab_walk:'beach',seagull_glide:'beach',starfish_spin:'beach',dolphin_dance:'beach',palm_tower:'beach',wave_dive:'beach',
+  octopus_dance:'beach',whale_watch:'beach',shark_tower:'beach',pirate_ship:'beach',conch_horn:'beach',jelly_float:'beach',turtle_tour:'beach',lighthouse_2:'beach',tide_pool:'beach',pelican_dive:'beach',
+  anchor_drop:'beach',boat_race:'beach',sand_castle_walk:'beach',beach_ball:'beach',umb_brella:'beach',fish_catch:'beach',snorkel_dive:'beach',coral_tower:'beach',fish_school:'beach',beach_jump:'beach',
+  sand_castle_jump:'beach',sailboat:'beach',sand_dune:'beach',coral_dance:'beach',surfboard:'beach',seashell_tower:'beach',sand_castle_2:'beach',palm_spin:'beach',beach_tower:'beach',boat_jump:'beach',
+  fish_jump:'beach',sea_tower:'beach',seahorse_dance:'beach',shell_swing:'beach',wave_run:'beach',pearl_dive:'beach',beach_wheel:'beach',pelican_perch:'beach',tide_pool_walk:'beach',ocean_dive:'beach',beach_balloon:'beach',
+};
+for (const [id, cfg] of Object.entries(RIDE_CONFIGS)) {
+  RIDE_INFO[id] = {
+    name: cfg.name,
+    cost: cfg.cost,
+    capacity: cfg.capacity,
+    income: cfg.income,
+    fun: cfg.fun,
+    cat: cfg.shape === 'tower' || cfg.shape === 'balloon' || cfg.shape === 'water' ? 'family' :
+        cfg.shape === 'swing' || cfg.shape === 'racer' ? 'thrill' :
+        cfg.shape === 'garden' ? 'kids' : 'family',
+    mapId: _PROC_MAP_ASSIGN[id] || 'park',
+    emoji: '🎠',
+  };
+}
+
+
+
+// v2.6.9: PROCEDURAL RIDE GENERATOR
+// Generates many unique-looking rides from a single config object.
+// Shape types: tower, spinner, track, swing, balloon, water, garden, racer
+function createProcRide(pos, cfg) {
+  const root = new BABYLON.TransformNode('proc_' + cfg.id, scene);
+  root.position.copyFrom(pos);
+  const c = cfg.colors;
+  const shadow = shadowGen;
+
+  // Helper: simple box
+  const box = (name, w, h, d, color, x, y, z, parent) => {
+    const m = BABYLON.MeshBuilder.CreateBox(name, { width: w, height: h, depth: d }, scene);
+    m.position.set(x, y, z); m.parent = parent || root;
+    m.material = makeMat(name + '_m', new BABYLON.Color3(color[0], color[1], color[2]), { specularPower: 24 });
+    shadow.addShadowCaster(m);
+    return m;
+  };
+  // Helper: cylinder
+  const cyl = (name, d, h, color, x, y, z, parent) => {
+    const m = BABYLON.MeshBuilder.CreateCylinder(name, { diameter: d, height: h, tessellation: 10 }, scene);
+    m.position.set(x, y, z); m.parent = parent || root;
+    m.material = makeMat(name + '_m', new BABYLON.Color3(color[0], color[1], color[2]), { specularPower: 24 });
+    shadow.addShadowCaster(m);
+    return m;
+  };
+  // Helper: sphere
+  const sph = (name, d, color, x, y, z, parent) => {
+    const m = BABYLON.MeshBuilder.CreateSphere(name, { diameter: d, segments: 8 }, scene);
+    m.position.set(x, y, z); m.parent = parent || root;
+    m.material = makeMat(name + '_m', new BABYLON.Color3(color[0], color[1], color[2]), { specularPower: 32 });
+    shadow.addShadowCaster(m);
+    return m;
+  };
+
+  if (cfg.shape === 'tower') {
+    // Vertical tower with platform on top (lighthouse, windmill, observation, etc.)
+    const h = cfg.height || 8;
+    cyl('twr', 2, h, c.body, 0, h/2, 0);
+    cyl('twrCap', 2.5, 0.4, c.accent, 0, h, 0);
+    const platform = box('plat', 3.5, 0.3, 3.5, c.platform, 0, h + 0.3, 0);
+    if (cfg.cabin) box('cabin', 2.5, 2, 2.5, c.cabin, 0, h + 1.3, 0);
+    if (cfg.roof) cyl('roof', 3, 1.5, c.accent, 0, h + 2.3, 0);
+    if (cfg.beacon) {
+      const beacon = sph('beacon', 0.5, [1, 0.95, 0.3], 0, h + 3, 0);
+      const beaconMat = beacon.material;
+      beaconMat.emissiveColor = new BABYLON.Color3(0.95, 0.85, 0.20);
+    }
+  } else if (cfg.shape === 'spinner') {
+    // Rotating platform with arms + seats
+    const arms = cfg.arms || 6;
+    const r = cfg.radius || 3;
+    cyl('pole', 0.6, 1, c.body, 0, 0.5, 0);
+    cyl('top', 0.4, 4, c.body, 0, 3, 0);
+    const platform = BABYLON.MeshBuilder.CreateCylinder('plat2', { diameter: r * 0.8, height: 0.3, tessellation: 12 }, scene);
+    platform.position.y = 0.5; platform.parent = root;
+    platform.material = makeMat('plat2_m', new BABYLON.Color3(c.platform[0], c.platform[1], c.platform[2]), { specularPower: 24 });
+    shadow.addShadowCaster(platform);
+    const rotor = new BABYLON.TransformNode('rotor', scene);
+    rotor.position.y = 0.5; rotor.parent = root;
+    for (let i = 0; i < arms; i++) {
+      const a = (i / arms) * Math.PI * 2;
+      const arm = box('arm' + i, r * 1.6, 0.2, 0.2, c.body, Math.cos(a) * r * 0.8, 0.1, Math.sin(a) * r * 0.8, rotor);
+      const seat = box('seat' + i, 0.8, 0.4, 0.8, c.seat, Math.cos(a) * r * 1.4, 0.5, Math.sin(a) * r * 1.4, rotor);
+      sph('ball' + i, 0.5, c.accent, Math.cos(a) * r * 1.4, 0.8, Math.sin(a) * r * 1.4, rotor);
+    }
+    scene.onBeforeRenderObservable.add(() => { rotor.rotation.y += cfg.speed || 0.02; });
+  } else if (cfg.shape === 'track') {
+    // Loop of track with cars
+    const seg = cfg.segments || 8;
+    const r = cfg.radius || 4;
+    for (let i = 0; i < seg; i++) {
+      const a = (i / seg) * Math.PI * 2;
+      const track = box('trk' + i, 0.6, 0.2, 0.6, c.platform, Math.cos(a) * r, 0.5, Math.sin(a) * r);
+      const car = box('car' + i, 0.8, 0.5, 0.8, c.seat, Math.cos(a) * r, 0.85, Math.sin(a) * r);
+      if (cfg.cars !== false) car.position.y = 0.85;
+    }
+    if (cfg.cars !== false) {
+      // Animate cars
+      scene.onBeforeRenderObservable.add(() => {
+        const t = performance.now() * 0.001 * (cfg.speed || 1);
+        for (let i = 0; i < seg; i++) {
+          const a = ((i / seg) * Math.PI * 2) + t;
+          // Not re-animating here, just spin the whole track
+        }
+      });
+    }
+    cyl('pole2', 0.4, 0.3, c.body, 0, 0.15, 0);
+  } else if (cfg.shape === 'swing') {
+    // Tall pole + swinging seat
+    const h = cfg.height || 6;
+    cyl('swPole', 0.5, h, c.body, 0, h/2, 0);
+    const pivot = new BABYLON.TransformNode('swPivot', scene);
+    pivot.position.y = h; pivot.parent = root;
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2;
+      const rope = cyl('swRope' + i, 0.1, 3, c.accent, 0, -1.5, 0, pivot);
+      rope.position.x = Math.cos(a) * 1.5;
+      rope.position.z = Math.sin(a) * 1.5;
+      const seat = box('swSeat' + i, 0.7, 0.2, 0.7, c.seat, Math.cos(a) * 1.5, -3, Math.sin(a) * 1.5, pivot);
+    }
+    scene.onBeforeRenderObservable.add(() => { pivot.rotation.z = Math.sin(performance.now() * 0.002) * 0.4; });
+  } else if (cfg.shape === 'balloon') {
+    // Floating balloon with basket
+    const balloon = sph('bal', 4, c.body, 0, 5, 0);
+    balloon.scaling.y = 1.2;
+    const balloonMat = balloon.material;
+    balloonMat.emissiveColor = new BABYLON.Color3(c.body[0] * 0.3, c.body[1] * 0.3, c.body[2] * 0.3);
+    for (let i = 0; i < 4; i++) {
+      const rope = cyl('balRope' + i, 0.05, 2, c.body, (i % 2 === 0 ? -0.5 : 0.5), 3, (i < 2 ? -0.5 : 0.5));
+    }
+    const basket = box('basket', 1.5, 1, 1.5, c.seat, 0, 1.5, 0);
+    scene.onBeforeRenderObservable.add(() => { root.position.y = pos.y + Math.sin(performance.now() * 0.001) * 0.4; });
+  } else if (cfg.shape === 'water') {
+    // Flat water + floating element
+    const water = box('water', cfg.size || 6, 0.2, cfg.size || 6, c.platform, 0, 0.1, 0);
+    if (cfg.float) {
+      const f = box('float', 1.5, 0.8, 1.5, c.body, 0, 0.6, 0);
+      sph('floatBall', 0.5, c.accent, 0, 1.1, 0);
+    }
+    if (cfg.spray) {
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        const spray = cyl('spray' + i, 0.3, 1, [0.5, 0.85, 0.98], Math.cos(a) * 2, 0.6, Math.sin(a) * 2);
+      }
+    }
+  } else if (cfg.shape === 'garden') {
+    // Themed garden environment
+    const cells = cfg.cells || 4;
+    for (let i = 0; i < cells; i++) {
+      const x = ((i % 2) - 0.5) * 2;
+      const z = (Math.floor(i / 2) - 0.5) * 2;
+      box('cell' + i, 1.2, 0.4, 1.2, c.platform, x, 0.2, z);
+      sph('crop' + i, 0.5, c.body, x, 0.7, z);
+    }
+    // Border
+    for (let side = 0; side < 4; side++) {
+      const s = box('bord' + side, 3, 0.3, 0.2, c.body, 0, 0.3, (side - 1.5) * 1);
+    }
+  } else if (cfg.shape === 'racer') {
+    // Fast spinning disc with cars
+    const disc = BABYLON.MeshBuilder.CreateCylinder('rDisc', { diameter: 4, height: 0.3, tessellation: 12 }, scene);
+    disc.position.y = 0.5; disc.parent = root;
+    disc.material = makeMat('rDisc_m', new BABYLON.Color3(c.platform[0], c.platform[1], c.platform[2]), { specularPower: 32 });
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2;
+      const car = box('rCar' + i, 0.8, 0.4, 1.4, c.seat, Math.cos(a) * 1.5, 0.9, Math.sin(a) * 1.5);
+    }
+    scene.onBeforeRenderObservable.add(() => { disc.rotation.y += cfg.speed || 0.05; });
+  }
+
+  // Add name sign at base
+  const sign = box('sign', 2, 0.6, 0.1, c.accent, 0, 0.4, cfg.radius || 3);
+  // Push sign back to base of ride
+  
+  root.metadata = { type: 'proc_' + cfg.shape };
+  return { root, type: 'proc_' + cfg.id, info: RIDE_INFO[cfg.id], passengers: [], update(dt) {} };
+}
+
 
 
 
@@ -7453,6 +7836,15 @@ function serializeGame() {
     savedAt: Date.now(),
   };
 }
+
+// v2.6.9: wire 150 procedural rides — each maps to a config that uses createProcRide
+for (const [id, cfg] of Object.entries(RIDE_CONFIGS)) {
+  rideFactories[id] = function(pos) {
+    const ride = createProcRide(pos, cfg);
+    return { ...ride, type: id, info: RIDE_INFO[id], passengers: [], update(dt) {} };
+  };
+};
+
 
 function saveGame(slot = 0, silent = false) {
   const data = serializeGame();
