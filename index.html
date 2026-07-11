@@ -371,6 +371,9 @@
   #challenges-toggle { left: calc(50% + 436px); }
   #screenshot-btn { left: calc(50% + 476px); }
   #lang-toggle { left: calc(50% + 516px); }
+  #trophy-toggle { left: calc(50% + 556px); }
+  #feedback-toggle { left: calc(50% + 596px); }
+  #theme-toggle { left: calc(50% + 636px); }
   #time-pause { left: calc(50% + 76px); }
   #time-speed { left: calc(50% + 36px); }
   #firework-btn { left: calc(50% - 4px); }
@@ -715,6 +718,10 @@
   .quest-panel.quest-claimed {
     border-color: #84cc16; opacity: 0.65;
   }
+  .report-card { background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px; }
+  .report-label { font-size: 0.72rem; color: rgba(255,255,255,0.5); }
+  .report-value { font-size: 1.2rem; color: #FFD66B; font-weight: 700; margin-top: 2px; }
+  .report-delta { font-size: 0.72rem; color: rgba(255,255,255,0.6); margin-top: 2px; }
   @keyframes float {
     0% { transform: translateY(0) scale(1); }
     100% { transform: translateY(-30px) scale(1.08); }
@@ -980,6 +987,9 @@
 <button id="challenges-toggle" class="topbar-btn" title="Daily Challenges (3 อัน/วัน)">📅</button>
 <button id="screenshot-btn" class="topbar-btn" title="แคปจอเป็น PNG">📷</button>
 <button id="lang-toggle" class="topbar-btn" title="ภาษา / Language / 语言" style="font-size: 13px; font-weight: 700;">TH</button>
+<button id="trophy-toggle" class="topbar-btn" title="Hall of Fame · ห้องโชว์ถ้วยรางวัล">🏆</button>
+<button id="feedback-toggle" class="topbar-btn" title="กระดานรีวิวจากผู้เข้าชม">💬</button>
+<button id="theme-toggle" class="topbar-btn" title="เปลี่ยนธีมสีสวนสนุก">🎨</button>
 <button id="time-pause" class="topbar-btn" title="หยุด/เล่น">⏸️</button>
 <button id="time-speed" class="topbar-btn" title="ความเร็ว">1x</button>
 <button id="firework-btn" class="topbar-btn" title="ยิ่งพลุ">🎆</button>
@@ -1148,6 +1158,55 @@
     <div id="challenges-list" style="margin: 16px 0;"></div>
     <div id="challenges-streak" style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.25); border-radius: 8px; text-align: center; font-size: 0.9rem; color: #FFD66B;"></div>
     <button class="close-btn" id="challenges-close" style="margin-top: 14px;">ปิด</button>
+  </div>
+</div>
+
+<!-- v2.7.1: Daily Report Card modal -->
+<div id="day-report-modal" class="manage-modal">
+  <div class="manage-box" style="max-width: 420px;">
+    <h2>📊 รายงานประจำวัน</h2>
+    <div class="sub">สรุปผลการดำเนินงาน</div>
+    <div id="day-report-body"></div>
+    <button class="close-btn" id="day-report-close" style="margin-top: 14px;">ตกลง</button>
+  </div>
+</div>
+
+<!-- v2.7.2: Hall of Fame (achievement showcase) -->
+<div id="trophy-modal" class="manage-modal">
+  <div class="manage-box" style="max-width: 640px;">
+    <h2>🏆 Hall of Fame</h2>
+    <div class="sub" id="trophy-progress">0 / 0 unlocked</div>
+    <div id="trophy-categories" style="margin: 16px 0; max-height: 60vh; overflow-y: auto;"></div>
+    <button class="close-btn" id="trophy-close" style="margin-top: 14px;">ปิด</button>
+  </div>
+</div>
+
+<!-- v2.7.4: Visitor Feedback Board -->
+<div id="feedback-modal" class="manage-modal">
+  <div class="manage-box" style="max-width: 540px;">
+    <h2>💬 กระดานรีวิวจากผู้เข้าชม</h2>
+    <div class="sub">ความเห็นล่าสุด 20 รายการ</div>
+    <div style="display: flex; gap: 6px; margin: 12px 0;">
+      <button class="filter-btn active" data-filter="all" style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,214,107,0.2); color: #fff; font-size: 0.85rem; cursor: pointer;">ทั้งหมด</button>
+      <button class="filter-btn" data-filter="5" style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.2); color: #fff; font-size: 0.85rem; cursor: pointer;">⭐⭐⭐⭐⭐</button>
+      <button class="filter-btn" data-filter="1" style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.2); color: #fff; font-size: 0.85rem; cursor: pointer;">⭐ 1 ดาว</button>
+    </div>
+    <div id="feedback-list" style="margin: 14px 0; max-height: 50vh; overflow-y: auto;"></div>
+    <button class="close-btn" id="feedback-close" style="margin-top: 14px;">ปิด</button>
+  </div>
+</div>
+
+<!-- v2.7.5: Park Theme picker -->
+<div id="theme-modal" class="manage-modal">
+  <div class="manage-box" style="max-width: 480px;">
+    <h2>🎨 ธีมสีสวนสนุก</h2>
+    <div class="sub">เลือกโทนสีที่ใช่สำหรับสวนสนุกของคุณ</div>
+    <div id="theme-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 16px 0;"></div>
+    <div id="theme-preview" style="margin-top: 14px; padding: 14px; background: rgba(0,0,0,0.3); border-radius: 10px; text-align: center;">
+      <div style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">ตัวอย่างธีม</div>
+      <div id="theme-preview-content" style="margin-top: 8px; font-size: 1.1rem; font-weight: 700;">--</div>
+    </div>
+    <button class="close-btn" id="theme-close" style="margin-top: 14px;">ปิด</button>
   </div>
 </div>
 
@@ -4353,6 +4412,19 @@ class Visitor {
         return;
       }
 
+      // v2.7.3: visit a shop (food/souvenir) - pays bonus income
+      const currentMapDecos = (game.decorations || []).filter(d => (d.mapId || 'park') === game.currentMap);
+      const shops = currentMapDecos.filter(d => d.type === 'shop_stall' || d.type === 'souvenir' || d.type === 'icecream_cart');
+      if (shops.length > 0 && this.shopCooldown === undefined) this.shopCooldown = 0;
+      if (shops.length > 0 && (this.shopCooldown || 0) <= 0 && Math.random() < 0.005) {
+        // 50% chance to visit a shop
+        const target = shops[Math.floor(Math.random() * shops.length)];
+        this.state = 'walking_to_shop';
+        this.targetShop = target;
+        this.shopCooldown = 15 + Math.random() * 10;
+        return;
+      }
+
       // Decide to visit a ride (v1.5: weighted by personality preferences)
       if (rides.length > 0 && this.ridesTaken < this.maxRides && Math.random() < 0.012) {
         const candidates = rides.filter(r => r.passengers.length < r.info.capacity);
@@ -4407,6 +4479,35 @@ class Visitor {
     }
     else if (this.state === 'queuing') {
       this.root.rotation.y += Math.sin(this.timer * 2) * 0.005;
+    }
+    // v2.7.3: walk to a shop
+    else if (this.state === 'walking_to_shop') {
+      if (!this.targetShop || !this.targetShop.result?.root) {
+        this.state = 'wandering';
+        this.targetShop = null;
+        return;
+      }
+      const tp = this.targetShop.result.root.position;
+      const dx = tp.x - this.root.position.x;
+      const dz = tp.z - this.root.position.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      if (dist < 2) {
+        // pay shop + happiness boost
+        const shopIncome = (this.type === 'rich' ? 25 : this.type === 'couple' ? 18 : this.type === 'date' ? 22 : 12) + Math.floor(Math.random() * 8);
+        game.money += shopIncome;
+        recordDailyStat('income', shopIncome);
+        recordDailyStat('tips', shopIncome);
+        spawnCoinParticle(shopIncome);
+        this.happiness = Math.min(1, this.happiness + 0.15);
+        game.shopIncome = (game.shopIncome || 0) + shopIncome;
+        this.state = 'wandering';
+        this.targetShop = null;
+        this.wanderTimer = 1;
+      } else {
+        this.root.position.x += (dx / dist) * this.speed * dt;
+        this.root.position.z += (dz / dist) * this.speed * dt;
+        this.root.rotation.y = lerpAngle(this.root.rotation.y, Math.atan2(dx, dz), dt * 5);
+      }
     }
     else if (this.state === 'riding') {
       if (this.targetRide) {
@@ -5183,6 +5284,7 @@ const game = {
   dailyChallenges: [],           // [{id, type, target, progress, reward, icon, label, claimed}]
   challengeStreak: 0,            // consecutive days completing at least 1 challenge
   challengesCompleted: 0,        // lifetime challenges completed
+  shopIncome: 0,                 // v2.7.3: lifetime income from shop visits
   activeEvent: null,            // {type, expiresAt, label, icon, effects, startedAt}
   eventLog: [],                 // [{day, type, label, icon, ts}] for review
   customRides: [],              // [{id, type, x, z, color, capacity, income, level}]
@@ -5358,6 +5460,10 @@ const DECORATION_TYPES = {
   // 🎉 Decorative
   balloon:   {name:'🎈 ลูกโป่ง',   cost: 80,  color:[0.95,0.30,0.50], height:2,  shape:'flag' },
   present:   {name:'🎁 ของขวัญ',    cost: 100, color:[0.95,0.20,0.30], height:1,  shape:'box' },
+  // v2.7.3: Visitor shop
+  shop_stall:   {name:'🏪 ร้านค้า',      cost: 600, color:[0.95, 0.55, 0.20], height:2.5, shape:'shop'},
+  souvenir:     {name:'🎁 ของที่ระลึก',   cost: 350, color:[0.85, 0.40, 0.65], height:2,   shape:'sphere'},
+  icecream_cart:{name:'🍦 รถไอติม',     cost: 250, color:[0.95, 0.70, 0.85], height:1.5, shape:'sphere'},
 };
 
 // v2.6.4: Decoration categories
@@ -5368,6 +5474,7 @@ const DECO_CATEGORIES = {
   decor:     { name: '🎉 Decor',    color: '#ec4899', items: ['flag', 'fountain', 'balloon', 'present'] },
   farm:      { name: '🚜 Farm',     color: '#84cc16', items: ['farm_plot', 'farm_pond', 'farm_cow'] },
   portal:    { name: '🚪 Portal',   color: '#a855f7', items: ['map_portal'] },
+  shop:      { name: '🏪 Shop',     color: '#fb923c', items: ['shop_stall', 'souvenir', 'icecream_cart'] },
 };
 
 function createDecorationMesh(type, x, z) {
@@ -5791,6 +5898,35 @@ function createDecorationMesh(type, x, z) {
     body.material = mat;
     shadowGen.addShadowCaster(body);
     mesh = body;
+  } else if (type === 'shop_stall') {
+    // v2.7.3: shop stall (boxed roof + awning + counter)
+    const counter = BABYLON.MeshBuilder.CreateBox('shop_counter_' + Date.now(), { width: 3, height: 1, depth: 1.5 }, scene);
+    counter.position.set(x, 0.5, z);
+    counter.material = mat;
+    shadowGen.addShadowCaster(counter);
+    const awning = BABYLON.MeshBuilder.CreateBox('shop_awning_' + Date.now(), { width: 3.4, height: 0.1, depth: 1.8 }, scene);
+    awning.position.set(x, 2.3, z);
+    awning.material = mat;
+    shadowGen.addShadowCaster(awning);
+    // support poles
+    for (let i = -1; i <= 1; i += 2) {
+      const pole = BABYLON.MeshBuilder.CreateCylinder('shop_pole_' + i, { diameter: 0.1, height: 2.5 }, scene);
+      pole.position.set(x + i * 1.5, 1.25, z);
+      pole.material = mat;
+      shadowGen.addShadowCaster(pole);
+    }
+    mesh = counter;
+  } else if (type === 'souvenir' || type === 'icecream_cart') {
+    const body = BABYLON.MeshBuilder.CreateCylinder('shop_cyl_' + Date.now(), { diameter: 1.2, height: 1.5, tessellation: 8 }, scene);
+    body.position.set(x, 0.75, z);
+    body.material = mat;
+    shadowGen.addShadowCaster(body);
+    const top = BABYLON.MeshBuilder.CreateSphere('shop_top_' + Date.now(), { diameter: 1.4, segments: 8 }, scene);
+    top.position.set(x, 1.7, z);
+    top.scaling.y = 0.6;
+    top.material = mat;
+    shadowGen.addShadowCaster(top);
+    mesh = top;
   }
   return mesh;
 }
@@ -7106,6 +7242,266 @@ function takeScreenshot() {
   }
 }
 document.getElementById('screenshot-btn').addEventListener('click', takeScreenshot);
+
+// v2.7.1: Daily report card
+let currentDayReport = null;
+function generateDayReport(day) {
+  const ds = game.dailyStats || { income: 0, visitors: 0, riders: 0, tips: 0 };
+  // Find best/worst ride from today's popularity
+  const todayRides = {};
+  for (const [type, count] of Object.entries(game.ridePopularity)) {
+    todayRides[type] = count;
+  }
+  const sortedRides = Object.entries(todayRides).sort((a, b) => b[1] - a[1]);
+  const bestRide = sortedRides[0] || ['--', 0];
+  const worstRide = sortedRides[sortedRides.length - 1] || ['--', 0];
+  // Top visitor type today
+  const typeCounts = (game.visitorStats && game.visitorStats.byType) || {};
+  const topType = Object.entries(typeCounts).sort((a, b) => b[1].count - a[1].count)[0];
+  // Satisfaction (avg rating)
+  const rating = +(game.parkRating || 0).toFixed(2);
+  // Letter grade
+  const grade = rating >= 4.5 ? 'S' : rating >= 3.5 ? 'A' : rating >= 2.5 ? 'B' : rating >= 1.5 ? 'C' : 'D';
+  // Income change
+  const yesterdayIncome = game.lastDayMoney || 0;
+  const moneyNow = Math.floor(game.money);
+  const incomeDelta = moneyNow - (yesterdayIncome - (game.dailyStaffCost || 0));
+  currentDayReport = {
+    day, grade, rating,
+    income: Math.floor(ds.income || 0),
+    visitors: ds.visitors || 0,
+    riders: ds.riders || 0,
+    tips: Math.floor(ds.tips || 0),
+    bestRide: { name: RIDE_INFO[bestRide[0]]?.name || bestRide[0], type: bestRide[0], count: bestRide[1] },
+    worstRide: { name: RIDE_INFO[worstRide[0]]?.name || worstRide[0], type: worstRide[0], count: worstRide[1] },
+    topTypeName: topType ? (VISITOR_TYPES[topType[0]]?.name || topType[0]) : '--',
+    topTypeCount: topType ? topType[1].count : 0,
+    weather: game.lastDayWeather || 'sunny',
+    money: moneyNow,
+    incomeDelta,
+    challengesCompleted: (game.dailyChallenges || []).filter(c => c.claimed).length,
+    challengesTotal: (game.dailyChallenges || []).length,
+  };
+}
+function showDayReport() {
+  if (!currentDayReport || !document.getElementById('day-report-modal')) return;
+  const r = currentDayReport;
+  const gradeColor = r.grade === 'S' ? '#FFD66B' : r.grade === 'A' ? '#84cc16' : r.grade === 'B' ? '#06b6d4' : r.grade === 'C' ? '#f59e0b' : '#ef4444';
+  const body = document.getElementById('day-report-body');
+  if (body) {
+    body.innerHTML = `
+      <div style="text-align: center; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-bottom: 8px;">สรุปผลวันที่ ${r.day}</div>
+        <div style="font-size: 4rem; font-weight: 700; color: ${gradeColor}; text-shadow: 0 0 24px ${gradeColor}80;">${r.grade}</div>
+        <div style="color: #FFD66B; margin-top: 4px;">⭐ ${r.rating} / 5.0</div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0;">
+        <div class="report-card"><div class="report-label">💰 รายได้</div><div class="report-value">$${r.income.toLocaleString()}</div><div class="report-delta">${r.incomeDelta >= 0 ? '+' : ''}$${r.incomeDelta.toLocaleString()}</div></div>
+        <div class="report-card"><div class="report-label">👥 ผู้เข้าชม</div><div class="report-value">${r.visitors.toLocaleString()}</div><div class="report-delta">${r.weather === 'sunny' ? '☀️' : r.weather === 'rain' ? '🌧️' : r.weather === 'storm' ? '⛈️' : r.weather === 'snow' ? '❄️' : '☁️'} ${r.weather}</div></div>
+        <div class="report-card"><div class="report-label">🎟️ รอบที่นั่ง</div><div class="report-value">${r.riders.toLocaleString()}</div></div>
+        <div class="report-card"><div class="report-label">🎯 Challenges</div><div class="report-value">${r.challengesCompleted} / ${r.challengesTotal}</div></div>
+      </div>
+      <div style="padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.1);">
+        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-bottom: 4px;">🏆 เครื่องเล่นยอดนิยม</div>
+        <div style="font-size: 0.95rem; color: #FFD66B; font-weight: 600;">${getRideEmoji(r.bestRide.type)} ${r.bestRide.name} <span style="color: rgba(255,255,255,0.5); font-weight: 400;">(${r.bestRide.count} รอบ)</span></div>
+      </div>
+      <div style="padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.1);">
+        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-bottom: 4px;">👤 กลุ่มผู้เข้าชมหลัก</div>
+        <div style="font-size: 0.95rem; color: #fff;">${r.topTypeName} <span style="color: rgba(255,255,255,0.5);">(${r.topTypeCount} คน)</span></div>
+      </div>
+    `;
+  }
+  document.getElementById('day-report-modal').classList.add('show');
+  setTimeout(() => { playStarUp(); }, 100);
+}
+function closeDayReport() {
+  document.getElementById('day-report-modal').classList.remove('show');
+}
+document.getElementById('day-report-close').addEventListener('click', closeDayReport);
+
+// v2.7.2: Hall of Fame (trophy showcase)
+const TROPHY_CATEGORIES = {
+  build:  { name: '🏗️ Build',  color: '#f59e0b', icon: '🏗️' },
+  econ:   { name: '💰 Economy', color: '#FFD66B', icon: '💰' },
+  visitor:{ name: '👥 Visitor', color: '#10b981', icon: '👥' },
+  weather:{ name: '⛅ Weather', color: '#3b82f6', icon: '⛅' },
+  staff:  { name: '👔 Staff',  color: '#06b6d4', icon: '👔' },
+  mastery:{ name: '⭐ Mastery', color: '#a855f7', icon: '⭐' },
+};
+function openTrophy() {
+  const cats = document.getElementById('trophy-categories');
+  if (!cats) return;
+  const byCat = {};
+  for (const [id, ach] of Object.entries(ACHIEVEMENTS)) {
+    if (!byCat[ach.cat]) byCat[ach.cat] = [];
+    byCat[ach.cat].push({ id, ...ach, unlocked: !!(game.achievements && game.achievements[id]) });
+  }
+  let html = '';
+  for (const [catKey, list] of Object.entries(byCat)) {
+    const cat = TROPHY_CATEGORIES[catKey] || { name: catKey, color: '#fff' };
+    const unlocked = list.filter(a => a.unlocked).length;
+    html += `<div style="margin-bottom: 18px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid ${cat.color}40;">
+        <span style="font-size: 1.1rem;">${cat.icon}</span>
+        <span style="font-weight: 700; color: ${cat.color}; font-size: 0.95rem;">${cat.name}</span>
+        <span style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">${unlocked}/${list.length}</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px;">
+        ${list.map(a => {
+          const opacity = a.unlocked ? '1' : '0.32';
+          const bg = a.unlocked ? `linear-gradient(135deg, ${cat.color}30, ${cat.color}10)` : 'rgba(255,255,255,0.04)';
+          const border = a.unlocked ? cat.color : 'rgba(255,255,255,0.1)';
+          const lockIcon = a.unlocked ? '' : '🔒 ';
+          return `<div style="background: ${bg}; border: 1.5px solid ${border}; border-radius: 10px; padding: 10px; opacity: ${opacity}; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            <div style="font-size: 1.6rem; margin-bottom: 4px; filter: ${a.unlocked ? 'none' : 'grayscale(1)'};">${lockIcon}${a.icon}</div>
+            <div style="font-size: 0.78rem; font-weight: 600; color: #fff; margin-bottom: 2px;">${a.name}</div>
+            <div style="font-size: 0.68rem; color: rgba(255,255,255,0.6);">${a.desc}</div>
+            ${a.unlocked ? '<div style="font-size: 0.65rem; color: #84cc16; margin-top: 4px;">✅ Unlocked</div>' : ''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+  cats.innerHTML = html;
+  const prog = document.getElementById('trophy-progress');
+  if (prog) {
+    const totalUnlocked = Object.keys(game.achievements || {}).length;
+    const totalAll = Object.keys(ACHIEVEMENTS).length;
+    prog.textContent = `${totalUnlocked} / ${totalAll} unlocked (${Math.round(totalUnlocked / totalAll * 100)}%)`;
+  }
+  document.getElementById('trophy-modal').classList.add('show');
+  playClick();
+}
+function closeTrophy() {
+  document.getElementById('trophy-modal').classList.remove('show');
+  playClick();
+}
+document.getElementById('trophy-toggle').addEventListener('click', openTrophy);
+document.getElementById('trophy-close').addEventListener('click', closeTrophy);
+
+// v2.7.4: Feedback board (aggregated reviews)
+let feedbackFilter = 'all';
+function openFeedback() {
+  document.getElementById('feedback-modal').classList.add('show');
+  renderFeedbackList();
+  playClick();
+}
+function closeFeedback() {
+  document.getElementById('feedback-modal').classList.remove('show');
+  playClick();
+}
+function renderFeedbackList() {
+  const list = document.getElementById('feedback-list');
+  if (!list) return;
+  const all = [];
+  for (const rideId in (game.rideReviews || {})) {
+    const reviews = game.rideReviews[rideId] || [];
+    const ride = rides.find(r => r.id === parseInt(rideId));
+    reviews.forEach(r => {
+      all.push({ ...r, rideName: ride?.info?.name || 'Ride', rideEmoji: ride ? getRideEmoji(ride.type) : '✨' });
+    });
+  }
+  all.sort((a, b) => (b.day || 0) - (a.day || 0));
+  const filtered = feedbackFilter === 'all' ? all : all.filter(r => String(r.stars) === feedbackFilter);
+  const display = filtered.slice(0, 20);
+  if (display.length === 0) {
+    list.innerHTML = '<div style="padding: 30px; text-align: center; color: rgba(255,255,255,0.5);">ยังไม่มีรีวิว<br/><small>ลองเล่นเกมสักพักแล้วเปิดใหม่</small></div>';
+  } else {
+    list.innerHTML = display.map(r => {
+      const starColor = r.stars >= 4 ? '#FFD66B' : r.stars >= 3 ? '#fb923c' : '#ef4444';
+      return `<div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px; margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+          <div style="font-size: 1.2rem;">${r.rideEmoji}</div>
+          <div style="flex: 1;">
+            <div style="font-size: 0.85rem; font-weight: 600; color: #fff;">${r.rideName}</div>
+            <div style="font-size: 0.7rem; color: rgba(255,255,255,0.5);">${r.emoji} ${VISITOR_TYPES[r.type]?.name || r.type} · Day ${r.day || '?'}</div>
+          </div>
+          <div style="color: ${starColor}; font-size: 0.9rem;">${'⭐'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
+        </div>
+        <div style="font-size: 0.85rem; color: rgba(255,255,255,0.85); line-height: 1.4;">"${r.text}"</div>
+      </div>`;
+    }).join('');
+  }
+  // Update filter button states
+  document.querySelectorAll('#feedback-modal .filter-btn').forEach(btn => {
+    const f = btn.dataset.filter;
+    btn.style.background = (f === feedbackFilter) ? 'rgba(255,214,107,0.3)' : 'rgba(0,0,0,0.2)';
+    btn.style.border = (f === feedbackFilter) ? '1px solid #FFD66B' : '1px solid rgba(255,255,255,0.15)';
+  });
+}
+document.getElementById('feedback-toggle').addEventListener('click', openFeedback);
+document.getElementById('feedback-close').addEventListener('click', closeFeedback);
+// v2.7.5: Park theme
+const PARK_THEMES = {
+  classic: { name: '🌅 Classic Sunset', primary: '#FFD66B', secondary: '#f97316', bg: '#0f172a', accent: '#ec4899', lantern: '#FFD66B' },
+  candy:   { name: '🍭 Candy Pop', primary: '#ec4899', secondary: '#a78bfa', bg: '#2a1830', accent: '#fbbf24', lantern: '#ec4899' },
+  forest:  { name: '🌲 Enchanted Forest', primary: '#84cc16', secondary: '#10b981', bg: '#0a1a0f', accent: '#fbbf24', lantern: '#84cc16' },
+  ocean:   { name: '🌊 Ocean Breeze', primary: '#06b6d4', secondary: '#3b82f6', bg: '#0a1a2a', accent: '#22d3ee', lantern: '#22d3ee' },
+  neon:    { name: '⚡ Neon Night', primary: '#a855f7', secondary: '#ec4899', bg: '#0a0a18', accent: '#22d3ee', lantern: '#ec4899' },
+  royal:   { name: '👑 Royal Gold', primary: '#fbbf24', secondary: '#f59e0b', bg: '#1a1500', accent: '#a855f7', lantern: '#fbbf24' },
+};
+let currentTheme = localStorage.getItem('sj88wonderpark_theme') || 'classic';
+function applyTheme(themeKey) {
+  const theme = PARK_THEMES[themeKey];
+  if (!theme) return;
+  currentTheme = themeKey;
+  localStorage.setItem('sj88wonderpark_theme', themeKey);
+  document.body.style.setProperty('--park-primary', theme.primary);
+  document.body.style.setProperty('--park-secondary', theme.secondary);
+  document.body.style.setProperty('--park-bg', theme.bg);
+  document.body.style.setProperty('--park-accent', theme.accent);
+  document.body.style.setProperty('--park-lantern', theme.lantern);
+  document.body.style.background = `linear-gradient(135deg, ${theme.bg} 0%, #0a0a18 100%)`;
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.style.background = `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`;
+  game.parkTheme = themeKey;
+  saveGame(0, true);
+  showHint('🎨 เปลี่ยนธีม: ' + theme.name);
+  playClick();
+  updateThemePreview();
+}
+function renderThemeGrid() {
+  const grid = document.getElementById('theme-grid');
+  if (!grid) return;
+  grid.innerHTML = Object.entries(PARK_THEMES).map(([key, t]) => {
+    const isCurrent = key === currentTheme;
+    const emoji = t.name.split(' ')[0];
+    const name = t.name.split(' ').slice(1).join(' ');
+    return `<div onclick="applyTheme('${key}')" style="cursor: pointer; background: linear-gradient(135deg, ${t.primary}, ${t.secondary}); border: ${isCurrent ? '3px solid #FFD66B' : '2px solid rgba(255,255,255,0.15)'}; border-radius: 12px; padding: 18px 12px; text-align: center; transition: transform 0.2s; box-shadow: 0 4px 16px rgba(0,0,0,0.3);" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+      <div style="font-size: 1.8rem;">${emoji}</div>
+      <div style="font-size: 0.85rem; font-weight: 600; color: #fff; margin-top: 4px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${name}</div>
+      ${isCurrent ? '<div style="font-size: 0.7rem; color: #fff; margin-top: 4px;">✓ กำลังใช้</div>' : ''}
+    </div>`;
+  }).join('');
+}
+function updateThemePreview() {
+  const el = document.getElementById('theme-preview-content');
+  if (el) {
+    const t = PARK_THEMES[currentTheme];
+    if (t) el.innerHTML = '<span style="background: linear-gradient(135deg, ' + t.primary + ', ' + t.secondary + '); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1.4rem;">' + t.name + '</span>';
+  }
+}
+function openTheme() {
+  renderThemeGrid();
+  updateThemePreview();
+  document.getElementById('theme-modal').classList.add('show');
+  playClick();
+}
+function closeTheme() {
+  document.getElementById('theme-modal').classList.remove('show');
+  playClick();
+}
+document.getElementById('theme-toggle').addEventListener('click', openTheme);
+document.getElementById('theme-close').addEventListener('click', closeTheme);
+setTimeout(() => { applyTheme(currentTheme); }, 200);
+
+// Filter button clicks (event delegation)
+document.addEventListener('click', (e) => {
+  if (e.target && e.target.classList && e.target.classList.contains('filter-btn') && e.target.closest('#feedback-modal')) {
+    feedbackFilter = e.target.dataset.filter;
+    renderFeedbackList();
+  }
+});
 
 // v2.6.5: Multi-language (i18n) — TH/EN/CH
 const I18N = {
@@ -9154,6 +9550,9 @@ scene.registerBeforeRender(() => {
     recordWeatherDay(game.weather);
     snapshotDailyHistory();
     checkStreakOnDayEnd();  // v1.5: update streak
+    // v2.7.1: generate day-end report
+    generateDayReport(prevDay);
+    showDayReport();
     game.dailyStats = { income: 0, visitors: 0, riders: 0, tips: 0 };
 
     game.day++;
