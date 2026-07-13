@@ -95,6 +95,63 @@
   .pager-num { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 3px 8px; border-radius: 5px; cursor: pointer; font-size: 0.78rem; min-width: 26px; }
   .pager-num.active { background: rgba(255,214,107,0.3); border-color: #FFD66B; color: #FFD66B; }
   #ride-page-info { font-size: 0.72rem; color: rgba(255,255,255,0.55); }
+  .ride-info-btn { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.25); color: #fff; width: 24px; height: 24px; border-radius: 50%; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; backdrop-filter: blur(4px); transition: all 0.2s; }
+  .ride-info-btn:hover { background: rgba(255,214,107,0.5); border-color: #FFD66B; transform: scale(1.15) rotate(90deg); box-shadow: 0 0 12px rgba(255,214,107,0.5); }
+  /* v2.8.2: Premium ride detail modal */
+  #ride-detail-modal .manage-box { max-width: 640px; text-align: left; padding: 0; overflow: hidden; background: linear-gradient(180deg, #1e1b3a 0%, #0f0f23 100%); border: 1px solid var(--cat-color, #FFD66B40); box-shadow: 0 0 60px var(--cat-color, #FFD66B30), 0 20px 60px rgba(0,0,0,0.8); }
+  .rd-hero { position: relative; height: 220px; background: linear-gradient(135deg, var(--cat-color, #FFD66B) 0%, transparent 60%), radial-gradient(circle at 70% 50%, var(--cat-color, #FFD66B) 0%, transparent 70%), linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.8)); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .rd-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.1) 0%, transparent 40%), radial-gradient(circle at 80% 70%, rgba(255,255,255,0.05) 0%, transparent 30%); pointer-events: none; }
+  .rd-hero::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60px; background: linear-gradient(180deg, transparent, #0f0f23); }
+  .rd-hero-svg { width: 180px; height: 180px; filter: drop-shadow(0 8px 20px rgba(0,0,0,0.5)) drop-shadow(0 0 30px var(--cat-color, #FFD66B80)); animation: rd-float 4s ease-in-out infinite, rd-glow 3s ease-in-out infinite alternate; }
+  @keyframes rd-float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
+  @keyframes rd-glow { 0% { filter: drop-shadow(0 8px 20px rgba(0,0,0,0.5)) drop-shadow(0 0 20px var(--cat-color, #FFD66B40)); } 100% { filter: drop-shadow(0 8px 20px rgba(0,0,0,0.5)) drop-shadow(0 0 40px var(--cat-color, #FFD66B80)); } }
+  .rd-ribbon { position: absolute; top: 14px; left: -40px; background: var(--cat-color, #FFD66B); color: #000; padding: 5px 50px; font-size: 0.78rem; font-weight: 800; transform: rotate(-30deg); box-shadow: 0 4px 12px rgba(0,0,0,0.4); letter-spacing: 0.5px; z-index: 2; }
+  .rd-close-x { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 32px; height: 32px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; z-index: 3; backdrop-filter: blur(8px); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .rd-close-x:hover { background: rgba(239,68,68,0.6); border-color: #ef4444; transform: rotate(90deg); }
+  .rd-body { padding: 0 22px 22px; margin-top: -30px; position: relative; z-index: 1; }
+  .rd-title { font-size: 1.7rem; font-weight: 900; color: #fff; margin-bottom: 4px; text-shadow: 0 2px 8px rgba(0,0,0,0.6); letter-spacing: -0.5px; }
+  .rd-tagline { font-size: 0.85rem; color: rgba(255,255,255,0.65); font-style: italic; margin-bottom: 16px; }
+  .rd-hero-est { text-align: center; margin: 10px 0 18px; padding: 16px; background: linear-gradient(135deg, rgba(132,204,22,0.15), rgba(16,185,129,0.08)); border: 1px solid rgba(132,204,22,0.3); border-radius: 12px; }
+  .rd-hero-est .label { font-size: 0.7rem; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+  .rd-hero-est .value { font-size: 2rem; font-weight: 900; color: #84cc16; text-shadow: 0 0 20px rgba(132,204,22,0.4); margin-top: 2px; }
+  .rd-pills { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
+  .rd-pill { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 6px; text-align: center; backdrop-filter: blur(8px); transition: all 0.2s; }
+  .rd-pill:hover { background: rgba(255,255,255,0.08); transform: translateY(-2px); }
+  .rd-pill .ico { font-size: 1.1rem; margin-bottom: 2px; }
+  .rd-pill .val { font-size: 0.95rem; font-weight: 800; color: #fff; }
+  .rd-pill .val.cant-afford { color: #ef4444; }
+  .rd-pill .lbl { font-size: 0.65rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 1px; }
+  .rd-section-title { font-size: 0.78rem; color: var(--cat-color, #FFD66B); font-weight: 800; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: 1.2px; display: flex; align-items: center; gap: 6px; }
+  .rd-section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--cat-color, #FFD66B), transparent); }
+  .rd-prefer-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .rd-prefer-chip { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 5px 11px; font-size: 0.78rem; color: #fff; cursor: default; transition: all 0.2s; position: relative; }
+  .rd-prefer-chip:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
+  .rd-prefer-chip.preferred { background: linear-gradient(135deg, rgba(236,72,153,0.18), rgba(236,72,153,0.08)); border-color: rgba(236,72,153,0.4); box-shadow: 0 0 12px rgba(236,72,153,0.15); }
+  .rd-prefer-chip .tip-badge { display: inline-block; background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 8px; font-size: 0.65rem; margin-left: 4px; color: #FFD66B; font-weight: 700; }
+  .rd-roadmap { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 0; align-items: center; margin: 6px 0 4px; }
+  .rd-roadmap-step { background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 10px 6px; text-align: center; }
+  .rd-roadmap-step.lv3 { background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(168,85,247,0.05)); border-color: rgba(168,85,247,0.4); }
+  .rd-roadmap-step .lvl { font-size: 0.7rem; color: var(--cat-color, #FFD66B); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+  .rd-roadmap-step .lvl-num { font-size: 1.4rem; font-weight: 900; color: #fff; margin: 2px 0; }
+  .rd-roadmap-step .stat { font-size: 0.7rem; color: rgba(255,255,255,0.7); margin-top: 1px; }
+  .rd-roadmap-step .stat strong { color: #fff; }
+  .rd-roadmap-step .cost-up { font-size: 0.65rem; color: #FFD66B; margin-top: 4px; font-weight: 700; }
+  .rd-roadmap-arrow { text-align: center; color: var(--cat-color, #FFD66B); font-size: 1.2rem; opacity: 0.6; padding: 0 4px; }
+  .rd-strategy { background: rgba(255,255,255,0.04); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08); border-left: 3px solid var(--cat-color, #FFD66B); padding: 12px 14px; font-size: 0.88rem; color: rgba(255,255,255,0.9); border-radius: 0 10px 10px 0; line-height: 1.55; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+  .rd-strategy strong { color: var(--cat-color, #FFD66B); }
+  .rd-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .rd-actions button { flex: 1; padding: 12px 16px; border-radius: 10px; border: none; font-weight: 800; cursor: pointer; font-size: 0.92rem; letter-spacing: 0.3px; transition: all 0.2s; }
+  .rd-btn-place { background: linear-gradient(135deg, #84cc16 0%, #10b981 100%); color: #fff; box-shadow: 0 4px 16px rgba(132,204,22,0.3); position: relative; overflow: hidden; }
+  .rd-btn-place::after { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255,255,255,0.3); transform: translate(-50%, -50%); transition: width 0.4s, height 0.4s; }
+  .rd-btn-place:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(132,204,22,0.5); }
+  .rd-btn-place:hover::after { width: 300px; height: 300px; }
+  .rd-btn-place:not(:disabled) { animation: rd-pulse 2.4s ease-in-out infinite; }
+  @keyframes rd-pulse { 0%, 100% { box-shadow: 0 4px 16px rgba(132,204,22,0.3); } 50% { box-shadow: 0 4px 16px rgba(132,204,22,0.3), 0 0 0 6px rgba(132,204,22,0); } }
+  .rd-btn-place:disabled { background: linear-gradient(135deg, #4b5563, #374151); cursor: not-allowed; box-shadow: none; }
+  .rd-btn-close { background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+  .rd-btn-close:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
+  .rd-fun-bar { background: rgba(255,255,255,0.1); border-radius: 4px; height: 6px; margin-top: 4px; overflow: hidden; }
+  .rd-fun-bar-fill { height: 100%; background: linear-gradient(90deg, #FFD66B, var(--cat-color, #FFD66B)); border-radius: 4px; transition: width 0.6s ease; box-shadow: 0 0 8px var(--cat-color, #FFD66B80); }
   .ride-btn {
     background: rgba(255,255,255,0.06);
     border: 2px solid rgba(255,255,255,0.08);
@@ -1224,6 +1281,13 @@
       <div id="theme-preview-content" style="margin-top: 8px; font-size: 1.1rem; font-weight: 700;">--</div>
     </div>
     <button class="close-btn" id="theme-close" style="margin-top: 14px;">ปิด</button>
+  </div>
+</div>
+
+<!-- v2.8.1: Ride Detail Modal -->
+<div id="ride-detail-modal" class="manage-modal">
+  <div class="manage-box">
+    <div id="ride-detail-content"></div>
   </div>
 </div>
 
@@ -7985,6 +8049,159 @@ function showHint(msg, duration = 2200) {
 let currentCategory = 'family';
 let currentRidePage = 1;
 const RIDES_PER_PAGE = 6;
+// v2.8.1: Per-ride detail (thai strategy + tagline)
+const RIDE_DESCRIPTIONS = {
+  ferris:    { tag: 'ชิงช้าสวรรค์สุดคลาสสิก',        desc: 'เครื่องเล่นคลาสสิกที่ทุกคนในครอบครัวชื่นชอบ วิวมุมสูงเห็นทั่วสวนสนุก เหมาะเป็นจุดเริ่มต้นของสวน ไม่กินพื้นที่เยอะ รายได้ดีต่อเนื่อง' },
+  carousel:  { tag: 'ม้าหมุนแสนหวาน',            desc: 'ม้าหมุนสีสันสดใส เด็กและครอบครัวติดใจ ความเร็วต่ำ ผู้เข้าชมไม่ตกใจ รายได้นิ่ง เหมาะวางใกล้ทางเข้า' },
+  swing:     { tag: 'ชิงช้าแกว่งกลางอากาศ',     desc: 'ชิงช้าหมุนรอบเสา ตื่นเต้นแต่ไม่กลัว ความจุสูง (10 คน) ทำเงินได้ดีต่อรอบ เหมาะกับผู้เข้าชมทุกวัย' },
+  teacup:    { tag: 'ถ้วยชาหมุนได้',              desc: 'ถ้วยชาหมุนเร็ว เด็กชอบ ผู้ใหญ่ก็สนุก ความเร็วปรับได้ตามจังหวะ ราคาถูก คืนทุนเร็ว' },
+  train:     { tag: 'รถไฟเล็กสำหรับครอบครัว',  desc: 'รถไฟวนรอบสวน พาชมวิวทั่วบริเวณ ความจุ 12 คน เหมาะกับกลุ่มใหญ่ สร้างบรรยากาศย้อนยุค' },
+  balloon:   { tag: 'ลูกโป่งลอยฟ้า',              desc: 'ลูกโป่งขึ้น-ลงเบาๆ วิวมุมสูงช้าๆ คนชอบถ่ายรูป โอกาสได้ทิปจากคู่รักสูง แนะนำวางมุมโรแมนติก' },
+  coaster:   { tag: 'รถไฟเหาะตีลังกา',           desc: 'รถไฟเหาะความเร็วสูง เร่งอะดรีนาลีน ดึงดูดนักท่องเที่ยวสาย Thrill รายได้ดีมาก แต่ต้องการพื้นที่และคนดูแล' },
+  tower:     { tag: 'หอตกอิสระ',                  desc: 'หอสูง 4 คน ตกแบบอิสระ ระยะสั้นแต่ตื่นเต้นสุดขั้ว คนรวยและคู่รักชอบ เก็บค่าเข้าชมสูงได้' },
+  pendulum:  { tag: 'ชิงช้ากระดก',                desc: 'แกว่งกว้าง 180° ขึ้น-ลง เสียงกรี๊ดดังสนั่น เป็นไฮไลท์ของโซน Thrill รายได้เยอะ กินพื้นที่น้อยกว่ารถไฟเหาะ' },
+  loop:      { tag: 'รถไฟเหาะลูป',                desc: 'ลูป 360° สองรอบ ความเร็วสูงสุด เครื่องเล่นพรีเมียม ราคาแพงที่สุดในหมวด Thrill แต่คืนทุนไว' },
+  pirate:    { tag: 'เรือโจรสลัด',                 desc: 'เรือแกว่งซ้ายขวา กลางอากาศ ความสูง 90° กรี๊ดสนั่น ครอบครัวชอบ รายได้นิ่ง เหมาะกับทุกกลุ่ม' },
+  bungee:    { tag: 'กระโดดบันจี้',                desc: 'ตกจากที่สูงแบบบันจี้ ความเร็วสูง 4 คน คนรวยและสายลุยชอบ รายได้ต่อคนสูงที่สุด' },
+  bumper:    { tag: 'รถชนสนั่นสนาน',              desc: 'รถชนกันสนุก เด็กและวัยรุ่นชอบ กินพื้นที่น้อย รายได้ดี บำรุงรักษาง่าย' },
+  playground:{ tag: 'สนามเด็กเล่น',                desc: 'เครื่องเล่นสำหรับเด็กเล็ก ค่าโดยสารถูก แต่ผู้ปกครองต้องพามา ดึงดูดครอบครัว เหมาะวางริมทางเดิน' },
+  boats:     { tag: 'เรือยางชน',                  desc: 'เรือยางบนสระน้ำ ชนกันได้ เด็กชอบมาก ฤดูร้อนฮิตสุด ใช้น้ำเยอะ ต้องมีแหล่งน้ำใกล้เคียง' },
+  food:      { tag: 'ร้านอาหาร',                  desc: 'ร้านอาหารทั่วไป ขายของกิน ไม่ต้องมีผู้โดยสาร รายได้ต่อเนื่องตลอดวัน ลงทุนต่ำ คืนทุนไวมาก' },
+  icecream:  { tag: 'ร้านไอติม',                  desc: 'ไอติมหวานเย็น ขายดีหน้าร้อน แต่เก็บเงินเร็ว ลงทุนน้อยที่สุด เหมาะเป็นรายได้เสริม' },
+  popcorn:   { tag: 'ร้านป๊อปคอร์น',             desc: 'ป๊อปคอร์นกรุบกรอบ ขายดีตลอด ลงทุนต่ำสุด ใช้คู่กับโรงภาพยนตร์หรือโซนครอบครัว' },
+  haunted:   { tag: 'บ้านผีสิง',                  desc: 'บ้านหลอนสุดสยอง กลางคืนฮอตสุด ผีและคู่เดทชอบ ค่าโดยสารสูง ตกแต่งซ่อมเยอะ' },
+  magic:     { tag: 'โชว์มายากล',                 desc: 'โชว์กลางแจ้ง คนดูตั้งรอบ ทุกเพศทุกวัยชอบ คู่รักและครอบครัวมาดูบ่อย ค่าโดยสารปานกลาง' },
+  custom:    { tag: 'เครื่องเล่นกำหนดเอง',     desc: 'เครื่องเล่นที่คุณออกแบบเอง ชื่อและสีสุ่ม ราคาสุ่ม ความพิเศษคือความเป็นคุณ' },
+};
+
+function openRideDetail(type) {
+  const r = RIDE_INFO[type];
+  if (!r) return;
+  const cat = (type === 'custom') ? { name: '✨ Custom', color: '#ec4899' } : RIDE_CATEGORIES[r.cat];
+  const desc = RIDE_DESCRIPTIONS[type] || { tag: r.name, desc: 'เครื่องเล่นในสวนสนุก' };
+  const owned = rideTypeCount[type] || 0;
+  const canAfford = game.money >= r.cost;
+  // Compute upgrade levels (Lv 1/2/3)
+  const baseCap = r.capacity;
+  const baseIncome = r.income;
+  const up1 = { cap: baseCap, inc: baseIncome, cost: 0 };
+  const up2 = { cap: Math.floor(baseCap * 1.5), inc: Math.round(baseIncome * 1.3), cost: Math.floor(r.cost * 0.4) };
+  const up3 = { cap: Math.floor(baseCap * 2.0), inc: Math.round(baseIncome * 1.6), cost: Math.floor(r.cost * 0.8) };
+  // Which visitor types prefer it
+  const prefChips = Object.entries(VISITOR_TYPES).map(([k, vt]) => {
+    const isPref = (vt.prefers || []).includes(type);
+    const tipStr = vt.tipMult ? '×' + vt.tipMult : '×1';
+    return `<span class="rd-prefer-chip ${isPref ? 'preferred' : ''}" title="${isPref ? '❤️ ชอบเครื่องเล่นนี้' : 'ไม่ได้ชอบเป็นพิเศษ'} (tip ${tipStr})">${vt.emoji} ${vt.name}${isPref ? ' ❤️' : ''}<span class="tip-badge">tip ${tipStr}</span></span>`;
+  }).join('');
+  // Fun rating (out of 10) + progress bar
+  const funVal = r.fun || 5;
+  const funPct = (funVal / 10) * 100;
+  // Daily est: capacity * income * 6 (rough)
+  const dailyEst = (baseCap || 0) * baseIncome * 6;
+  const dailyEstDisplay = dailyEst > 0 ? dailyEst.toLocaleString() : Math.round(r.income * 30).toLocaleString();
+  // Place button label
+  const placeLabel = canAfford
+    ? `📍 วางเครื่องเล่น · $${r.cost.toLocaleString()}`
+    : `❌ เงินไม่พอ (มี $${Math.floor(game.money).toLocaleString()})`;
+  const html = `
+    <div style="--cat-color: ${cat.color};">
+      <div class="rd-hero">
+        <div class="rd-ribbon">${cat.name}</div>
+        <div class="rd-close-x" id="rd-close-x" title="ปิด">×</div>
+        <div class="rd-hero-svg">${RIDE_PREVIEWS[type] || ''}</div>
+      </div>
+      <div class="rd-body">
+        <div class="rd-title">${getRideEmoji(type)} ${r.name}</div>
+        <div class="rd-tagline">${desc.tag}</div>
+        <div class="rd-hero-est">
+          <div class="label">รายได้ประมาณ / วัน</div>
+          <div class="value">$${dailyEstDisplay}</div>
+        </div>
+        <div class="rd-pills">
+          <div class="rd-pill">
+            <div class="ico">💰</div>
+            <div class="val ${canAfford ? '' : 'cant-afford'}">$${r.cost.toLocaleString()}</div>
+            <div class="lbl">ค่าสร้าง</div>
+          </div>
+          <div class="rd-pill">
+            <div class="ico">${r.capacity > 0 ? '👥' : '♾️'}</div>
+            <div class="val">${r.capacity > 0 ? r.capacity : '∞'}</div>
+            <div class="lbl">${r.capacity > 0 ? 'คน/รอบ' : 'ไม่จำกัด'}</div>
+          </div>
+          <div class="rd-pill">
+            <div class="ico">🎫</div>
+            <div class="val">$${r.income}</div>
+            <div class="lbl">ต่อคน</div>
+          </div>
+          <div class="rd-pill">
+            <div class="ico">${owned > 0 ? '✅' : '🆕'}</div>
+            <div class="val">${owned > 0 ? '×' + owned : 'ใหม่'}</div>
+            <div class="lbl">ที่มีอยู่</div>
+          </div>
+        </div>
+        <div style="margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: rgba(255,255,255,0.7);">
+            <span>🌟 ความสนุก</span>
+            <span style="color: ${cat.color}; font-weight: 800;">${funVal}/10</span>
+          </div>
+          <div class="rd-fun-bar"><div class="rd-fun-bar-fill" style="width: ${funPct}%;"></div></div>
+        </div>
+        <div class="rd-section-title">❤️ ผู้เข้าชมที่ชอบ</div>
+        <div class="rd-prefer-grid">${prefChips}</div>
+        <div class="rd-section-title">⬆️ เส้นทางอัปเกรด</div>
+        <div class="rd-roadmap">
+          <div class="rd-roadmap-step">
+            <div class="lvl">เริ่มต้น</div>
+            <div class="lvl-num">Lv 1</div>
+            <div class="stat"><strong>${up1.cap}</strong> คน</div>
+            <div class="stat">$${up1.inc}/คน</div>
+          </div>
+          <div class="rd-roadmap-arrow">→</div>
+          <div class="rd-roadmap-step">
+            <div class="lvl">อัปเกรด</div>
+            <div class="lvl-num">Lv 2</div>
+            <div class="stat"><strong>${up2.cap}</strong> คน</div>
+            <div class="stat">$${up2.inc}/คน</div>
+            <div class="cost-up">+$${up2.cost.toLocaleString()}</div>
+          </div>
+          <div class="rd-roadmap-arrow">→</div>
+          <div class="rd-roadmap-step lv3">
+            <div class="lvl">สูงสุด</div>
+            <div class="lvl-num">Lv 3</div>
+            <div class="stat"><strong>${up3.cap}</strong> คน</div>
+            <div class="stat">$${up3.inc}/คน</div>
+            <div class="cost-up">+$${up3.cost.toLocaleString()}</div>
+          </div>
+        </div>
+        <div class="rd-section-title">💡 กลยุทธ์</div>
+        <div class="rd-strategy">${desc.desc}</div>
+        <div class="rd-actions">
+          <button class="rd-btn-place" id="rd-place-btn" ${canAfford ? '' : 'disabled'}>${placeLabel}</button>
+          <button class="rd-btn-close" id="rd-close-btn">ยกเลิก</button>
+        </div>
+      </div>
+    </div>
+  `;
+  const el = document.getElementById('ride-detail-content');
+  if (el) el.innerHTML = html;
+  document.getElementById('ride-detail-modal').classList.add('show');
+  // Bind buttons
+  const placeBtn = document.getElementById('rd-place-btn');
+  const closeBtn = document.getElementById('rd-close-btn');
+  const closeX = document.getElementById('rd-close-x');
+  if (closeBtn) closeBtn.addEventListener('click', closeRideDetail);
+  if (closeX) closeX.addEventListener('click', closeRideDetail);
+  if (placeBtn && canAfford) placeBtn.addEventListener('click', () => {
+    closeRideDetail();
+    const card = document.querySelector(`.ride-card[data-ride="${type}"]`);
+    if (card) card.click();
+  });
+  playClick();
+}
+function closeRideDetail() {
+  document.getElementById('ride-detail-modal').classList.remove('show');
+  playClick();
+}
 function renderCatTabs() {
   const tabs = document.getElementById('cat-tabs');
   if (!tabs) return;
@@ -8028,6 +8245,7 @@ function renderRideGrid() {
     const canAfford = game.money >= r.cost;
     const isSelected = game.selectedRideType === key;
     return `<div class="ride-card ${isSelected ? 'active' : ''} ${canAfford ? '' : 'disabled'}" data-ride="${key}" style="position: relative; --cat-color: ${catColor};">
+      <button class="ride-info-btn" data-info="${key}" title="ดูรายละเอียด">i</button>
       <div class="ride-card-preview">${RIDE_PREVIEWS[key] || '<svg viewBox="0 0 64 64"><text x="32" y="40" text-anchor="middle" font-size="32" fill="#fff">✨</text></svg>'}</div>
       <div class="ride-card-name">${r.name}</div>
       <div class="ride-card-cost ${canAfford ? '' : 'cant-afford'}">$${r.cost.toLocaleString()}</div>
@@ -8070,6 +8288,13 @@ function renderRideGrid() {
       makeGhost(type);
       showHint(`คลิกบนพื้น เพื่อวาง ${RIDE_INFO[type].name}`);
       playClick();
+    });
+  });
+  // v2.8.1: bind info button (separate from card click)
+  grid.querySelectorAll('.ride-info-btn[data-info]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openRideDetail(btn.dataset.info);
     });
   });
 }
