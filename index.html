@@ -152,6 +152,58 @@
   .rd-btn-close:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
   .rd-fun-bar { background: rgba(255,255,255,0.1); border-radius: 4px; height: 6px; margin-top: 4px; overflow: hidden; }
   .rd-fun-bar-fill { height: 100%; background: linear-gradient(90deg, #FFD66B, var(--cat-color, #FFD66B)); border-radius: 4px; transition: width 0.6s ease; box-shadow: 0 0 8px var(--cat-color, #FFD66B80); }
+  /* v2.8.3: Modal opening animation (A) */
+  .manage-modal { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+  .manage-modal.show { opacity: 1; pointer-events: auto; }
+  .manage-modal.show .manage-box { animation: rd-modal-in 0.42s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  @keyframes rd-modal-in {
+    0%   { opacity: 0; transform: translateY(40px) scale(0.92); filter: blur(4px); }
+    60%  { filter: blur(0); }
+    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  }
+  /* v2.8.3: Light theme overrides (B) */
+  #ride-detail-modal[data-theme="light"] .manage-box {
+    background: linear-gradient(180deg, #fafbfc 0%, #f1f3f8 100%);
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 0 60px rgba(0,0,0,0.15), 0 20px 60px rgba(0,0,0,0.25);
+  }
+  #ride-detail-modal[data-theme="light"] .rd-hero {
+    background: linear-gradient(135deg, var(--cat-color, #FFD66B) 0%, transparent 60%), radial-gradient(circle at 70% 50%, var(--cat-color, #FFD66B) 0%, transparent 70%), linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.9));
+  }
+  #ride-detail-modal[data-theme="light"] .rd-hero::after { background: linear-gradient(180deg, transparent, #f1f3f8); }
+  #ride-detail-modal[data-theme="light"] .rd-title { color: #0f172a; text-shadow: 0 1px 2px rgba(255,255,255,0.6); }
+  #ride-detail-modal[data-theme="light"] .rd-tagline { color: #475569; }
+  #ride-detail-modal[data-theme="light"] .rd-pill { background: rgba(255,255,255,0.7); border: 1px solid #cbd5e1; backdrop-filter: blur(8px); }
+  #ride-detail-modal[data-theme="light"] .rd-pill:hover { background: rgba(255,255,255,0.9); }
+  #ride-detail-modal[data-theme="light"] .rd-pill .val { color: #0f172a; }
+  #ride-detail-modal[data-theme="light"] .rd-pill .lbl { color: #64748b; }
+  #ride-detail-modal[data-theme="light"] .rd-section-title { color: var(--cat-color, #d97706); }
+  #ride-detail-modal[data-theme="light"] .rd-section-title::after { background: linear-gradient(90deg, var(--cat-color, #d97706), transparent); }
+  #ride-detail-modal[data-theme="light"] .rd-prefer-chip { background: #fff; border: 1px solid #cbd5e1; color: #0f172a; }
+  #ride-detail-modal[data-theme="light"] .rd-prefer-chip.preferred { background: linear-gradient(135deg, #fce7f3, #fdf2f8); border-color: #ec4899; }
+  #ride-detail-modal[data-theme="light"] .rd-prefer-chip .tip-badge { background: #f1f5f9; color: #b45309; }
+  #ride-detail-modal[data-theme="light"] .rd-roadmap-step { background: #fff; border-color: #cbd5e1; }
+  #ride-detail-modal[data-theme="light"] .rd-roadmap-step.lv3 { background: linear-gradient(135deg, #f3e8ff, #faf5ff); border-color: #a855f7; }
+  #ride-detail-modal[data-theme="light"] .rd-roadmap-step .lvl-num { color: #0f172a; }
+  #ride-detail-modal[data-theme="light"] .rd-roadmap-step .stat { color: #475569; }
+  #ride-detail-modal[data-theme="light"] .rd-roadmap-step .stat strong { color: #0f172a; }
+  #ride-detail-modal[data-theme="light"] .rd-roadmap-arrow { color: var(--cat-color, #d97706); }
+  #ride-detail-modal[data-theme="light"] .rd-strategy { background: #fff; border: 1px solid #cbd5e1; border-left: 3px solid var(--cat-color, #d97706); color: #334155; }
+  #ride-detail-modal[data-theme="light"] .rd-strategy strong { color: var(--cat-color, #d97706); }
+  #ride-detail-modal[data-theme="light"] .rd-fun-bar { background: #e2e8f0; }
+  #ride-detail-modal[data-theme="light"] .rd-btn-close { background: #f1f5f9; color: #0f172a; border-color: #cbd5e1; }
+  #ride-detail-modal[data-theme="light"] .rd-btn-close:hover { background: #e2e8f0; }
+  #ride-detail-modal[data-theme="light"] .rd-ribbon { color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,0.2); }
+  #ride-detail-modal[data-theme="light"] .rd-hero-est { background: linear-gradient(135deg, rgba(132,204,22,0.18), rgba(16,185,129,0.08)); border-color: #84cc16; }
+  #ride-detail-modal[data-theme="light"] .rd-hero-est .label { color: #475569; }
+  #rd-theme-toggle { position: absolute; top: 10px; right: 50px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 32px; height: 32px; border-radius: 50%; font-size: 0.95rem; cursor: pointer; z-index: 3; backdrop-filter: blur(8px); transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
+  #rd-theme-toggle:hover { background: rgba(255,214,107,0.5); transform: scale(1.1) rotate(180deg); }
+  #ride-detail-modal[data-theme="light"] #rd-theme-toggle { background: rgba(255,255,255,0.7); color: #0f172a; border-color: #cbd5e1; }
+  #ride-detail-modal[data-theme="light"] #rd-theme-toggle:hover { background: rgba(255,214,107,0.3); }
+  /* v2.8.3: 3D tilt effect on hero (C) */
+  .rd-hero { perspective: 1000px; transform-style: preserve-3d; transition: transform 0.15s ease-out; will-change: transform; }
+  .rd-hero-svg { transform-style: preserve-3d; transition: transform 0.15s ease-out; }
+  .rd-hero-glow { position: absolute; top: 50%; left: 50%; width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(circle, var(--cat-color, #FFD66B) 0%, transparent 70%); transform: translate(-50%, -50%) translateZ(20px); opacity: 0.5; filter: blur(30px); transition: transform 0.3s ease-out, opacity 0.3s; pointer-events: none; z-index: 0; }
   .ride-btn {
     background: rgba(255,255,255,0.06);
     border: 2px solid rgba(255,255,255,0.08);
@@ -8105,10 +8157,12 @@ function openRideDetail(type) {
     : `❌ เงินไม่พอ (มี $${Math.floor(game.money).toLocaleString()})`;
   const html = `
     <div style="--cat-color: ${cat.color};">
-      <div class="rd-hero">
+      <div class="rd-hero" id="rd-hero">
+        <div class="rd-hero-glow"></div>
         <div class="rd-ribbon">${cat.name}</div>
         <div class="rd-close-x" id="rd-close-x" title="ปิด">×</div>
-        <div class="rd-hero-svg">${RIDE_PREVIEWS[type] || ''}</div>
+        <button id="rd-theme-toggle" title="สลับธีม">🌙</button>
+        <div class="rd-hero-svg" id="rd-hero-svg">${RIDE_PREVIEWS[type] || ''}</div>
       </div>
       <div class="rd-body">
         <div class="rd-title">${getRideEmoji(type)} ${r.name}</div>
@@ -8189,6 +8243,7 @@ function openRideDetail(type) {
   const placeBtn = document.getElementById('rd-place-btn');
   const closeBtn = document.getElementById('rd-close-btn');
   const closeX = document.getElementById('rd-close-x');
+  const themeBtn = document.getElementById('rd-theme-toggle');
   if (closeBtn) closeBtn.addEventListener('click', closeRideDetail);
   if (closeX) closeX.addEventListener('click', closeRideDetail);
   if (placeBtn && canAfford) placeBtn.addEventListener('click', () => {
@@ -8196,10 +8251,71 @@ function openRideDetail(type) {
     const card = document.querySelector(`.ride-card[data-ride="${type}"]`);
     if (card) card.click();
   });
+  // v2.8.3 B: theme toggle (persist in localStorage)
+  const modal = document.getElementById('ride-detail-modal');
+  if (modal) {
+    const savedTheme = localStorage.getItem('ride_detail_theme_v1') || 'dark';
+    modal.setAttribute('data-theme', savedTheme);
+    if (themeBtn) themeBtn.textContent = savedTheme === 'light' ? '☀️' : '🌙';
+  }
+  if (themeBtn) themeBtn.addEventListener('click', () => {
+    const m = document.getElementById('ride-detail-modal');
+    if (!m) return;
+    const cur = m.getAttribute('data-theme') || 'dark';
+    const next = cur === 'light' ? 'dark' : 'light';
+    m.setAttribute('data-theme', next);
+    localStorage.setItem('ride_detail_theme_v1', next);
+    themeBtn.textContent = next === 'light' ? '☀️' : '🌙';
+    playClick();
+  });
+  // v2.8.3 C: 3D tilt on hero (mouse-tracked)
+  const hero = document.getElementById('rd-hero');
+  const heroSvg = document.getElementById('rd-hero-svg');
+  if (hero && heroSvg) {
+    let rafId = null;
+    let targetX = 0, targetY = 0, curX = 0, curY = 0;
+    const onMove = (e) => {
+      const rect = hero.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      targetY = (x - 0.5) * 16;  // rotateY -8 to +8 deg
+      targetX = -(y - 0.5) * 16; // rotateX -8 to +8 deg (inverted)
+      if (!rafId) animate();
+    };
+    const animate = () => {
+      curX += (targetX - curX) * 0.18;
+      curY += (targetY - curY) * 0.18;
+      hero.style.transform = `rotateX(${curX.toFixed(2)}deg) rotateY(${curY.toFixed(2)}deg)`;
+      // SVG tilts opposite (parallax) for depth
+      heroSvg.style.transform = `translateZ(40px) rotateX(${(-curX * 0.4).toFixed(2)}deg) rotateY(${(-curY * 0.4).toFixed(2)}deg)`;
+      if (Math.abs(targetX - curX) > 0.05 || Math.abs(targetY - curY) > 0.05) {
+        rafId = requestAnimationFrame(animate);
+      } else {
+        rafId = null;
+      }
+    };
+    const onLeave = () => {
+      targetX = 0; targetY = 0;
+      if (!rafId) animate();
+    };
+    hero.addEventListener('mousemove', onMove);
+    hero.addEventListener('mouseleave', onLeave);
+    // Store cleanup on the modal element
+    modal._tiltCleanup = () => {
+      hero.removeEventListener('mousemove', onMove);
+      hero.removeEventListener('mouseleave', onLeave);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }
   playClick();
 }
 function closeRideDetail() {
-  document.getElementById('ride-detail-modal').classList.remove('show');
+  const modal = document.getElementById('ride-detail-modal');
+  if (modal && modal._tiltCleanup) {
+    modal._tiltCleanup();
+    modal._tiltCleanup = null;
+  }
+  if (modal) modal.classList.remove('show');
   playClick();
 }
 function renderCatTabs() {
